@@ -38,9 +38,21 @@
 static int ntimes = ntimes_default;
 static int digits = digits_default;
 
-#include "types.h"
+#define LEN 32000
+#define LEN2 256
 
-#include "tests.h"
+#ifndef TYPE
+#define TYPE float
+#endif
+
+#ifndef X_TYPE
+#define X_TYPE TYPE
+#endif
+
+#ifndef ALIGNMENT
+#define ALIGNMENT 16
+#endif
+
 
 #define lll LEN
 
