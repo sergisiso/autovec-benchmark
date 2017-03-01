@@ -5501,7 +5501,8 @@ int vbor()
 #endif // CONTROL_LOOPS
 
 void set(int* ip, TYPE* s1, TYPE* s2){
-        posix_memalign((void **) &xx, ALIGNMENT, LEN*sizeof(TYPE));
+    int err  = posix_memalign((void **) &xx, ALIGNMENT, LEN*sizeof(TYPE));
+    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
 	printf("\n");
 	for (int i = 0; i < LEN; i = i+5){
 		ip[i]	= (i+4);
@@ -5535,14 +5536,13 @@ int main(int argc, char *argv[]){
 	int* ip;
 	TYPE s1,s2;
 
-        posix_memalign((void **) &ip, ALIGNMENT, LEN*sizeof(TYPE));
+    int err = posix_memalign((void **) &ip, ALIGNMENT, LEN*sizeof(TYPE));
+    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
 
-        if (argc > 1)
-          ntimes = atoi(argv[1]);
-        printf("Running each loop %d times...\n", ntimes);
+    if (argc > 1) ntimes = atoi(argv[1]);
+    printf("Running each loop %d times...\n", ntimes);
 
-        if (argc > 2)
-          digits = atoi(argv[2]);
+    if (argc > 2) digits = atoi(argv[2]);
 
 	set(ip, &s1, &s2);
 	printf("Loop \t Time(Sec) \t Checksum \n");
