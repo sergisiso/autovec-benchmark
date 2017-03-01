@@ -41,10 +41,6 @@ static int digits = digits_default;
 
 #include "types.h"
 
-#ifndef TESTS
-#define TESTS 0xFFFFFFFF
-#endif
-
 #include "tests.h"
 
 #define lll LEN
@@ -776,7 +772,7 @@ int init(char* name)
 	return 0;
 }
 
-#if TESTS & LINEAR_DEPENDENCE
+#if LINEAR_DEPENDENCE
 
 int s000()
 {
@@ -1169,9 +1165,9 @@ int s1119()
 	return 0;
 }
 
-#endif // TESTS & LINEAR_DEPENDENCE
+#endif // LINEAR_DEPENDENCE
 
-#if TESTS & INDUCTION_VARIABLE
+#if INDUCTION_VARIABLE
 
 // %1.2
 
@@ -1432,11 +1428,11 @@ int s128()
 	return 0;
 }
 
-#endif //  TESTS & INDUCTION_VARIABLE
+#endif //  INDUCTION_VARIABLE
 
 // %1.3
 
-#if TESTS & GLOBAL_DATA_FLOW
+#if GLOBAL_DATA_FLOW
 
 int s131()
 {
@@ -1588,9 +1584,9 @@ int s152()
 	return 0;
 }
 
-#endif // TESTS & GLOBAL_DATA_FLOW
+#endif // GLOBAL_DATA_FLOW
 
-#if TESTS & CONTROL_FLOW
+#if CONTROL_FLOW
 
 // %1.6
 
@@ -1690,9 +1686,9 @@ int s162(int k)
 	return 0;
 }
 
-#endif // TESTS & CONTROL_FLOW
+#endif // CONTROL_FLOW
 
-#if TESTS & SYMBOLICS
+#if SYMBOLICS
 
 // %1.7
 
@@ -1857,7 +1853,7 @@ int s176()
 	return 0;
 }
 
-#endif // TESTS & SYMBOLICS
+#endif // SYMBOLICS
 
 // **********************************************************
 // *							    *
@@ -1865,7 +1861,7 @@ int s176()
 // *							    *
 // **********************************************************
 
-#if TESTS & STATEMENT_REORDERING
+#if STATEMENT_REORDERING
 
 // %2.1
 
@@ -1947,9 +1943,9 @@ int s1213()
 	return 0;
 }
 
-#endif // TESTS & STATEMENT_REORDERING
+#endif // STATEMENT_REORDERING
 
-#if TESTS & LOOP_RESTRUCTURING
+#if LOOP_RESTRUCTURING
 
 // %2.2
 
@@ -2208,9 +2204,9 @@ int s235()
 }
 
 
-#endif // TESTS & LOOP_RESTRUCTURING
+#endif // LOOP_RESTRUCTURING
 
-#if TESTS & NODE_SPLITTING
+#if NODE_SPLITTING
 
 // %2.4
 
@@ -2377,9 +2373,9 @@ int s2244()
 	return 0;
 }
 
-#endif // TESTS & NODE_SPLITTING
+#endif // NODE_SPLITTING
 
-#if TESTS & EXPANSION
+#if EXPANSION
 
 // %2.5
 
@@ -2740,9 +2736,9 @@ int s261()
 	return 0;
 }
 
-#endif // TESTS & EXPANSION
+#endif // EXPANSION
 
-#if TESTS & CONTROL_FLOW
+#if CONTROL_FLOW
 
 int s271()
 {
@@ -3190,9 +3186,9 @@ int s2712()
 	return 0;
 }
 
-#endif // TESTS & CONTROL_FLOW
+#endif // CONTROL_FLOW
 
-#if TESTS & CROSSING_THRESHOLDS
+#if CROSSING_THRESHOLDS
 
 // %2.8
 
@@ -3433,7 +3429,7 @@ int s2111()
 	return 0;
 }
 
-#endif // TESTS & CROSSING_THRESHOLDS
+#endif // CROSSING_THRESHOLDS
 
 // **********************************************************
 //							    *
@@ -3441,7 +3437,7 @@ int s2111()
 //							    *
 // **********************************************************
 
-#if TESTS & REDUCTIONS
+#if REDUCTIONS
 
 // %3.1
 
@@ -3951,9 +3947,9 @@ int s3113()
 	return 0;
 }
 
-#endif // TESTS & REDUCTIONS
+#endif // REDUCTIONS
 
-#if TESTS & RECURRENCES
+#if RECURRENCES
 
 // %3.2
 
@@ -4037,9 +4033,9 @@ int s323()
 	return 0;
 }
 
-#endif // TESTS & RECURRENCES
+#endif // RECURRENCES
 
-#if TESTS & SEARCHING
+#if SEARCHING
 
 // %3.3
 
@@ -4121,9 +4117,9 @@ L20:
 	return 0;
 }
 
-#endif // TESTS & SEARCHING
+#endif // SEARCHING
 
-#if TESTS & PACKING
+#if PACKING
 
 // %3.4
 
@@ -4226,9 +4222,9 @@ int s343()
 	return 0;
 }
 
-#endif // TESTS & PACKING
+#endif // PACKING
 
-#if TESTS & LOOP_REROLLING
+#if LOOP_REROLLING
 
 // %3.5
 
@@ -4356,7 +4352,7 @@ int s353(int* __restrict__ ip)
 	return 0;
 }
 
-#endif // TESTS & LOOP_REROLLING
+#endif // LOOP_REROLLING
 
 // **********************************************************
 //							    *
@@ -4364,7 +4360,7 @@ int s353(int* __restrict__ ip)
 //							    *
 // **********************************************************
 
-#if TESTS & EQUIVALENCING
+#if EQUIVALENCING
 
 // %4.1
 // %4.2
@@ -4527,10 +4523,10 @@ int s424()
 	return 0;
 }
 
-#endif // TESTS & EQUIVALENCING
+#endif // EQUIVALENCING
 // %4.3
 
-#if TESTS & GLOBAL_DATA_FLOW
+#if GLOBAL_DATA_FLOW
 
 int s431()
 {
@@ -4560,10 +4556,10 @@ int s431()
 	return 0;
 }
 
-#endif // TESTS & GLOBAL_DATA_FLOW
+#endif // GLOBAL_DATA_FLOW
 // %4.4
 
-#if TESTS & CONTROL_FLOW
+#if CONTROL_FLOW
 
 int s441()
 {
@@ -4679,9 +4675,9 @@ L50:
 	return 0;
 }
 
-#endif // TESTS & CONTROL_FLOW
+#endif // CONTROL_FLOW
 
-#if TESTS & GLOBAL_DATA_FLOW
+#if GLOBAL_DATA_FLOW
 
 // %4.5
 
@@ -4741,9 +4737,9 @@ int s452()
 	return 0;
 }
 
-#endif // TESTS & GLOBAL_DATA_FLOW
+#endif // GLOBAL_DATA_FLOW
 
-#if TESTS & INDUCTION_VARIABLE
+#if INDUCTION_VARIABLE
 
 // %4.5
 
@@ -4774,11 +4770,11 @@ int s453()
 	return 0;
 }
 
-#endif // TESTS & INDUCTION_VARIABLE
+#endif // INDUCTION_VARIABLE
 
 // %4.7
 
-#if TESTS & GLOBAL_DATA_FLOW
+#if GLOBAL_DATA_FLOW
 
 int s471(){
 
@@ -4811,9 +4807,9 @@ int s471(){
 	return 0;
 }
 
-#endif // TESTS & GLOBAL_DATA_FLOW
+#endif // GLOBAL_DATA_FLOW
 
-#if TESTS & CONTROL_FLOW
+#if CONTROL_FLOW
 
 // %4.8
 
@@ -4875,13 +4871,13 @@ int s482()
 }
 
 
-#endif // TESTS & CONTROL_FLOW
+#endif // CONTROL_FLOW
 
 int min(int a, int b){
   return (a < b) ? a : b;
 }
 
-#if TESTS & INDIRECT_ADDRESSING
+#if INDIRECT_ADDRESSING
 
 // %4.9
 
@@ -5088,9 +5084,9 @@ int s4117()
 	return 0;
 }
 
-#endif // TESTS & INDIRECT_ADDRESSING
+#endif // INDIRECT_ADDRESSING
 
-#if TESTS & GLOBAL_DATA_FLOW
+#if GLOBAL_DATA_FLOW
 
 // %4.12
 
@@ -5119,9 +5115,9 @@ int s4121()
 	return 0;
 }
 
-#endif // TESTS & GLOBAL_DATA_FLOW
+#endif // GLOBAL_DATA_FLOW
 
-#if TESTS & CONTROL_LOOPS
+#if CONTROL_LOOPS
 
 // %5.1
 
@@ -5502,7 +5498,7 @@ int vbor()
 	return 0;
 }
 
-#endif // TESTS & CONTROL_LOOPS
+#endif // CONTROL_LOOPS
 
 void set(int* ip, TYPE* s1, TYPE* s2){
         posix_memalign((void **) &xx, ALIGNMENT, LEN*sizeof(TYPE));
@@ -5552,7 +5548,7 @@ int main(int argc, char *argv[]){
 	printf("Loop \t Time(Sec) \t Checksum \n");
 
 
-#if TESTS & LINEAR_DEPENDENCE
+#if LINEAR_DEPENDENCE
     printf("Testing Linear Dependence Loops\n");
 	s000();
 	s111();
@@ -5569,7 +5565,8 @@ int main(int argc, char *argv[]){
 	s119();
 	s1119();
 #endif
-#if TESTS & INDUCTION_VARIABLE
+
+#if INDUCTION_VARIABLE
     printf("Testing Induction Variable Loops\n");
 	s121();
 	s122(n1,n3);
@@ -5579,74 +5576,28 @@ int main(int argc, char *argv[]){
 	s126();
 	s127();
 	s128();
+	s453();
 #endif
-#if TESTS & GLOBAL_DATA_FLOW
+
+#if GLOBAL_DATA_FLOW
     printf("Testing Global Data Flow Loops\n");
 	s131();
 	s132();
 	s141();
 	s151();
 	s152();
+	s431();
+	s451();
+	s452();
+	s471();
+	s4121();
 #endif
-#if TESTS & CONTROL_FLOW
+
+#if CONTROL_FLOW
     printf("Testing Control Flow Loops\n");
 	s161();
 	s1161();
 	s162(n1);
-#endif
-#if TESTS & SYMBOLICS
-    printf("Testing Symbolics Loops\n");
-	s171(n1);
-	s172(n1,n3);
-	s173();
-	s174(LEN/2);
-	s175(n1);
-	s176();
-#endif
-#if TESTS & STATEMENT_REORDERING
-    printf("Testing Statement Reordering Loops\n");
-	s211();
-	s212();
-	s1213();
-#endif
-#if TESTS & LOOP_RESTRUCTURING
-    printf("Testing Restructuring Loops\n");
-	s221();
-	s1221();
-	s222();
-	s231();
-	s232();
-	s1232();
-	s233();
-	s2233();
-	s235();
-#endif
-#if TESTS & NODE_SPLITTING
-    printf("Testing Node Splitting Loops\n");
-	s241();
-	s242(s1, s2);
-	s243();
-	s244();
-	s1244();
-	s2244();
-#endif
-#if TESTS & EXPANSION
-    printf("Testing Expansion Loops\n");
-	s251();
-	s1251();
-	s2251();
-	s3251();
-	s252();
-	s253();
-	s254();
-	s255();
-	s256();
-	s257();
-	s258();
-	s261();
-#endif
-#if TESTS & CONTROL_FLOW
-    printf("Testing Control Flow Loops\n");
 	s271();
 	s272(s1);
 	s273();
@@ -5661,8 +5612,70 @@ int main(int argc, char *argv[]){
 	s2710(s1);
 	s2711();
 	s2712();
+	s441();
+	s442();
+	s443();
+	s481();
+	s482();
 #endif
-#if TESTS & CROSSING_THRESHOLDS
+
+#if SYMBOLICS
+    printf("Testing Symbolics Loops\n");
+	s171(n1);
+	s172(n1,n3);
+	s173();
+	s174(LEN/2);
+	s175(n1);
+	s176();
+#endif
+
+#if STATEMENT_REORDERING
+    printf("Testing Statement Reordering Loops\n");
+	s211();
+	s212();
+	s1213();
+#endif
+
+#if LOOP_RESTRUCTURING
+    printf("Testing Restructuring Loops\n");
+	s221();
+	s1221();
+	s222();
+	s231();
+	s232();
+	s1232();
+	s233();
+	s2233();
+	s235();
+#endif
+
+#if NODE_SPLITTING
+    printf("Testing Node Splitting Loops\n");
+	s241();
+	s242(s1, s2);
+	s243();
+	s244();
+	s1244();
+	s2244();
+#endif
+
+#if EXPANSION
+    printf("Testing Expansion Loops\n");
+	s251();
+	s1251();
+	s2251();
+	s3251();
+	s252();
+	s253();
+	s254();
+	s255();
+	s256();
+	s257();
+	s258();
+	s261();
+#endif
+
+#if CROSSING_THRESHOLDS
     printf("Testing Crossing Thresholds Loops\n");
 	s281();
 	s1281();
@@ -5673,7 +5686,8 @@ int main(int argc, char *argv[]){
 	s2102();
 	s2111();
 #endif
-#if TESTS & REDUCTIONS
+
+#if REDUCTIONS
     printf("Testing Reduction Loops\n");
 	s311();
 	s31111();
@@ -5691,31 +5705,36 @@ int main(int argc, char *argv[]){
 	s3112();
 	s3113();
 #endif
-#if TESTS & RECURRENCES
+
+#if RECURRENCES
     printf("Testing Recurrences Loops\n");
 	s321();
 	s322();
 	s323();
 #endif
-#if TESTS & SEARCHING
+
+#if SEARCHING
     printf("Testing Searching Loops\n");
 	s331();
 	s332(s1);
 #endif
-#if TESTS & PACKING
+
+#if PACKING
     printf("Testing Packing Loops\n");
 	s341();
 	s342();
 	s343();
 #endif
-#if TESTS & LOOP_REROLLING
+
+#if LOOP_REROLLING
     printf("Testing Rerolling Loops\n");
 	s351();
 	s1351();
 	s352();
 	s353(ip);
 #endif
-#if TESTS & EQUIVALENCING
+
+#if EQUIVALENCING
     printf("Testing Equivalencing Loops\n");
 	s421();
 	s1421();
@@ -5723,35 +5742,8 @@ int main(int argc, char *argv[]){
 	s423();
 	s424();
 #endif
-#if TESTS & GLOBAL_DATA_FLOW
-    printf("Testing Global Data Flow Loops\n");
-	s431();
-#endif
-#if TESTS & CONTROL_FLOW
-    printf("Testing Control Flow Loops\n");
-	s441();
-	s442();
-	s443();
-#endif
-#if TESTS & GLOBAL_DATA_FLOW
-    printf("Testing Global Data Flow Loops\n");
-	s451();
-	s452();
-#endif
-#if TESTS & INDUCTION_VARIABLE
-    printf("Testing Induction Variable Loops\n");
-	s453();
-#endif
-#if TESTS & GLOBAL_DATA_FLOW
-    printf("Testing Global Data Flow Loops\n");
-	s471();
-#endif
-#if TESTS & CONTROL_FLOW
-    printf("Testing Control Flow Loops\n");
-	s481();
-	s482();
-#endif
-#if TESTS & INDIRECT_ADDRESSING
+
+#if INDIRECT_ADDRESSING
     printf("Testing Indirect Addressing Loops\n");
 	s491(ip);
 	s4112(ip, s1);
@@ -5761,11 +5753,8 @@ int main(int argc, char *argv[]){
 	s4116(ip, LEN2/2, n1);
 	s4117();
 #endif
-#if TESTS & GLOBAL_DATA_FLOW
-    printf("Testing Global Data Flow Loops\n");
-	s4121();
-#endif
-#if TESTS & CONTROL_LOOPS
+
+#if CONTROL_LOOPS
     printf("Testing Control Loops\n");
 	va();
 	vag(ip);
