@@ -25,7 +25,6 @@
 #define ntimes_default 200000
 #define digits_default 6
 
-#define _XOPEN_SOURCE 600
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
@@ -44,13 +43,6 @@ static int digits = digits_default;
 #include "tests.h"
 
 #define lll LEN
-
-/*
- * Disable timing in the output so that we can use the output for correctness testing.
- */
-//#ifndef USE_CLOCK
-//#define clock() 0
-//#endif
 
 __attribute__ ((aligned(ALIGNMENT))) X_TYPE X[lll],Y[lll],Z[lll],U[lll],V[lll];
 
