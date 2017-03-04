@@ -21,7 +21,7 @@
  * functions' name have 4 digits.
  */
 
-//#define RUNTIME_LOOP_BOUNDS_PARAMETERS 0
+#define RUNTIME_LOOP_BOUNDS_PARAMETERS 0
 //#define RUNTIME_ARITHMETIC_PARAMETERS 0
 //#define RUNTIME_INDEX_PARAMETERS 0
 
@@ -62,22 +62,7 @@ static int digits = digits_default;
     #define LEN 32000
     #define LEN2 256
     #define lll LEN
-    //Declare arrays with CompileTime Lenght
-    //TYPE array[LEN2*LEN2] __attribute__((aligned(ALIGNMENT)));
-    //TYPE x[LEN] __attribute__((aligned(ALIGNMENT)));
-    //__attribute__((aligned(ALIGNMENT))) TYPE a[LEN],b[LEN],c[LEN],d[LEN],e[LEN],
-    //                aa[LEN2][LEN2],bb[LEN2][LEN2],cc[LEN2][LEN2],tt[LEN2][LEN2];
-    //int indx[LEN] __attribute__((aligned(ALIGNMENT)));
-
 #endif
-
-    //Declare arrays with but don't allocate them
-    __attribute__ ((aligned(ALIGNMENT))) X_TYPE * X,* Y, * Z, * U, * V; //size lll
-    TYPE * array __attribute__((aligned(ALIGNMENT))); // size LEN2*LEN2
-    TYPE * x __attribute__((aligned(ALIGNMENT))); //size LEN
-    __attribute__((aligned(ALIGNMENT))) TYPE * a, * b, * c, * d, * e; //size LEN
-    __attribute__((aligned(ALIGNMENT))) TYPE * aa, * bb, * cc, * tt; //size LEN2*LEN2
-    int * indx __attribute__((aligned(ALIGNMENT))); // size LEN
 
 /*#if defined(RUNTIME_ARITHMETIC_PARAMETERS)
 
@@ -92,8 +77,13 @@ static int digits = digits_default;
 #endif
 */
 
-
-
+//Declare arrays with but don't allocate them
+__attribute__ ((aligned(ALIGNMENT))) X_TYPE * X,* Y, * Z, * U, * V; //size lll
+TYPE * array __attribute__((aligned(ALIGNMENT))); // size LEN2*LEN2
+TYPE * x __attribute__((aligned(ALIGNMENT))); //size LEN
+__attribute__((aligned(ALIGNMENT))) TYPE * a, * b, * c, * d, * e; //size LEN
+__attribute__((aligned(ALIGNMENT))) TYPE * aa, * bb, * cc, * tt; //size LEN2*LEN2
+int * indx __attribute__((aligned(ALIGNMENT))); // size LEN
 
 TYPE temp;
 int temp_int;
@@ -5577,10 +5567,10 @@ void load_parameters(){
         if (0){
 
 #if defined(RUNTIME_LOOP_BOUNDS_PARAMETERS)
-        }else if (!strcmp(name, "LEN")){
+        }else if (!strcmp(parameter, "LEN")){
             LEN = value;
             lll = value;
-        }else if(!strcmp(name, "LEN2")){
+        }else if(!strcmp(parameter, "LEN2")){
             LEN2 = value;
 #endif
 #if defined(RUNTIME_ARITHMETIC_PARAMETERS)
@@ -5594,7 +5584,6 @@ void load_parameters(){
     }
 
     fclose(file);
-    exit(0);
 
 }
 
@@ -5623,13 +5612,6 @@ void allocate_arrays(){
 
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
 
-
-    //__attribute__ ((aligned(ALIGNMENT))) X_TYPE * X,* Y, * Z, * U, * V; //size lll
-    //TYPE * array __attribute__((aligned(ALIGNMENT))); // size LEN2*LEN2
-    //TYPE * x __attribute__((aligned(ALIGNMENT))); //size LEN
-    //__attribute__((aligned(ALIGNMENT))) TYPE * a, * b, * c, * d, * e; //size LEN
-    //__attribute__((aligned(ALIGNMENT))) TYPE ** aa, ** bb, ** cc, ** tt; //size LEN2*LEN2
-    //int * indx __attribute__((aligned(ALIGNMENT))); // size LEN
 }
 
 void free_arrays(){
@@ -5657,6 +5639,18 @@ int main(int argc, char *argv[]){
 	int n3 = 1;
 	int* ip;
 	TYPE s1,s2;
+
+// Print TEST info
+    printf("Runing extended TSVC test with dynamic arrays\n");
+#if defined(RUNTIME_LOOP_BOUNDS_PARAMETERS)
+    printf("Test with Runtime Loop Bounds\n");
+#endif
+#if defined(RUNTIME_ARITHMETIC_PARAMETERS)
+    printf("Test with Runtime Arithmetic Parameters\n");
+#endif
+#if defined(RUNTIME_INDEX_PARAMETERS) 
+    printf("Test with Runtime INDEX PARAMETERS\n");
+#endif
 
 #if defined(RUNTIME_LOOP_BOUNDS_PARAMETERS) || defined(RUNTIME_ARITHMETIC_PARAMETERS) || defined(RUNTIME_INDEX_PARAMETERS) 
     load_parameters();

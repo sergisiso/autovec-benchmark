@@ -5540,6 +5540,9 @@ int main(int argc, char *argv[]){
 	int* ip;
 	TYPE s1,s2;
 
+// Print TEST info
+    printf("Runing extended TSVC test with compile-time defined arrays\n");
+
     int err = posix_memalign((void **) &ip, ALIGNMENT, LEN*sizeof(TYPE));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
 
