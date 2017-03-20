@@ -22,7 +22,7 @@
  */
 
 #define RUNTIME_LOOP_BOUNDS_PARAMETERS 0
-//#define RUNTIME_ARITHMETIC_PARAMETERS 0
+#define RUNTIME_ARITHMETIC_PARAMETERS 0
 //#define RUNTIME_INDEX_PARAMETERS 0
 
 #include <stdlib.h>
@@ -808,7 +808,7 @@ int s000()
 		for (int i = 0; i < lll; i++) {
 //			a[i] = b[i] + c[i];
 //			X[i] = (Y[i] * Z[i])+(U[i]*V[i]);
-			X[i] = Y[i] + 1;
+			X[i] = Y[i] + ap_n1;
 		}
 		dummy((TYPE*)X, (TYPE*)Y, (TYPE*)Z, (TYPE*)U, (TYPE*)V, aa, bb, cc, 0.);
 	}
@@ -913,7 +913,7 @@ int s1112()
 
 	for (int nl = 0; nl < ntimes*3; nl++) {
 		for (int i = LEN - 1; i >= 0; i--) {
-			a[i] = b[i] + (TYPE) 1.;
+			a[i] = b[i] + (TYPE) ap_n1;
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -1269,7 +1269,7 @@ int s123()
 		for (int i = 0; i < (LEN/2); i++) {
 			j++;
 			a[j] = b[i] + d[i] * e[i];
-			if (c[i] > (TYPE)0.) {
+			if (c[i] > (TYPE) cp_n0) {
 				j++;
 				a[j] = c[i] + d[i] * e[i];
 			}
@@ -1301,7 +1301,7 @@ int s124()
 	for (int nl = 0; nl < ntimes; nl++) {
 		j = -1;
 		for (int i = 0; i < LEN; i++) {
-			if (b[i] > (TYPE)0.) {
+			if (b[i] > (TYPE) cp_n0) {
 				j++;
 				a[j] = b[i] + d[i] * e[i];
 			} else {
@@ -1623,7 +1623,7 @@ int s161()
 
 	for (int nl = 0; nl < ntimes/2; nl++) {
 		for (int i = 0; i < LEN-1; ++i) {
-			if (b[i] < (TYPE)0.) {
+			if (b[i] < (TYPE) cp_n0) {
 				goto L20;
 			}
 			a[i] = c[i] + d[i] * e[i];
@@ -1657,7 +1657,7 @@ int s1161()
 
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN-1; ++i) {
-			if (c[i] < (TYPE)0.) {
+			if (c[i] < (TYPE) cp_n0) {
 				goto L20;
 			}
 			a[i] = c[i] + d[i] * e[i];
@@ -1690,7 +1690,7 @@ int s162(int k)
 	start_t = clock();
 
 	for (int nl = 0; nl < ntimes; nl++) {
-		if (k > 0) {
+		if (k > ip_n0) {
 			for (int i = 0; i < LEN-1; i++) {
 				a[i] = a[i + k] + b[i] * c[i];
 			}
@@ -2465,7 +2465,7 @@ int s2251()
 	start_t = clock();
 
 	for (int nl = 0; nl < ntimes; nl++) {
-		TYPE s = (TYPE)0.0;
+		TYPE s = (TYPE) ap_n0;
 		for (int i = 0; i < LEN; i++) {
 			a[i] = s*e[i];
 			s = b[i]+c[i];
@@ -2522,7 +2522,7 @@ int s252()
 
 	TYPE t, s;
 	for (int nl = 0; nl < ntimes; nl++) {
-		t = (TYPE) 0.;
+		t = (TYPE) ap_n0;
 		for (int i = 0; i < LEN; i++) {
 			s = b[i] * c[i];
 			a[i] = s + t;
@@ -2588,7 +2588,7 @@ int s254()
 	for (int nl = 0; nl < 4*ntimes; nl++) {
 		x = b[LEN-1];
 		for (int i = 0; i < LEN; i++) {
-			a[i] = (b[i] + x) * (TYPE).5;
+			a[i] = (b[i] + x) * (TYPE) ap_n5;
 			x = b[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -2619,7 +2619,7 @@ int s255()
 		x = b[LEN-1];
 		y = b[LEN-2];
 		for (int i = 0; i < LEN; i++) {
-			a[i] = (b[i] + x + y) * (TYPE).333;
+			a[i] = (b[i] + x + y) * (TYPE) ap_n0333;
 			y = x;
 			x = b[i];
 		}
@@ -2649,7 +2649,7 @@ int s256()
 	for (int nl = 0; nl < 10*(ntimes/LEN2); nl++) {
 		for (int i = 0; i < LEN2; i++) {
 			for (int j = 1; j < LEN2; j++) {
-				a[j] = (TYPE)1.0 - a[j - 1];
+				a[j] = (TYPE) ap_n1 - a[j - 1];
 				cc[j*LEN2+i] = a[j] + bb[j*LEN2+i]*d[j];
 			}
 		}
@@ -2712,7 +2712,7 @@ int s258()
 				s = d[i] * d[i];
 			}
 			b[i] = s * c[i] + d[i];
-			e[i] = (s + (TYPE)1.) * aa[0*LEN2+i];
+			e[i] = (s + (TYPE) ap_n1) * aa[0*LEN2+i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -2772,7 +2772,7 @@ int s271()
 
 	for (int nl = 0; nl < 4*ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			if (b[i] > (TYPE)0.) {
+			if (b[i] > (TYPE) cp_n0) {
 				a[i] += b[i] * c[i];
 			}
 		}
@@ -2832,7 +2832,7 @@ int s273()
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
 			a[i] += d[i] * e[i];
-			if (a[i] < (TYPE)0.)
+			if (a[i] < (TYPE) cp_n0)
 				b[i] += d[i] * e[i];
 			c[i] += a[i] * d[i];
 		}
@@ -2862,7 +2862,7 @@ int s274()
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
 			a[i] = c[i] + e[i] * d[i];
-			if (a[i] > (TYPE)0.) {
+			if (a[i] > (TYPE) cp_n0) {
 				b[i] = a[i] + b[i];
 			} else {
 				a[i] = d[i] * e[i];
@@ -2893,7 +2893,7 @@ int s275()
 
 	for (int nl = 0; nl < 10*(ntimes/LEN2); nl++) {
 		for (int i = 0; i < LEN2; i++) {
-			if (aa[0*LEN2+i] > (TYPE)0.) {
+			if (aa[0*LEN2+i] > (TYPE) cp_n0) {
 				for (int j = 1; j < LEN2; j++) {
 					aa[j*LEN2+i] = aa[(j-1)*LEN2+i] + bb[j*LEN2+i] * cc[j*LEN2+i];
 				}
@@ -2952,7 +2952,7 @@ int s276()
 	int mid = (LEN/2);
 	for (int nl = 0; nl < 4*ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			if (i+1 < mid) {
+			if (i+ cp_n1 < mid) {
 				a[i] += b[i] * c[i];
 			} else {
 				a[i] += b[i] * d[i];
@@ -2982,10 +2982,10 @@ int s277()
 
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN-1; i++) {
-				if (a[i] >= (TYPE)0.) {
+				if (a[i] >= (TYPE) cp_n0) {
 					goto L20;
 				}
-				if (b[i] >= (TYPE)0.) {
+				if (b[i] >= (TYPE) cp_n0) {
 					goto L30;
 				}
 				a[i] += c[i] * d[i];
@@ -3019,7 +3019,7 @@ int s278()
 
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			if (a[i] > (TYPE)0.) {
+			if (a[i] > (TYPE) cp_n0) {
 				goto L20;
 			}
 			b[i] = -b[i] + d[i] * e[i];
@@ -3054,7 +3054,7 @@ int s279()
 
 	for (int nl = 0; nl < ntimes/2; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			if (a[i] > (TYPE)0.) {
+			if (a[i] > (TYPE) cp_n0) {
 				goto L20;
 			}
 			b[i] = -b[i] + d[i] * d[i];
@@ -3091,7 +3091,7 @@ int s1279()
 
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			if (a[i] < (TYPE)0.) {
+			if (a[i] < (TYPE) cp_n0) {
 				if (b[i] > a[i]) {
 					c[i] += d[i] * e[i];
 				}
@@ -3124,14 +3124,14 @@ int s2710( TYPE x)
 		for (int i = 0; i < LEN; i++) {
 			if (a[i] > b[i]) {
 				a[i] += b[i] * d[i];
-				if (LEN > 10) {
+				if (LEN > cp_n10) {
 					c[i] += d[i] * d[i];
 				} else {
-					c[i] = d[i] * e[i] + (TYPE)1.;
+					c[i] = d[i] * e[i] + (TYPE)ap_n1;
 				}
 			} else {
 				b[i] = a[i] + e[i] * e[i];
-				if (x > (TYPE)0.) {
+				if (x > (TYPE) cp_n0) {
 					c[i] = a[i] + d[i] * d[i];
 				} else {
 					c[i] += e[i] * e[i];

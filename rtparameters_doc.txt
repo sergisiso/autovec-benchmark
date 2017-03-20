@@ -1,0 +1,44 @@
+Runtime Arithmetic Parameters
+(are they all TYPE)
+S000 ap_n1 1
+S1112 ap_n1 1
+S2251 ap_n0 0
+s252 ap_n0 0
+s254 ap_n5 5
+s255 ap_n0333 0.333
+s256 ap_n1 1
+s258 ap_n1 1
+s2710 ap_n1 1 (but path not executed?)
+
+
+Bound Arithmetic Parameters
+
+Index Arithmetic Parameters
+s162 ip_n0 0
+
+Conditional Arithmetic Parameters
+(most conditionals use num 0, is the performance result due to that compare to 0 is quicker?)
+(most of them are TYPE)
+s123 cp_n0 0
+s124 cp_n0 0
+s161 cp_n0 0
+s1161 cp_n0 0
+s271 cp_n0 0
+s273 cp_n0 0
+s274 cp_n0 0
+s275 cp_n0 0
+s276 cp_n1 1
+s277 cp_n0 0
+s278 cp_n0 0
+s279 cp_n0 0
+s1279 cp_n0 0
+s2710 cp_n10 10, cp_n0 0
+
+
+
+
+
+What to do with function parameters? Is the compiler optimizing it already?
+s171
+s242
+s272
