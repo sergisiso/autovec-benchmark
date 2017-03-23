@@ -3916,7 +3916,7 @@ int s3111()
 	for (int nl = 0; nl < ntimes/2; nl++) {
 		sum = 0.;
 		for (int i = 0; i < LEN; i++) {
-			if (a[i] > (TYPE)0.) {
+			if (a[i] > (TYPE)cp_n0) {
 				sum += a[i];
 			}
 		}
@@ -3946,7 +3946,7 @@ int s3112()
 
 	TYPE sum;
 	for (int nl = 0; nl < ntimes; nl++) {
-		sum = (TYPE)0.0;
+		sum = (TYPE)cp_n0;
 		for (int i = 0; i < LEN; i++) {
 			sum += a[i];
 			b[i] = sum;
@@ -4102,7 +4102,7 @@ int s331()
 	for (int nl = 0; nl < ntimes; nl++) {
 		j = -1;
 		for (int i = 0; i < LEN; i++) {
-			if (a[i] < (TYPE)0.) {
+			if (a[i] < (TYPE)cp_n0) {
 				j = i;
 			}
 		}
@@ -4142,8 +4142,8 @@ int s332( TYPE t)
 	TYPE value;
 	TYPE chksum;
 	for (int nl = 0; nl < ntimes; nl++) {
-		index = -2;
-		value = -1.;
+		index = ip_n_2;
+		value = cp_n_1;
 		for (int i = 0; i < LEN; i++) {
 			if (a[i] > t) {
 				index = i;
@@ -4186,7 +4186,7 @@ int s341()
 	for (int nl = 0; nl < ntimes; nl++) {
 		j = -1;
 		for (int i = 0; i < LEN; i++) {
-			if (b[i] > (TYPE)0.) {
+			if (b[i] > (TYPE)cp_n0) {
 				j++;
 				a[j] = b[i];
 			}
@@ -4219,7 +4219,7 @@ int s342()
 	for (int nl = 0; nl < ntimes; nl++) {
 		j = -1;
 		for (int i = 0; i < LEN; i++) {
-			if (a[i] > (TYPE)0.) {
+			if (a[i] > (TYPE)cp_n0) {
 				j++;
 				a[i] = b[j];
 			}
@@ -4253,7 +4253,7 @@ int s343()
 		k = -1;
 		for (int i = 0; i < LEN2; i++) {
 			for (int j = 0; j < LEN2; j++) {
-				if (bb[j*LEN2+i] > (TYPE)0.) {
+				if (bb[j*LEN2+i] > (TYPE)cp_n0) {
 					k++;
 					array[k] = aa[j*LEN2+i];
 				}
@@ -4621,9 +4621,9 @@ int s441()
 
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			if (d[i] < (TYPE)0.) {
+			if (d[i] < (TYPE)cp_n0) {
 				a[i] += b[i] * c[i];
-			} else if (d[i] == (TYPE)0.) {
+			} else if (d[i] == (TYPE)cp_n0) {
 				a[i] += b[i] * b[i];
 			} else {
 				a[i] += c[i] * c[i];
@@ -4699,7 +4699,7 @@ int s443()
 
 	for (int nl = 0; nl < 2*ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			if (d[i] <= (TYPE)0.) {
+			if (d[i] <= (TYPE)cp_n0) {
 				goto L20;
 			} else {
 				goto L30;
@@ -4804,7 +4804,7 @@ int s453()
 	for (int nl = 0; nl < ntimes*2; nl++) {
 		s = 0.;
 		for (int i = 0; i < LEN; i++) {
-			s += (TYPE)2.;
+			s += (TYPE)ap_n2;
 			a[i] = s * b[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -4873,7 +4873,7 @@ int s481()
 
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			if (d[i] < (TYPE)0.) {
+			if (d[i] < (TYPE)cp_n0) {
 				exit (0);
 			}
 			a[i] += b[i] * c[i];

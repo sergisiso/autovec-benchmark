@@ -17,6 +17,7 @@ s2102 ap_n0 0, ap_n1 1
 s31111 ap_n0 0 (test ap_n0 0)
 s313 ap_n0 0
 s317 ap_n099 0.99, ap_n1 1
+s453 ap_n2 2
 
 
 Bound Arithmetic Parameters
@@ -25,6 +26,8 @@ s31111 (test function) bp_n4 4
 
 Index Arithmetic Parameters
 s162 ip_n0 0
+s332 ip_n_2 -2
+
 
 Conditional Arithmetic Parameters
 (most conditionals use num 0, is the performance result due to that compare to 0 is quicker?)
@@ -44,12 +47,23 @@ s279 cp_n0 0
 s1279 cp_n0 0
 s2710 cp_n10 10, cp_n0 0
 s2711 cp_n0 0
-
-
-
-
+s3111 cp_n0 0
+s3112 cp_n0 0
+s331 cp_n0 0
+s332 cp_n_1 -1
+s341 cp_n0 0
+s342 cp_n0 0
+s343 cp_n0 0
+s441 cp_n0 0
+s443 cp_n0 0
+s481 cp_n0 0
 
 What to do with function parameters? Is the compiler optimizing it already?
 s171
 s242
 s272
+
+
+There is some tests where the arithmetic constat is to set up a starting value, eg: sum = 0; This probably don't have any effect in performance. Should not be considered?
+
+There is tests where the original tsc already may have compiler hidden values, e.g: max = abs(a[0]); in test 3113. Should I modify the original case to make a clear distinction btw compiler-time and runtime performance comparison?
