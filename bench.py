@@ -3,6 +3,7 @@ import argparse
 import os
 import shutil
 import subprocess
+import re
 from datetime import datetime
 
 benchmarks = [
@@ -27,6 +28,26 @@ benchmarks = [
 ]
 
 compilers = ["gcc", "icc"]
+
+c_flags = { "gcc" : {
+                "vec" : " -msse4.2 ",
+                "novec" : " -fno-tree-vectorize ",
+                "common" : "gcc -std=c99 -O3 -fivopts -flax-vector-conversions -funsafe-math-optimizations",
+                "unopt" : "gcc -O0"
+                },
+            "icc" : {
+                "vec" : " ",
+                "novec" : " ",
+                "common" : " ",
+                "unopt" : " "
+            }
+        }
+
+
+parameterflags = {
+    "None":" ",
+    "All" : " -DRUNTIME_LOOP_BOUNDS_PARAMETERS -DRUNTIME_ARITHMETIC_PARAMETERS -DRUNTIME_INDEX_PARAMETERS -DCONDITION_EVAL_PARAMETERS"
+}
 
 
 def main():
@@ -67,33 +88,81 @@ def main():
         shutil.copyfile("tsc.c",os.path.join(test_dir,"tsc.c"))
         print "Compiling ", b
 
-        cmd = 'gcc -c -o dummy.o dummy.c'
-        run_cmd(cmd, test_dir)
+        cmd = c_flags['gcc']['unopt'] + ' -c -o dummy.o dummy.c'
+        exec_comp(cmd, test_dir)
 
-        cmd = 'gcc -std=c99 -O3 -fivopts -flax-vector-conversions -funsafe-math-optimizations -msse4.2 -c -o tscvec.o tsc.c' + ' -D' + b
-        run_cmd(cmd, test_dir)
+        cmd = c_flags['gcc']['common'] + c_flags['gcc']['vec'] +' -c -o tscvec.o tsc.c' + ' -D' + b
+        exec_comp(cmd, test_dir)
 
-        cmd = 'gcc -std=c99 -O3 -fivopts -flax-vector-conversions -funsafe-math-optimizations -msse4.2 -fno-tree-vectorize -c -o tscnovec.o tsc.c' + ' -D' + b
-        run_cmd(cmd, test_dir)
+        cmd = c_flags['gcc']['common'] + c_flags['gcc']['novec'] +' -c -o tscvec.o tsc.c' + ' -D' + b
+        exec_comp(cmd, test_dir)
 
-        cmd = 'gcc -O0 dummy.o tscvec.o -o runvec -lm'
-        run_cmd(cmd, test_dir)
+        cmd = c_flags['gcc']['unopt'] + ' dummy.o tscvec.o -o runvec -lm'
+        exec_comp(cmd, test_dir)
 
-        cmd = 'gcc -O0 dummy.o tscnovec.o -o runnovec -lm'
-        run_cmd(cmd, test_dir)
-
+        cmd = c_flags['gcc']['unopt'] + 'dummy.o tscnovec.o -o runnovec -lm'
+        exec_comp(cmd, test_dir)
+ 
         print "Run vector test", b
         run_cmd('./runvec', test_dir)
         print "Run scalar test", b
         run_cmd('./runnovec', test_dir)
 
-def run_cmd(cmd, test_dir):
-    print "Executing: ", cmd
+
+        for p_name, p_flags in parameterflags.iteritems():
+            test_dir = os.path.join(os.path.join(basedir,b),p_name)
+            print "Creating ", test_dir , " folder"
+            os.makedirs(test_dir)
+            shutil.copyfile("dummy.c",os.path.join(test_dir,"dummy.c"))
+            shutil.copyfile("tsc_runtime.c",os.path.join(test_dir,"tsc_runtime.c"))
+            print "Compiling ", b, p_name
+
+            cmd = c_flags['gcc']['unopt'] + ' -c -o dummy.o dummy.c'
+            exec_comp(cmd, test_dir)
+
+            cmd = c_flags['gcc']['common'] + c_flags['gcc']['vec'] +' -c -o tscrtvec.o tsc_runtime.c' + ' -D' + b + p_flags
+            exec_comp(cmd, test_dir)
+
+            cmd = c_flags['gcc']['common'] + c_flags['gcc']['novec'] +' -c -o tscrtvec.o tsc_runtime.c' + ' -D' + b + p_flags
+            exec_comp(cmd, test_dir)
+
+            cmd = c_flags['gcc']['unopt'] + ' dummy.o tscrtvec.o -o runrtvec -lm'
+            exec_comp(cmd, test_dir)
+
+            cmd = c_flags['gcc']['unopt'] + ' dummy.o tscrtnovec.o -o runrtnovec -lm'
+            exec_comp(cmd, test_dir)
+
+            print "Run runtime", p_name , "vector test", b
+            run_cmd('./runrtvec', test_dir)
+            print "Run runtime ", p_name, "scalar test", b
+            run_cmd('./runrtnovec', test_dir)
+
+
+def exec_comp(cmd, test_dir):
+    print "Compiling: ", cmd
     p = subprocess.Popen(cmd, cwd=test_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = p.communicate()
     errcode  = p.returncode
     print out
     print err
+
+def run_cmd(cmd, test_dir):
+    if True:
+        print "Executing: ", cmd
+        p = subprocess.Popen(cmd, cwd=test_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        out, err = p.communicate()
+        errcode  = p.returncode
+        print out
+        print err
+    else:
+        print "submiting job: ", cmd
+        job = "bsub -J name -e error.out -o output.out -W 1:00 -n 1 cd" + test_dir + "; " + cmd
+        p = subprocess.Popen(cmd, cwd=test_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        out, err = p.communicate()
+        errcode  = p.returncode
+        print out
+        print err
+
 
 
 
