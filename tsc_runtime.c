@@ -21,9 +21,13 @@
  * functions' name have 4 digits.
  */
 
-#define RUNTIME_LOOP_BOUNDS_PARAMETERS 0
-#define RUNTIME_ARITHMETIC_PARAMETERS 0
-//#define RUNTIME_INDEX_PARAMETERS 0
+
+/*
+#define RUNTIME_LOOP_BOUNDS_PARAMETERS 1
+#define RUNTIME_ARITHMETIC_PARAMETERS 1
+#define RUNTIME_INDEX_PARAMETERS 1
+#define CONDITION_EVAL_PARAMETERS 1
+*/
 
 #include <stdlib.h>
 #include <math.h>

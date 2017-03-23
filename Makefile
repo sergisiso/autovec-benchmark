@@ -8,10 +8,15 @@ libs = -lm
 noopt = -O0
 
 alltests = -DLINEAR_DEPENDENCE -DINDUCTION_VARIABLE
+alltests += -DGLOBAL_DATA_FLOW -DCONTROL_FLOW -DSYMBOLICS -DSTATEMENT_REORDERING -DLOOP_RESTRUCTURING
+alltests += -DNODE_SPLITTING -DEXPANSION -DCROSSING_THRESHOLDS -DREDUCTIONS -DRECURRENCES -DSEARCHING
+alltests += -DPACKING -DLOOP_REROLLING -DEQUIVALENCING -DINDIRECT_ADDRESSING -DCONTROL_LOOPS
 
-#alltests := -DGLOBAL_DATA_FLOW -DCONTROL_FLOW -DSYMBOLICS -DSTATEMENT_REORDERING -DLOOP_RESTRUCTURING
-#alltests := -DNODE_SPLITTING -DEXPANSION -DCROSSING_THRESHOLDS -DREDUCTIONS -DRECURRENCES -DSEARCHING
-#alltests := -DPACKING -DLOOP_REROLLING -DEQUIVALENCING -DINDIRECT_ADDRESSING -DCONTROL_LOOPS
+params = 
+params += -DRUNTIME_LOOP_BOUNDS_PARAMETERS
+params += -DRUNTIME_ARITHMETIC_PARAMETERS
+params += -DRUNTIME_INDEX_PARAMETERS
+params += -DCONDITION_EVAL_PARAMETERS
 
 all : runvec runnovec runrtvec runrtnovec
 
@@ -33,13 +38,13 @@ tscvec.o : tsc.c
 
 tscrtvec.o: tsc_runtime.c
 	rm -f reportrt.txt
-	$(CC) $(CFLAGS) $(vecflags) $(alltests) -c -o tscrtvec.o tsc_runtime.c  2> reportrt.txt
+	$(CC) $(CFLAGS) $(vecflags) $(alltests) $(params) -c -o tscrtvec.o tsc_runtime.c  2> reportrt.txt
 
 tscnovec.o : tsc.c
 	$(CC) $(CFLAGS) $(novecflags) $(alltests) -c -o tscnovec.o tsc.c
 
 tscrtnovec.o : tsc_runtime.c
-	$(CC) $(CFLAGS) $(novecflags) $(alltests) -c -o tscrtnovec.o tsc_runtime.c
+	$(CC) $(CFLAGS) $(novecflags) $(alltests) $(params) -c -o tscrtnovec.o tsc_runtime.c
 
 tsc.s : tsc.c dummy.o
 	$(CC) $(CFLAGS) dummy.o tsc.c -S 
