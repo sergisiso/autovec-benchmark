@@ -77,30 +77,36 @@ static int digits = digits_default;
     TYPE ap_n05;
     TYPE ap_n099;
     TYPE ap_n1;
+    TYPE ap_n2;
     TYPE ap_n5;
 #else
-    #define ap_n0 0
+    #define ap_n0 0.
     #define ap_n0333 0.333
     #define ap_n05 0.5
     #define ap_n099 0.99
-    #define ap_n1 1
-    #define ap_n5 5
+    #define ap_n1 1.
+    #define ap_n2 2.
+    #define ap_n5 5.
 #endif
 
 #if defined(RUNTIME_INDEX_PARAMETERS)
-    TYPE ip_n0;
+    int ip_n0;
+    int ip_n_2;
 #else
     #define ip_n0 0
+    #define ip_n_2 0
 #endif
 
 #if defined(CONDITION_EVAL_PARAMETERS)
     TYPE cp_n0;
     TYPE cp_n1;
+    TYPE cp_n_1;
     TYPE cp_n10;
 #else
-    #define cp_n0 0
-    #define cp_n1 1
-    #define cp_n10 10
+    #define cp_n0 0.
+    #define cp_n1 1.
+    #define cp_n_1 -1.
+    #define cp_n10 10.
 #endif
 
 
@@ -5614,18 +5620,24 @@ void load_parameters(){
             ap_n099 = atof(value);
         }else if(!strcmp(parameter, "ap_n1")){
             ap_n1 = atof(value);
+        }else if(!strcmp(parameter, "ap_n2")){
+            ap_n2 = atof(value);
         }else if(!strcmp(parameter, "ap_n5")){
             ap_n5 = atof(value);
 #endif
 #if defined(RUNTIME_INDEX_PARAMETERS)
         }else if(!strcmp(parameter, "ip_n0")){
-            ip_n0 = atof(value);
+            ip_n0 = atoi(value);
+        }else if(!strcmp(parameter, "ip_n_2")){
+            ip_n_2 = atoi(value);
 #endif
 #if defined(CONDITION_EVAL_PARAMETERS)
         }else if(!strcmp(parameter, "cp_n0")){
             cp_n0 = atof(value);
         }else if(!strcmp(parameter, "cp_n1")){
             cp_n1 = atof(value);
+        }else if(!strcmp(parameter, "cp_n_1")){
+            cp_n_1 = atof(value);
         }else if(!strcmp(parameter, "cp_n10")){
             cp_n10 = atof(value);
 #endif

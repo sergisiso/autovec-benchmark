@@ -4,11 +4,14 @@ ap_n0333 0.333
 ap_n05 0.5
 ap_n099 0.99
 ap_n1 1
+ap_n2 2
 ap_n5 5
 bp_n4 4
 ip_n0 0
+ip_n_2 -2
 cp_n0 0
 cp_n1 1
 cp_n10 10
+cp_n_1 -1
 
 
