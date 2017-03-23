@@ -9,9 +9,19 @@ s255 ap_n0333 0.333
 s256 ap_n1 1
 s258 ap_n1 1
 s2710 ap_n1 1 (but path not executed?)
+s281 ap_n1 1
+s1281 ap_n1 1
+s291 ap_n05 0.5
+s292 ap_n0333 0.333
+s2102 ap_n0 0, ap_n1 1
+s31111 ap_n0 0 (test ap_n0 0)
+s313 ap_n0 0
+s317 ap_n099 0.99, ap_n1 1
 
 
 Bound Arithmetic Parameters
+almost all have LEN reference
+s31111 (test function) bp_n4 4
 
 Index Arithmetic Parameters
 s162 ip_n0 0
@@ -33,6 +43,7 @@ s278 cp_n0 0
 s279 cp_n0 0
 s1279 cp_n0 0
 s2710 cp_n10 10, cp_n0 0
+s2711 cp_n0 0
 
 
 

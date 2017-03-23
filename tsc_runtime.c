@@ -41,6 +41,7 @@
 static int ntimes = ntimes_default;
 static int digits = digits_default;
 
+// Type can not be changes without adaption load_parameters
 #ifndef TYPE
 #define TYPE float
 #endif
@@ -58,24 +59,47 @@ static int digits = digits_default;
     int LEN;
     int LEN2;
     int lll;
+    int bp_n4;
 #else
     #define LEN 32000
     #define LEN2 256
     #define lll LEN
+    #define bp_n4 4
 #endif
 
-/*#if defined(RUNTIME_ARITHMETIC_PARAMETERS)
-
+#if defined(RUNTIME_ARITHMETIC_PARAMETERS)
+    TYPE ap_n0;
+    TYPE ap_n0333;
+    TYPE ap_n05;
+    TYPE ap_n099;
+    TYPE ap_n1;
+    TYPE ap_n5;
 #else
-
+    #define ap_n0 0
+    #define ap_n0333 0.333
+    #define ap_n05 0.5
+    #define ap_n099 0.99
+    #define ap_n1 1
+    #define ap_n5 5
 #endif
 
 #if defined(RUNTIME_INDEX_PARAMETERS)
-
+    TYPE ip_n0;
 #else
-
+    #define ip_n0 0
 #endif
-*/
+
+#if defined(CONDITION_EVAL_PARAMETERS)
+    TYPE cp_n0;
+    TYPE cp_n1;
+    TYPE cp_n10;
+#else
+    #define cp_n0 0
+    #define cp_n1 1
+    #define cp_n10 10
+#endif
+
+
 
 //Declare arrays with but don't allocate them
 __attribute__ ((aligned(ALIGNMENT))) X_TYPE * X,* Y, * Z, * U, * V; //size lll
@@ -3162,7 +3186,7 @@ int s2711()
 
 	for (int nl = 0; nl < 4*ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			if (b[i] != (TYPE)0.0) {
+			if (b[i] != (TYPE)cp_n0) {
 				a[i] += b[i] * c[i];
 			}
 		}
@@ -3227,7 +3251,7 @@ int s281()
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
 			x = a[LEN-i-1] + b[i] * c[i];
-			a[i] = x-(TYPE)1.0;
+			a[i] = x-(TYPE)ap_n1;
 			b[i] = x;
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -3256,7 +3280,7 @@ int s1281()
 	for (int nl = 0; nl < 4*ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
 			x = b[i]*c[i]+a[i]*d[i]+e[i];
-			a[i] = x-(TYPE)1.0;
+			a[i] = x-(TYPE)ap_n1;
 			b[i] = x;
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -3286,7 +3310,7 @@ int s291()
 	for (int nl = 0; nl < 2*ntimes; nl++) {
 		im1 = LEN-1;
 		for (int i = 0; i < LEN; i++) {
-			a[i] = (b[i] + b[im1]) * (TYPE).5;
+			a[i] = (b[i] + b[im1]) * (TYPE)ap_n05;
 			im1 = i;
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -3318,7 +3342,7 @@ int s292()
 		im1 = LEN-1;
 		im2 = LEN-2;
 		for (int i = 0; i < LEN; i++) {
-			a[i] = (b[i] + b[im1] + b[im2]) * (TYPE).333;
+			a[i] = (b[i] + b[im1] + b[im2]) * (TYPE)ap_n0333;
 			im2 = im1;
 			im1 = i;
 		}
@@ -3402,9 +3426,9 @@ int s2102()
 	for (int nl = 0; nl < 100*(ntimes/LEN2); nl++) {
 		for (int i = 0; i < LEN2; i++) {
 			for (int j = 0; j < LEN2; j++) {
-				aa[j*LEN2+i] = (TYPE)0.;
+				aa[j*LEN2+i] = (TYPE)ap_n0;
 			}
-			aa[i*LEN2+i] = (TYPE)1.;
+			aa[i*LEN2+i] = (TYPE)ap_n1;
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -3487,9 +3511,9 @@ int s311()
 }
 
 TYPE test(TYPE* A){
-  TYPE s = (TYPE)0.0;
+  TYPE s = (TYPE)ap_n0;
 //  #pragma nosimd
-  for (int i = 0; i < 4; i++)
+  for (int i = 0; i < bp_n4; i++)
     s += A[i];
   return s;
 }
@@ -3508,7 +3532,7 @@ int s31111()
 
 	TYPE sum;
 	for (int nl = 0; nl < 2000*ntimes; nl++) {
-		sum = (TYPE)0.;
+		sum = (TYPE)ap_n0;
 		sum += test(a);
 		sum += test(&a[4]);
 		sum += test(&a[8]);
@@ -3571,7 +3595,7 @@ int s313()
 
 	TYPE dot;
 	for (int nl = 0; nl < ntimes*5; nl++) {
-		dot = (TYPE)0.;
+		dot = (TYPE)ap_n0;
 		for (int i = 0; i < LEN; i++) {
 			dot += a[i] * b[i];
 		}
@@ -3704,9 +3728,9 @@ int s317()
 
 	TYPE q;
 	for (int nl = 0; nl < 5*ntimes; nl++) {
-		q = (TYPE)1.;
+		q = (TYPE)ap_n1;
 		for (int i = 0; i < LEN/2; i++) {
-			q *= (TYPE).99;
+			q *= (TYPE)ap_n099;
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, q);
 	}
@@ -5555,7 +5579,7 @@ void load_parameters(){
     
     const char fileName[] = "parameters.dat";
     char parameter[15];
-    int value;
+    char value[15];
 
     FILE* file = fopen(fileName,"r");
     if (file==NULL){
@@ -5563,19 +5587,43 @@ void load_parameters(){
         exit(-1);
     }
 
-    while(EOF != fscanf(file, "%s %d\n", parameter, &value)){
+    while(EOF != fscanf(file, "%s %s\n", parameter, value)){
         if (0){
 
 #if defined(RUNTIME_LOOP_BOUNDS_PARAMETERS)
         }else if (!strcmp(parameter, "LEN")){
-            LEN = value;
-            lll = value;
+            LEN = atoi(value);
+            lll = LEN;
         }else if(!strcmp(parameter, "LEN2")){
-            LEN2 = value;
+            LEN2 = atoi(value);
+        }else if(!strcmp(parameter, "bp_n4")){
+            bp_n4 = atoi(value);
 #endif
 #if defined(RUNTIME_ARITHMETIC_PARAMETERS)
+        }else if(!strcmp(parameter, "ap_n0")){
+            ap_n0 = atof(value);
+        }else if(!strcmp(parameter, "ap_n0333")){
+            ap_n0333 = atof(value);
+        }else if(!strcmp(parameter, "ap_n05")){
+            ap_n05 = atof(value);
+        }else if(!strcmp(parameter, "ap_n99")){
+            ap_n099 = atof(value);
+        }else if(!strcmp(parameter, "ap_n1")){
+            ap_n1 = atof(value);
+        }else if(!strcmp(parameter, "ap_n5")){
+            ap_n5 = atof(value);
 #endif
 #if defined(RUNTIME_INDEX_PARAMETERS)
+        }else if(!strcmp(parameter, "ip_n0")){
+            ip_n0 = atof(value);
+#endif
+#if defined(CONDITION_EVAL_PARAMETERS)
+        }else if(!strcmp(parameter, "cp_n0")){
+            cp_n0 = atof(value);
+        }else if(!strcmp(parameter, "cp_n1")){
+            cp_n1 = atof(value);
+        }else if(!strcmp(parameter, "cp_n10")){
+            cp_n10 = atof(value);
 #endif
         }else{
             printf("Error: Unrecognized parameter %s %d\n", parameter, value);
