@@ -107,7 +107,7 @@ def main():
         os.makedirs(test_dir)
             
         for b in b_list:
-            test_dir = os.path.join(basedir,b)
+            test_dir = os.path.join(os.path.join(basedir,c),b)
             print "Creating ", test_dir , " folder"
             os.makedirs(test_dir)
             shutil.copyfile("dummy.c",os.path.join(test_dir,"dummy.c"))
@@ -128,14 +128,16 @@ def main():
             run_cmd('./runnovec > runnovec.txt', test_dir)
 
 
-            for p_name, p_flags in parameterflags.iteritems():
-                test_dir = os.path.join(os.path.join(basedir,b),p_name)
+            for p in p_list:
+                test_dir = os.path.join(os.path.join(os.path.join(basedir,c),b),p)
+                p_flags = parameterflags[p]
                 print "Creating ", test_dir , " folder"
                 os.makedirs(test_dir)
                 shutil.copyfile("dummy.c",os.path.join(test_dir,"dummy.c"))
                 shutil.copyfile("tsc_runtime.c",os.path.join(test_dir,"tsc_runtime.c"))
+                shutil.copyfile("parameters.dat",os.path.join(test_dir,"parameters.dat"))
 
-                print "Compiling tsc_runtime ", b, p_name
+                print "Compiling tsc_runtime ", b, p
                 exec_comp(c_flags[c]['unopt'] + ' -c -o dummy.o dummy.c', test_dir)
                 exec_comp(c_flags[c]['common'] + c_flags[c]['vec'] + c_flags[c]['report'] + ' -c -o tscrtvec.o tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
                 exec_comp(c_flags[c]['common'] + c_flags[c]['vec']  + ' -S -o tscrtvec.s tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
@@ -144,9 +146,9 @@ def main():
                 exec_comp(c_flags[c]['unopt'] + ' dummy.o tscrtvec.o -o runrtvec -lm', test_dir)
                 exec_comp(c_flags[c]['unopt'] + ' dummy.o tscrtnovec.o -o runrtnovec -lm', test_dir)
 
-                print "Run tsc_runtime", p_name , "vector test", b
+                print "Run tsc_runtime", p , "vector test", b
                 run_cmd('./runrtvec > runrtvec.txt', test_dir)
-                print "Run rsc_runtime ", p_name, "scalar test", b
+                print "Run rsc_runtime ", p, "scalar test", b
                 run_cmd('./runrtnovec > runrtnovec.txt', test_dir)
 
 
@@ -159,7 +161,7 @@ def exec_comp(cmd, test_dir):
     print err
 
 def run_cmd(cmd, test_dir):
-    if True:
+    if False:
         print "No job submitted, just compiling"
     elif False:
         print "Executing: ", cmd
@@ -169,7 +171,7 @@ def run_cmd(cmd, test_dir):
         print out
         print err
     else:
-        job = "bsub -J name -e error.out -o output.out -W 1:00 -n 1 \"cd " + test_dir + "; " + cmd + "\""
+        job = "bsub -J name -e error.out -o output.out -W 00:19 -n 1 \"" + cmd + "\""
         print "submiting job: ", job
         p = subprocess.Popen(job, cwd=test_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         out, err = p.communicate()

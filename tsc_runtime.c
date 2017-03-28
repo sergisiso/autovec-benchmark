@@ -5565,17 +5565,14 @@ void set(int* ip, TYPE* s1, TYPE* s2){
 
 	}
 
-	printf("bb\n");fflush(stdout);
 	set1d(a, 1.,1);
 	set1d(b, 1.,1);
 	set1d(c, 1.,1);
 	set1d(d, 1.,1);
 	set1d(e, 1.,1);
-	printf("cc\n");fflush(stdout);
 	set2d(aa, 0.,-1);
 	set2d(bb, 0.,-1);
 	set2d(cc, 0.,-1);
-	printf("dd\n");fflush(stdout);
 
 	for (int i = 0; i < LEN; i++){
 		indx[i] = (i+1) % 4+1;
@@ -5616,7 +5613,7 @@ void load_parameters(){
             ap_n0333 = atof(value);
         }else if(!strcmp(parameter, "ap_n05")){
             ap_n05 = atof(value);
-        }else if(!strcmp(parameter, "ap_n99")){
+        }else if(!strcmp(parameter, "ap_n099")){
             ap_n099 = atof(value);
         }else if(!strcmp(parameter, "ap_n1")){
             ap_n1 = atof(value);
@@ -5713,10 +5710,14 @@ int main(int argc, char *argv[]){
     printf("Test with Runtime Arithmetic Parameters\n");
 #endif
 #if defined(RUNTIME_INDEX_PARAMETERS) 
-    printf("Test with Runtime INDEX PARAMETERS\n");
+    printf("Test with Runtime Index Parameters\n");
 #endif
 
-#if defined(RUNTIME_LOOP_BOUNDS_PARAMETERS) || defined(RUNTIME_ARITHMETIC_PARAMETERS) || defined(RUNTIME_INDEX_PARAMETERS) 
+#if defined(CONDITION_EVAL_PARAMETERS)
+    printf("Test with Runtime Conditional Parameters\n");
+#endif
+
+#if defined(RUNTIME_LOOP_BOUNDS_PARAMETERS) || defined(RUNTIME_ARITHMETIC_PARAMETERS) || defined(RUNTIME_INDEX_PARAMETERS) || defined(CONDITION_EVAL_PARAMETERS)
     load_parameters();
 #endif
 
@@ -5730,233 +5731,230 @@ int main(int argc, char *argv[]){
 
     if (argc > 2) digits = atoi(argv[2]);
 
-    printf("aa");fflush(stdout);
 	set(ip, &s1, &s2);
-    printf("aa");fflush(stdout);
-	printf("Loop \t Time(Sec) \t Checksum \n");
-
+	printf("Loop \t Time(Sec) \t Checksum \n");fflush(stdout);
 
 #if LINEAR_DEPENDENCE
     printf("Testing Linear Dependence Loops\n");
-	s000();
-	s111();
-	s1111();
-	s112();
-	s1112();
-	s113();
-	s1113();
-	s114();
-	s115();
-	s1115();
-	s116();
-	s118();
-	s119();
-	s1119();
+	s000();fflush(stdout);
+	s111();fflush(stdout);
+	s1111();fflush(stdout);
+	s112();fflush(stdout);
+	s1112();fflush(stdout);
+	s113();fflush(stdout);
+	s1113();fflush(stdout);
+	s114();fflush(stdout);
+	s115();fflush(stdout);
+	s1115();fflush(stdout);
+	s116();fflush(stdout);
+	s118();fflush(stdout);
+	s119();fflush(stdout);
+	s1119();fflush(stdout);
 #endif
 
 #if INDUCTION_VARIABLE
-    printf("Testing Induction Variable Loops\n");
-	s121();
-	s122(n1,n3);
-	s123();
-	s124();
-	s125();
-	s126();
-	s127();
-	s128();
-	s453();
+    printf("Testing Induction Variable Loops\n");fflush(stdout);
+	s121();fflush(stdout);
+	s122(n1,n3);fflush(stdout);
+	s123();fflush(stdout);
+	s124();fflush(stdout);
+	s125();fflush(stdout);
+	s126();fflush(stdout);
+	s127();fflush(stdout);
+	s128();fflush(stdout);
+	s453();fflush(stdout);
 #endif
 
 #if GLOBAL_DATA_FLOW
     printf("Testing Global Data Flow Loops\n");
-	s131();
-	s132();
-	s141();
-	s151();
-	s152();
-	s431();
-	s451();
-	s452();
-	s471();
-	s4121();
+	s131();fflush(stdout);
+	s132();fflush(stdout);
+	s141();fflush(stdout);
+	s151();fflush(stdout);
+	s152();fflush(stdout);
+	s431();fflush(stdout);
+	s451();fflush(stdout);
+	s452();fflush(stdout);
+	s471();fflush(stdout);
+	s4121();fflush(stdout);
 #endif
 
 #if CONTROL_FLOW
     printf("Testing Control Flow Loops\n");
-	s161();
-	s1161();
-	s162(n1);
-	s271();
-	s272(s1);
-	s273();
-	s274();
-	s275();
-	s2275();
-	s276();
-	s277();
-	s278();
-	s279();
-	s1279();
-	s2710(s1);
-	s2711();
-	s2712();
-	s441();
-	s442();
-	s443();
-	s481();
-	s482();
+	s161();fflush(stdout);
+	s1161();fflush(stdout);
+	s162(n1);fflush(stdout);
+	s271();fflush(stdout);
+	s272(s1);fflush(stdout);
+	s273();fflush(stdout);
+	s274();fflush(stdout);
+	s275();fflush(stdout);
+	s2275();fflush(stdout);
+	s276();fflush(stdout);
+	s277();fflush(stdout);
+	s278();fflush(stdout);
+	s279();fflush(stdout);
+	s1279();fflush(stdout);
+	s2710(s1);fflush(stdout);
+	s2711();fflush(stdout);
+	s2712();fflush(stdout);
+	s441();fflush(stdout);
+	s442();fflush(stdout);
+	s443();fflush(stdout);
+	s481();fflush(stdout);
+	s482();fflush(stdout);
 #endif
 
 #if SYMBOLICS
     printf("Testing Symbolics Loops\n");
-	s171(n1);
-	s172(n1,n3);
-	s173();
-	s174(LEN/2);
-	s175(n1);
-	s176();
+	s171(n1);fflush(stdout);
+	s172(n1,n3);fflush(stdout);
+	s173();fflush(stdout);
+	s174(LEN/2);fflush(stdout);
+	s175(n1);fflush(stdout);
+	s176();fflush(stdout);
 #endif
 
 #if STATEMENT_REORDERING
     printf("Testing Statement Reordering Loops\n");
-	s211();
-	s212();
-	s1213();
+	s211();fflush(stdout);
+	s212();fflush(stdout);
+	s1213();fflush(stdout);
 #endif
 
 #if LOOP_RESTRUCTURING
     printf("Testing Restructuring Loops\n");
-	s221();
-	s1221();
-	s222();
-	s231();
-	s232();
-	s1232();
-	s233();
-	s2233();
-	s235();
+	s221();fflush(stdout);
+	s1221();fflush(stdout);
+	s222();fflush(stdout);
+	s231();fflush(stdout);
+    s232();fflush(stdout);
+    s1232();fflush(stdout);
+	s233();fflush(stdout);
+	s2233();fflush(stdout);
+	s235();fflush(stdout);
 #endif
 
 #if NODE_SPLITTING
     printf("Testing Node Splitting Loops\n");
-	s241();
-	s242(s1, s2);
-	s243();
-	s244();
-	s1244();
-	s2244();
+	s241();fflush(stdout);
+	s242(s1, s2);fflush(stdout);
+	s243();fflush(stdout);
+	s244();fflush(stdout);
+	s1244();fflush(stdout);
+	s2244();fflush(stdout);
 #endif
 
 #if EXPANSION
     printf("Testing Expansion Loops\n");
-	s251();
-	s1251();
-	s2251();
-	s3251();
-	s252();
-	s253();
-	s254();
-	s255();
-	s256();
-	s257();
-	s258();
-	s261();
+	s251();fflush(stdout);
+	s1251();fflush(stdout);
+	s2251();fflush(stdout);
+	s3251();fflush(stdout);
+	s252();fflush(stdout);
+	s253();fflush(stdout);
+	s254();fflush(stdout);
+	s255();fflush(stdout);
+	s256();fflush(stdout);
+	s257();fflush(stdout);
+	s258();fflush(stdout);
+	s261();fflush(stdout);
 #endif
 
 #if CROSSING_THRESHOLDS
     printf("Testing Crossing Thresholds Loops\n");
-	s281();
-	s1281();
-	s291();
-	s292();
-	s293();
-	s2101();
-	s2102();
-	s2111();
+	s281();fflush(stdout);
+	s1281();fflush(stdout);
+	s291();fflush(stdout);
+	s292();fflush(stdout);
+	s293();fflush(stdout);
+	s2101();fflush(stdout);
+	s2102();fflush(stdout);
+	s2111();fflush(stdout);
 #endif
 
 #if REDUCTIONS
     printf("Testing Reduction Loops\n");
-	s311();
-	s31111();
-	s312();
-	s313();
-	s314();
-	s315();
-	s316();
-	s317();
-	s318(n1);
-	s319();
-	s3110();
-	s13110();
-	s3111();
-	s3112();
-	s3113();
+	s311();fflush(stdout);
+	s31111();fflush(stdout);
+	s312();fflush(stdout);
+	s313();fflush(stdout);
+	s314();fflush(stdout);
+	s315();fflush(stdout);
+	s316();fflush(stdout);
+	s317();fflush(stdout);
+	s318(n1);fflush(stdout);
+	s319();fflush(stdout);
+	s3110();fflush(stdout);
+	s13110();fflush(stdout);
+	s3111();fflush(stdout);
+	s3112();fflush(stdout);
+	s3113();fflush(stdout);
 #endif
 
 #if RECURRENCES
     printf("Testing Recurrences Loops\n");
-	s321();
-	s322();
-	s323();
+	s321();fflush(stdout);
+	s322();fflush(stdout);
+	s323();fflush(stdout);
 #endif
 
 #if SEARCHING
     printf("Testing Searching Loops\n");
-	s331();
-	s332(s1);
+	s331();fflush(stdout);
+	s332(s1);fflush(stdout);
 #endif
 
 #if PACKING
     printf("Testing Packing Loops\n");
-	s341();
-	s342();
-	s343();
+	s341();fflush(stdout);
+	s342();fflush(stdout);
+	s343();fflush(stdout);
 #endif
 
 #if LOOP_REROLLING
     printf("Testing Rerolling Loops\n");
-	s351();
-	s1351();
-	s352();
-	s353(ip);
+	s351();fflush(stdout);
+	s1351();fflush(stdout);
+	s352();fflush(stdout);
+	s353(ip);fflush(stdout);
 #endif
 
 #if EQUIVALENCING
     printf("Testing Equivalencing Loops\n");
-	s421();
-	s1421();
-	s422();
-	s423();
-	s424();
+	s421();fflush(stdout);
+	s1421();fflush(stdout);
+	s422();fflush(stdout);
+	s423();fflush(stdout);
+	s424();fflush(stdout);
 #endif
 
 #if INDIRECT_ADDRESSING
     printf("Testing Indirect Addressing Loops\n");
-	s491(ip);
-	s4112(ip, s1);
-	s4113(ip);
-	s4114(ip,n1);
-	s4115(ip);
-	s4116(ip, LEN2/2, n1);
-	s4117();
+	s491(ip);fflush(stdout);
+	s4112(ip, s1);fflush(stdout);
+	s4113(ip);fflush(stdout);
+	s4114(ip,n1);fflush(stdout);
+	s4115(ip);fflush(stdout);
+	s4116(ip, LEN2/2, n1);fflush(stdout);
+	s4117();fflush(stdout);
 #endif
 
 #if CONTROL_LOOPS
     printf("Testing Control Loops\n");
-	va();
-	vag(ip);
-	vas(ip);
-	vif();
-	vpv();
-	vtv();
-	vpvtv();
-	vpvts(s1);
-	vpvpv();
-	vtvtv();
-	vsumr();
-	vdotr();
-	vbor();
+	va();fflush(stdout);
+	vag(ip);fflush(stdout);
+	vas(ip);fflush(stdout);
+	vif();fflush(stdout);
+	vpv();fflush(stdout);
+	vtv();fflush(stdout);
+	vpvtv();fflush(stdout);
+	vpvts(s1);fflush(stdout);
+	vpvpv();fflush(stdout);
+	vtvtv();fflush(stdout);
+	vsumr();fflush(stdout);
+	vdotr();fflush(stdout);
+	vbor();fflush(stdout);
 #endif
 
     free_arrays();
