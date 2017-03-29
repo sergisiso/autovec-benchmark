@@ -44,8 +44,8 @@ c_flags = { "gcc" : {
             "gcc_unsafe" : {
                 "vec" : " -march=native ",
                 "novec" : " -fno-tree-vectorize ",
-                "common" : " gcc -std=c99 -O3 -fivopts -flax-vector-conversions -funsafe-math-optimizations -ffast-math -fassociative-math",
-                "report" : " -free-vectorizer-verbose=5 ",
+                "common" : " gcc -std=c99 -O3 -fivopts -flax-vector-conversions -funsafe-math-optimizations -ffast-math -fassociative-math ",
+                "report" : " -ftree-vectorizer-verbose=5 ",
                 "unopt" : " gcc -O0 "
             },
             "icc_unsafe" : {
@@ -53,7 +53,7 @@ c_flags = { "gcc" : {
                 "novec" : " -no-simd -no-vec ",
                 "common" : " icc -std=c99 -Ofast -fp-model fast=2 -prec-sqrt -ftz -fma ",
                 "report" : " -qopt-report=5 ",
-                "unopt" : " gcc -O0 "
+                "unopt" : " icc -O0 "
             },
 
         }
@@ -74,8 +74,8 @@ def main():
     parser.add_argument('--benchmark', nargs='+', choices=benchmarks, default="ALL",
             help="Space separated list of case sensitive benchmark names. Allowed values are " +
             ", ".join(benchmarks), metavar='')
-    parser.add_argument('--compiler', choices=c_flags.keys(), help="Select compiler", default="ALL") 
-    parser.add_argument('--parameters', choices=parameterflags.keys(), help="Select compiler", default="ALL") 
+    parser.add_argument('--compiler', nargs='+', choices=c_flags.keys(), help="Select compiler", default="ALL") 
+    parser.add_argument('--parameters', nargs='+', choices=parameterflags.keys(), help="Select compiler", default="ALL") 
     args = parser.parse_args()
 
 
@@ -139,12 +139,14 @@ def main():
 
                 print "Compiling tsc_runtime ", b, p
                 exec_comp(c_flags[c]['unopt'] + ' -c -o dummy.o dummy.c', test_dir)
-                exec_comp(c_flags[c]['common'] + c_flags[c]['vec'] + c_flags[c]['report'] + ' -c -o tscrtvec.o tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
+                exec_comp(c_flags[c]['common'] + c_flags[c]['vec'] + c_flags[c]['report'] +
+                    ' -c -o tscrtvec.o tsc_runtime.c' + ' -D' + b + p_flags, test_dir, 'compilervec_output.txt')
                 exec_comp(c_flags[c]['common'] + c_flags[c]['vec']  + ' -S -o tscrtvec.s tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
                 exec_comp(c_flags[c]['common'] + c_flags[c]['novec'] +' -c -o tscrtnovec.o tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
                 exec_comp(c_flags[c]['common'] + c_flags[c]['novec'] +' -S -o tscrtnovec.s tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
                 exec_comp(c_flags[c]['unopt'] + ' dummy.o tscrtvec.o -o runrtvec -lm', test_dir)
                 exec_comp(c_flags[c]['unopt'] + ' dummy.o tscrtnovec.o -o runrtnovec -lm', test_dir)
+                exit(0)
 
                 print "Run tsc_runtime", p , "vector test", b
                 run_cmd('./runrtvec > runrtvec.txt', test_dir)
@@ -152,16 +154,18 @@ def main():
                 run_cmd('./runrtnovec > runrtnovec.txt', test_dir)
 
 
-def exec_comp(cmd, test_dir):
+def exec_comp(cmd, test_dir, save=None):
     print "Compiling: ", cmd
     p = subprocess.Popen(cmd, cwd=test_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = p.communicate()
     errcode  = p.returncode
-    print out
-    print err
+    if save != None:
+        with open(os.path.join(test_dir,save),'w') as f:
+            f.write(out)
+            f.write(err)
 
 def run_cmd(cmd, test_dir):
-    if False:
+    if True:
         print "No job submitted, just compiling"
     elif False:
         print "Executing: ", cmd

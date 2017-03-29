@@ -5639,8 +5639,8 @@ void load_parameters(){
             cp_n10 = atof(value);
 #endif
         }else{
-            printf("Error: Unrecognized parameter %s %d\n", parameter, value);
-            exit(-2);
+            //printf("Error: Unrecognized parameter %s %d\n", parameter, value);
+            //exit(-2);
         }
     }
 
