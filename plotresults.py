@@ -18,16 +18,14 @@ palette = map (lambda x: [float(x[0])/255, float(x[1])/255, float(x[2])/255], [
         [255,255,0],[255,80,5]] )
 
 
-labels = ( "LINEAR_DEPENDENCE", "INDUCTION_VARIABLE", "GLOBAL_DATA_FLOW"
+all_labels = ( "LINEAR_DEPENDENCE", "INDUCTION_VARIABLE", "GLOBAL_DATA_FLOW"
         "CONTROL_FLOW", "SYMBOLICS", "STATEMENT_REORDERING",
         "LOOP_RESTRUCTURING", "NODE_SPLITTING", "EXPANSION",
         "CROSSING_THRESHOLDS", "REDUCTIONS", "RECURRENCES",
         "SEARCHING", "PACKING", "LOOP_REROLLING", "EQUIVALENCING",
         "INDIRECT_ADDRESSING", "CONTROL_LOOPS")
-
-charts = ("ALL", "RUNTIME_LOOP_BOUNDS_PARAMETERS", "NONE"
-          "RUNTIME_ARITHMETIC_PARAMETERS", "RUNTIME_INDEX_PARAMETERS",
-          "CONDITION_EVAL_PARAMETERS")
+all_parameters = ('original', 'None', 'RUNTIME_ARITHMETIC', 'RUNTIME_INDEX',
+        'RUNTIME_CONDITIONS', 'RUNTIME_LOOP_BOUNDS', 'RUNTIME_ALL')
 
 
 
@@ -36,16 +34,17 @@ def add_box(ax, name, values, labels):
         ax.bar(0, 0.025, width=1, bottom=value, color=color, linewidth=0, label=label)
         #ax.text(0.5, value+0.05, label.title().replace("_"," "), ha='center', va='bottom', fontsize=10)
 
-    ax.axhline(np.mean(values),0,1,color='black',linestyle="--")
-    ax.text(0.5, np.mean(values)+0.05, "Avg. Mean", ha='center', va='bottom', fontsize=12)
-    ax.set_ylim(bottom=0, top=8)
+    mean = np.mean(filter(lambda x: x < 8, values))
+    ax.axhline(mean,0,1,color='black',linestyle="--")
+    ax.text(0.5, mean+0.05, "Avg. Mean", ha='center', va='bottom', fontsize=12)
+    ax.set_ylim(bottom=0, top=2)
     ax.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
-    ax.set_xlabel(name.title().replace("_"," "))
+    ax.set_xlabel(name.title().replace("_"," "), rotation=-15)
 
 
     pass
 
-def plot_chart(charts, labels, values):
+def plot_chart(charts, labels, values, outputfile, ylabel='Vector efficiency' ):
 
     #Find existing elements
     fig, axis = plt.subplots(1,len(charts) + 1)
@@ -55,13 +54,13 @@ def plot_chart(charts, labels, values):
 
     #ax.plot([0., 4.5], [0.4, 3.4], "k--")
 
-    axis[0].set_ylabel('Vector efficiency')
+    axis[0].set_ylabel(ylabel)
     axis[-1].axis('off')
     axis[-2].legend(loc="center left", bbox_to_anchor=(1.2,0.5), fontsize = 'x-small')
     fig.suptitle('Test auto-vectorization')
 
     #plt.show()
-    plt.savefig('test.png')
+    plt.savefig(outputfile)
 
 
 if len(sys.argv) != 2:
@@ -146,13 +145,13 @@ for compiler in getfolders(datadir):
             load_data(compiler,category,parameters,parameters_path)
 
 
-print "Compilers: ", len(data.keys())
-for com in data.keys():
-    print "  Categories: ", len(data[com].keys())
-    for cat in data[com].keys():
-        print "    Parameters: ", len(data[com][cat].keys())
-        for par in data[com][cat].keys():
-            print "      Tests:", len(data[com][cat][par].keys())
+#print "Compilers: ", len(data.keys())
+#for com in data.keys():
+#    print "  Categories: ", len(data[com].keys())
+#    for cat in data[com].keys():
+#        print "    Parameters: ", len(data[com][cat].keys())
+#        for par in data[com][cat].keys():
+#            print "      Tests:", len(data[com][cat][par].keys())
 
 
 print "Ploting charts..."
@@ -171,10 +170,126 @@ for cat in data[data.keys()[0]].keys(): # dict keys first to not mess with order
     vals.append(vals2)
 
 vals = map(list, zip(*vals))
-print len(char), len(labs)
-
 labs = map(lambda x: x.title().replace("_"," "), labs)
-plot_chart(char, labs , vals)
+plot_chart(char, labs , vals, 'compiler.png')
+
+print "- Compiler comparison"
+# all compilers, all categories, original tsc
+vals = []
+labs = []
+char = data.keys()
+
+for cat in data[data.keys()[0]].keys(): # dict keys first to not mess with order
+    labs.append(cat)
+    vals2 = []
+    for comp in data.keys():
+        par = 'original'
+        gcc_vec = np.mean([x[0] for x in data['gcc'][cat][par].values()])
+        vals2.append(gcc_vec / np.mean([x[0] for x in data[comp][cat][par].values()]))
+    vals.append(vals2)
+
+vals = map(list, zip(*vals))
+labs = map(lambda x: x.title().replace("_"," "), labs)
+plot_chart(char, labs , vals, 'compiler_speedup.png', ylabel = 'Performance against gcc')
+
+
+
+
+print "- icc hidden info"
+comp = 'icc'
+labs = []
+vals = []
+char = ('original', 'RUNTIME_INDEX',
+        'RUNTIME_CONDITIONS', 'RUNTIME_LOOP_BOUNDS', 'RUNTIME_ALL')
+
+for cat in data[comp].keys():
+    labs.append(cat)
+    vals2 = []
+    for par in char:
+        vals2.append(np.mean([x[2] for x in data[comp][cat][par].values()]))
+    vals.append(vals2)
+
+vals = map(list, zip(*vals))
+labs = map(lambda x: x.title().replace("_"," "), labs)
+
+#for i,chart in enumerate(char):
+#    print chart, vals[i]
+#    print np.mean(vals[i])
+
+plot_chart(char, labs , vals, 'icc.png')
+
+print "- gcc hidden info"
+comp = 'gcc_unsafe'
+labs = []
+vals = []
+char = ('original', 'RUNTIME_INDEX',
+        'RUNTIME_CONDITIONS', 'RUNTIME_LOOP_BOUNDS', 'RUNTIME_ALL')
+
+for cat in data[comp].keys():
+    labs.append(cat)
+    vals2 = []
+    for par in char:
+        vals2.append(np.mean([x[2] for x in data[comp][cat][par].values()]))
+    vals.append(vals2)
+
+vals = map(list, zip(*vals))
+labs = map(lambda x: x.title().replace("_"," "), labs)
+
+#for i,chart in enumerate(char):
+#    print chart, vals[i]
+#    print np.mean(vals[i])
+
+plot_chart(char, labs , vals, 'gcc.png')
+
+print "- icc perf against original"
+comp = 'icc'
+labs = []
+vals = []
+char = ('original', 'RUNTIME_INDEX',
+        'RUNTIME_CONDITIONS', 'RUNTIME_LOOP_BOUNDS', 'RUNTIME_ALL')
+
+for cat in data[comp].keys():
+    labs.append(cat)
+    vals2 = []
+    for par in char:
+        original_vec = np.mean([x[0] for x in data[comp][cat]['original'].values()])
+        vals2.append( original_vec / np.mean([x[0] for x in data[comp][cat][par].values()]) )
+    vals.append(vals2)
+
+vals = map(list, zip(*vals))
+labs = map(lambda x: x.title().replace("_"," "), labs)
+
+#for i,chart in enumerate(char):
+#    print chart, vals[i]
+#    print np.mean(vals[i])
+
+plot_chart(char, labs , vals, 'icc_speedup.png', ylabel='Performance against original')
+
+print "- gcc perf against original"
+comp = 'gcc_unsafe'
+labs = []
+vals = []
+char = ('original', 'RUNTIME_INDEX',
+        'RUNTIME_CONDITIONS', 'RUNTIME_LOOP_BOUNDS', 'RUNTIME_ALL')
+
+for cat in data[comp].keys():
+    labs.append(cat)
+    vals2 = []
+    for par in char:
+        original_vec = np.mean([x[0] for x in data[comp][cat]['original'].values()])
+        vals2.append( original_vec / np.mean([x[0] for x in data[comp][cat][par].values()]) )
+    vals.append(vals2)
+
+vals = map(list, zip(*vals))
+labs = map(lambda x: x.title().replace("_"," "), labs)
+
+#for i,chart in enumerate(char):
+#    print chart, vals[i]
+#    print np.mean(vals[i])
+
+plot_chart(char, labs , vals, 'gcc_unsafe_speedup.png', ylabel='Performance against original')
+
+
 
 exit(0)
 """

@@ -146,7 +146,6 @@ def main():
                 exec_comp(c_flags[c]['common'] + c_flags[c]['novec'] +' -S -o tscrtnovec.s tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
                 exec_comp(c_flags[c]['unopt'] + ' dummy.o tscrtvec.o -o runrtvec -lm', test_dir)
                 exec_comp(c_flags[c]['unopt'] + ' dummy.o tscrtnovec.o -o runrtnovec -lm', test_dir)
-                exit(0)
 
                 print "Run tsc_runtime", p , "vector test", b
                 run_cmd('./runrtvec > runrtvec.txt', test_dir)
@@ -165,7 +164,7 @@ def exec_comp(cmd, test_dir, save=None):
             f.write(err)
 
 def run_cmd(cmd, test_dir):
-    if True:
+    if False:
         print "No job submitted, just compiling"
     elif False:
         print "Executing: ", cmd
