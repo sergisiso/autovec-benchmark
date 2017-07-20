@@ -6,13 +6,14 @@ import subprocess
 import re
 from datetime import datetime
 
+#    "LINEAR_DEPENDENCE",
+#    "INDUCTION_VARIABLE",
+#    "GLOBAL_DATA_FLOW",
+#    "CONTROL_FLOW",
+#    "SYMBOLICS",
+ 
 benchmarks = [
-    "LINEAR_DEPENDENCE",
-    "INDUCTION_VARIABLE",
-    "GLOBAL_DATA_FLOW",
-    "CONTROL_FLOW",
-    "SYMBOLICS",
-    "STATEMENT_REORDERING",
+   "STATEMENT_REORDERING",
     "LOOP_RESTRUCTURING",
     "NODE_SPLITTING",
     "EXPANSION",
@@ -27,21 +28,7 @@ benchmarks = [
     "CONTROL_LOOPS"
 ]
 
-c_flags = { "gcc" : {
-                "vec" : " -march=native ",
-                "novec" : " -fno-tree-vectorize ",
-                "common" : "gcc -std=c99 -O3 ",
-                "report" : " -ftree-vectorizer-verbose=5 ",
-                "unopt" : "gcc -O0"
-                },
-            "icc" : {
-                "vec" : " -xHost ",
-                "novec" : " -no-simd -no-vec ",
-                "common" : "icc -std=c99 -O3 ",
-                "report" : " -qopt-report=5 " ,
-                "unopt" : "icc -O0 "
-            },
-            "gcc_unsafe" : {
+c_flags = {"gcc_unsafe" : {
                 "vec" : " -march=native ",
                 "novec" : " -fno-tree-vectorize ",
                 "common" : " gcc -std=c99 -O3 -fivopts -flax-vector-conversions -funsafe-math-optimizations -ffast-math -fassociative-math ",
@@ -55,8 +42,33 @@ c_flags = { "gcc" : {
                 "report" : " -qopt-report=5 ",
                 "unopt" : " icc -O0 "
             },
+	    "clang" : {
+                "vec" : " -march=native ",
+                "novec" : " -fno-vectorize ",
+                "common" : " clang -std=c99 -O3 ",
+                "report" : " ",
+                "unopt" : " clang -O0 "
+            },
+	   
 
         }
+
+
+""" "gcc" : {
+                "vec" : " -march=native ",
+                "novec" : " -fno-tree-vectorize ",
+                "common" : "gcc -std=c99 -O3 ",
+                "report" : " -ftree-vectorizer-verbose=5 ",
+                "unopt" : "gcc -O0"
+                },
+            "icc" : {
+                "vec" : " -xHost ",
+                "novec" : " -no-simd -no-vec ",
+                "common" : "icc -std=c99 -O3 ",
+                "report" : " -qopt-report=5 " ,
+                "unopt" : "icc -O0 "
+            },
+"""
 
 parameterflags = {
     "None":" ",
@@ -166,7 +178,7 @@ def exec_comp(cmd, test_dir, save=None):
 def run_cmd(cmd, test_dir):
     if False:
         print "No job submitted, just compiling"
-    elif False:
+    elif True:
         print "Executing: ", cmd
         p = subprocess.Popen(cmd, cwd=test_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         out, err = p.communicate()

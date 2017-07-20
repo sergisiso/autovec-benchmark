@@ -6,16 +6,16 @@ from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
 
-colors = ('r', 'c', 'm', 'y', 'k', 'b', 'g', 'r', 'c', 'm')
 
-palette = map (lambda x: [float(x[0])/255, float(x[1])/255, float(x[2])/255], [
+
+palette = [ [float(x[0])/255, float(x[1])/255, float(x[2])/255] for x in [
         [240,163,255],[0,117,220],[153,63,0],[76,0,92],
         [25,25,25],[0,92,49],[43,206,72],[255,204,153],
         [128,128,128],[148,255,181],[143,124,0],[157,204,0],
         [194,0,136],[0,51,128],[255,164,5],[255,168,187],
         [66,102,0],[255,0,16],[94,241,242],[0,153,143],
         [224,255,102],[116,10,255],[153,0,0],[255,255,128],
-        [255,255,0],[255,80,5]] )
+        [255,255,0],[255,80,5]] ]
 
 
 all_labels = ( "LINEAR_DEPENDENCE", "INDUCTION_VARIABLE", "GLOBAL_DATA_FLOW"
@@ -30,51 +30,60 @@ all_parameters = ('original', 'None', 'RUNTIME_ARITHMETIC', 'RUNTIME_INDEX',
 
 
 def add_box(ax, name, values, labels):
+    if len(list(values)) != len(list(labels)):
+        print("Error: Inconsisten number of values/labels")
+        exit(-1)
+    
     for value, label, color in zip(values, labels, palette):
-        ax.bar(0, 0.025, width=1, bottom=value, color=color, linewidth=0, label=label)
-        #ax.text(0.5, value+0.05, label.title().replace("_"," "), ha='center', va='bottom', fontsize=10)
+        #print(value,label,color)
+        if not np.isnan(value):
+            ax.bar( 0, 0.05, width=1, bottom=value,
+                    color=color, linewidth=0, label=label)
 
-    mean = np.mean(filter(lambda x: x < 8, values))
+    mean = np.mean([v for v in values if not np.isnan(v)])
     ax.axhline(mean,0,1,color='black',linestyle="--")
-    ax.text(0.5, mean+0.05, "Avg. Mean", ha='center', va='bottom', fontsize=12)
-    ax.set_ylim(bottom=0, top=2)
+    #ax.text(0.5, mean+0.05, "Avg. Mean", ha='center', va='bottom', fontsize=12)
+    ax.set_ylim(bottom=0, top=16)
     ax.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
-    ax.set_xlabel(name.title().replace("_"," "), rotation=-15)
-
-
-    pass
+    ax.set_xlabel(name.title().replace("_","\n"), rotation=-15)
 
 def plot_chart(charts, labels, values, outputfile, ylabel='Vector efficiency' ):
+
+    if len(list(values)) != len(list(charts)):
+        print("Error: Inconsistent number of charts/values")
+        exit(-1)
 
     #Find existing elements
     fig, axis = plt.subplots(1,len(charts) + 1)
 
-    for i, ax in enumerate(axis[:-1]):
-        add_box(ax, charts[i], values[i], labels) 
+    for ax, c, v in zip(axis[:-1],list(charts),list(values)):
+        add_box(ax, c, v, labels) 
 
-    #ax.plot([0., 4.5], [0.4, 3.4], "k--")
+    for ax in axis[1:-1]:
+        ax.set_yticklabels([])
 
     axis[0].set_ylabel(ylabel)
     axis[-1].axis('off')
-    axis[-2].legend(loc="center left", bbox_to_anchor=(1.2,0.5), fontsize = 'x-small')
-    fig.suptitle('Test auto-vectorization')
+    axis[-2].legend(loc="center left", bbox_to_anchor=(1.2,0.5), fontsize = 'small')
+    #fig.suptitle('Test auto-vectorization')
+    fig.set_size_inches(9,6)
 
     #plt.show()
-    plt.savefig(outputfile)
+    plt.savefig(outputfile, dpi=100)
 
 
 if len(sys.argv) != 2:
-    print "Expecting an argument with a path to a results foler"
+    print("Expecting an argument with a path to a results foler")
     exit(-1)
 if not os.path.exists(sys.argv[1]):
-    print "Results folder does not exist"
+    print("Results folder does not exist")
     exit(-2)
 
 datadir = sys.argv[1]
 resultsdir = sys.argv[1]+"_plots"
 
 if os.path.exists(resultsdir):
-    print "Results dir", resultsdir," already exist, remove folder to redraw the plots"
+    print("Results dir", resultsdir," already exist, remove folder to redraw the plots")
     exit(-3)
 
 #os.makedirs(resultsdir)
@@ -86,18 +95,6 @@ def getfolders(path):
 data = defaultdict(lambda : defaultdict(lambda :defaultdict(dict)))
 #Dictionary test : checksum
 checksum_dict = {}
-
-
-def check_correctness(test, checksum):
-    # if it is first time, store checksum
-    if test not in checksum_dict:
-        checksum_dict[test] = checksum
-    else:
-        if checksum_dict[test] == checksum:
-            return
-        else:
-            print "Error checksum in ", test
-            return
 
 def load_data(compiler,category,parameters,parameters_path):
 
@@ -117,12 +114,14 @@ def load_data(compiler,category,parameters,parameters_path):
                     if linenovec.split()[0] == linevec.split()[0]:
                         test, novec_perf, cs1 = linenovec.split()
                         test, vec_perf, cs2 = linevec.split()
-                        #check_correctness(test,cs1)
-                        #check_correctness(test,cs2)
-                        if cs1 != cs2:
-                            print "Warning", compiler, category, parameters, test, "checksums differ!"
-                        if float(novec_perf) == 0.0 or float(vec_perf) == 0.0:
-                            print "Warning", compiler, category, parameters, test, "contains 0"
+                        if abs(float(cs1) - float(cs2)) > abs(float(cs1)*0.01):
+                            print("Warning checksums differ! ", compiler,
+                                    category, parameters, test, cs1," ",cs2)
+                        elif float(novec_perf) == 0.0 or float(vec_perf) == 0.0:
+                            print("Warning contains 0 " , compiler,
+                                    category, parameters, test)
+                        elif float(novec_perf)/float(vec_perf) > 16.0:
+                            print("Warning outlier " , compiler, category, parameters, test, float(novec_perf), float(vec_perf), float(novec_perf)/float(vec_perf)  )
                         else:
                             data[compiler][category][parameters][test] = [
                                 float(vec_perf),
@@ -130,12 +129,12 @@ def load_data(compiler,category,parameters,parameters_path):
                                 float(novec_perf)/float(vec_perf)
                                 ]
                     else:
-                        print "Warning, some lines are different!"
+                        print("Warning, some lines are different!")
 
 
-print "Loading data..."
+print("Loading data...")
 for compiler in getfolders(datadir):
-    print compiler
+    print(compiler)
     compiler_path = os.path.join(datadir,compiler)
     for category in getfolders(compiler_path):
         category_path = os.path.join(compiler_path,category)
@@ -154,14 +153,20 @@ for compiler in getfolders(datadir):
 #            print "      Tests:", len(data[com][cat][par].keys())
 
 
-print "Ploting charts..."
-print "- Compiler comparison"
+print("Ploting charts...")
+print("- Compiler comparison")
 # all compilers, all categories, original tsc
 vals = []
 labs = []
-char = data.keys()
 
-for cat in data[data.keys()[0]].keys(): # dict keys first to not mess with order
+def all_categories():
+    categories = set()
+    for compiler in data.keys():
+        for cat in data[compiler].keys():
+            categories.add(cat)
+    return list(categories)
+
+for cat in all_categories(): 
     labs.append(cat)
     vals2 = []
     for comp in data.keys():
@@ -169,34 +174,31 @@ for cat in data[data.keys()[0]].keys(): # dict keys first to not mess with order
         vals2.append(np.mean([x[2] for x in data[comp][cat][par].values()]))
     vals.append(vals2)
 
-vals = map(list, zip(*vals))
-labs = map(lambda x: x.title().replace("_"," "), labs)
+vals = [list(i) for i in zip(*vals)]
+labs = [x.title().replace("_"," ") for x in labs]
+char = [x.split("_")[0] for x in data.keys()]
 plot_chart(char, labs , vals, 'compiler.png')
 
-print "- Compiler comparison"
 # all compilers, all categories, original tsc
 vals = []
 labs = []
-char = data.keys()
 
-for cat in data[data.keys()[0]].keys(): # dict keys first to not mess with order
+for cat in all_categories():
     labs.append(cat)
     vals2 = []
     for comp in data.keys():
         par = 'original'
-        gcc_vec = np.mean([x[0] for x in data['gcc'][cat][par].values()])
+        gcc_vec = np.mean([x[0] for x in data['gcc_unsafe'][cat][par].values()])
         vals2.append(gcc_vec / np.mean([x[0] for x in data[comp][cat][par].values()]))
     vals.append(vals2)
 
-vals = map(list, zip(*vals))
-labs = map(lambda x: x.title().replace("_"," "), labs)
+vals = [list(i) for i in zip(*vals)]
+labs = [x.title().replace("_"," ") for x in labs]
+char = [x.split("_")[0] for x in data.keys()]
 plot_chart(char, labs , vals, 'compiler_speedup.png', ylabel = 'Performance against gcc')
 
-
-
-
-print "- icc hidden info"
-comp = 'icc'
+print("- icc hidden info")
+comp = 'icc_unsafe'
 labs = []
 vals = []
 char = ('original', 'RUNTIME_INDEX',
@@ -209,8 +211,8 @@ for cat in data[comp].keys():
         vals2.append(np.mean([x[2] for x in data[comp][cat][par].values()]))
     vals.append(vals2)
 
-vals = map(list, zip(*vals))
-labs = map(lambda x: x.title().replace("_"," "), labs)
+vals = [list(i) for i in zip(*vals)]
+labs = [x.title().replace("_"," ") for x in labs]
 
 #for i,chart in enumerate(char):
 #    print chart, vals[i]
@@ -218,7 +220,7 @@ labs = map(lambda x: x.title().replace("_"," "), labs)
 
 plot_chart(char, labs , vals, 'icc.png')
 
-print "- gcc hidden info"
+print("- gcc hidden info")
 comp = 'gcc_unsafe'
 labs = []
 vals = []
@@ -232,8 +234,11 @@ for cat in data[comp].keys():
         vals2.append(np.mean([x[2] for x in data[comp][cat][par].values()]))
     vals.append(vals2)
 
-vals = map(list, zip(*vals))
-labs = map(lambda x: x.title().replace("_"," "), labs)
+
+
+vals = [list(i) for i in zip(*vals)]
+labs = [x.title().replace("_"," ") for x in labs]
+
 
 #for i,chart in enumerate(char):
 #    print chart, vals[i]
@@ -241,7 +246,8 @@ labs = map(lambda x: x.title().replace("_"," "), labs)
 
 plot_chart(char, labs , vals, 'gcc.png')
 
-print "- icc perf against original"
+exit(0)
+print("- icc perf against original")
 comp = 'icc'
 labs = []
 vals = []
@@ -256,8 +262,8 @@ for cat in data[comp].keys():
         vals2.append( original_vec / np.mean([x[0] for x in data[comp][cat][par].values()]) )
     vals.append(vals2)
 
-vals = map(list, zip(*vals))
-labs = map(lambda x: x.title().replace("_"," "), labs)
+vals = [list(i) for i in zip(*vals)]
+labs = [x.title().replace("_"," ") for x in labs]
 
 #for i,chart in enumerate(char):
 #    print chart, vals[i]
@@ -265,7 +271,7 @@ labs = map(lambda x: x.title().replace("_"," "), labs)
 
 plot_chart(char, labs , vals, 'icc_speedup.png', ylabel='Performance against original')
 
-print "- gcc perf against original"
+print("- gcc perf against original")
 comp = 'gcc_unsafe'
 labs = []
 vals = []
@@ -280,8 +286,8 @@ for cat in data[comp].keys():
         vals2.append( original_vec / np.mean([x[0] for x in data[comp][cat][par].values()]) )
     vals.append(vals2)
 
-vals = map(list, zip(*vals))
-labs = map(lambda x: x.title().replace("_"," "), labs)
+vals = [list(i) for i in zip(*vals)]
+labs = [x.title().replace("_"," ") for x in labs]
 
 #for i,chart in enumerate(char):
 #    print chart, vals[i]
@@ -290,16 +296,3 @@ labs = map(lambda x: x.title().replace("_"," "), labs)
 plot_chart(char, labs , vals, 'gcc_unsafe_speedup.png', ylabel='Performance against original')
 
 
-
-exit(0)
-"""
-for comp in data.keys():
-    for cat in data[comp].keys():
-        for par in data[comp][cat].keys():
-            print comp, cat, par, np.mean([x[2] for x in data[comp][cat][par].values()])
-"""
-#val = [  for x in data.keys()]
-#plot_chart()
-
-
-#plot_chart()
