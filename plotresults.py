@@ -5,44 +5,55 @@ import os
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import ConnectionPatch
 
 
+def rgb(x):
+    return [float(x[0])/255, float(x[1])/255, float(x[2])/255]
 
-palette = [ [float(x[0])/255, float(x[1])/255, float(x[2])/255] for x in [
-        [240,163,255],[0,117,220],[153,63,0],[76,0,92],
-        [25,25,25],[0,92,49],[43,206,72],[255,204,153],
-        [128,128,128],[148,255,181],[143,124,0],[157,204,0],
-        [194,0,136],[0,51,128],[255,164,5],[255,168,187],
-        [66,102,0],[255,0,16],[94,241,242],[0,153,143],
-        [224,255,102],[116,10,255],[153,0,0],[255,255,128],
-        [255,255,0],[255,80,5]] ]
-
-
-all_labels = ( "LINEAR_DEPENDENCE", "INDUCTION_VARIABLE", "GLOBAL_DATA_FLOW"
-        "CONTROL_FLOW", "SYMBOLICS", "STATEMENT_REORDERING",
-        "LOOP_RESTRUCTURING", "NODE_SPLITTING", "EXPANSION",
-        "CROSSING_THRESHOLDS", "REDUCTIONS", "RECURRENCES",
-        "SEARCHING", "PACKING", "LOOP_REROLLING", "EQUIVALENCING",
-        "INDIRECT_ADDRESSING", "CONTROL_LOOPS")
-all_parameters = ('original', 'None', 'RUNTIME_ARITHMETIC', 'RUNTIME_INDEX',
-        'RUNTIME_CONDITIONS', 'RUNTIME_LOOP_BOUNDS', 'RUNTIME_ALL')
-
+palette = {
+        "Control Flow" : rgb([240,163,255]),
+        "Crossing Thresholds": rgb([0,117,220]),
+        "Expansion": rgb([153,63,0]),
+        "Global Data Flow": rgb([76,0,92]),
+        "Induction Variable": rgb([25,25,25]),
+        "Linear Dependence": rgb([0,92,49]),
+        "Loop Restructuring": rgb([43,206,72]),
+        "Node Splitting": rgb([255,204,153]),
+        "Recurrences": rgb([128,128,128]),
+        "Reductions": rgb([148,255,181]),
+        "Statement Reordering": rgb([143,124,0]),
+        "Symbolics": rgb([157,204,0]),
+        "Searching": rgb([194,0,136]),
+        "Recurrences": rgb([0,51,128]),
+        "Equivalencing": rgb([255,164,5]),
+        "Packing": rgb([255,168,187]),
+        "Indirect Addressing": rgb([66,102,0]),
+        "Loop Rerolling": rgb([255,0,16]),
+        "": rgb([94,241,242]),
+        "": rgb([0,152,143]),
+        "": rgb([224,255,102]),
+        "": rgb([116,10,255]),
+        "": rgb([153,0,0]),
+        "": rgb([255,255,128]),
+        "": rgb([255,255,0]),
+        "": rgb([255,80,5]),
+    }
 
 
 def add_box(ax, name, values, labels):
+
     if len(list(values)) != len(list(labels)):
         print("Error: Inconsisten number of values/labels")
         exit(-1)
     
-    for value, label, color in zip(values, labels, palette):
-        #print(value,label,color)
+    for value, label in zip(values, labels):
         if not np.isnan(value):
-            ax.bar( 0, 0.05, width=1, bottom=value,
-                    color=color, linewidth=0, label=label)
+            ax.axhline(value, 0, 1, color=palette[label], label=label)
 
     mean = np.mean([v for v in values if not np.isnan(v)])
     ax.axhline(mean,0,1,color='black',linestyle="--")
-    #ax.text(0.5, mean+0.05, "Avg. Mean", ha='center', va='bottom', fontsize=12)
+    ax.text(0.1, mean+0.05, "Avg. Mean = " + "{:.2f}".format(mean), ha='center', va='bottom', fontsize=10)
     ax.set_ylim(bottom=0, top=16)
     ax.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
     ax.set_xlabel(name.title().replace("_","\n"), rotation=-15)
@@ -59,44 +70,31 @@ def plot_chart(charts, labels, values, outputfile, ylabel='Vector efficiency' ):
     for ax, c, v in zip(axis[:-1],list(charts),list(values)):
         add_box(ax, c, v, labels) 
 
+    xy = (0.5,12)
+    con = ConnectionPatch(xyA=xy, xyB=xy, coordsA="data",coordsB="data", axesA=axis[0], axesB=axis[1], color="red")
+    axis[1].add_artist(con)
+    
+
+   #for ax, ax2, v, v2 in zip():
+
+    # Remove all labels but leftmost
+    axis[0].set_ylabel(ylabel)
     for ax in axis[1:-1]:
         ax.set_yticklabels([])
 
-    axis[0].set_ylabel(ylabel)
+    # Remove rightmost box to place the legend
     axis[-1].axis('off')
     axis[-2].legend(loc="center left", bbox_to_anchor=(1.2,0.5), fontsize = 'small')
-    #fig.suptitle('Test auto-vectorization')
-    fig.set_size_inches(9,6)
 
-    #plt.show()
+    fig.suptitle('Test auto-vectorization')
+    fig.set_size_inches(9,6)
     plt.savefig(outputfile, dpi=100)
 
-
-if len(sys.argv) != 2:
-    print("Expecting an argument with a path to a results foler")
-    exit(-1)
-if not os.path.exists(sys.argv[1]):
-    print("Results folder does not exist")
-    exit(-2)
-
-datadir = sys.argv[1]
-resultsdir = sys.argv[1]+"_plots"
-
-if os.path.exists(resultsdir):
-    print("Results dir", resultsdir," already exist, remove folder to redraw the plots")
-    exit(-3)
-
-#os.makedirs(resultsdir)
 
 def getfolders(path):
     return filter(lambda x: os.path.isdir(os.path.join(path,x)),os.listdir(path))
 
-#Nested dictionary of: compiler, category, parameters, test : [performance vec, performance novec, vector eff]
-data = defaultdict(lambda : defaultdict(lambda :defaultdict(dict)))
-#Dictionary test : checksum
-checksum_dict = {}
-
-def load_data(compiler,category,parameters,parameters_path):
+def load_data(data, compiler, category, parameters, parameters_path):
 
     # Set filenames for tsc or tsc_runtime results
     if parameters == 'original':
@@ -106,7 +104,7 @@ def load_data(compiler,category,parameters,parameters_path):
         vecfname = 'runrtvec.txt'
         novecfname = 'runrtnovec.txt'
 
-    # Open results files
+    # Open results files and entries to 'data'
     with open(os.path.join(parameters_path,vecfname)) as vecf:
         with open(os.path.join(parameters_path,novecfname)) as novecf:
             for linevec, linenovec in zip(vecf.readlines(),novecf.readlines()):
@@ -121,7 +119,9 @@ def load_data(compiler,category,parameters,parameters_path):
                             print("Warning contains 0 " , compiler,
                                     category, parameters, test)
                         elif float(novec_perf)/float(vec_perf) > 16.0:
-                            print("Warning outlier " , compiler, category, parameters, test, float(novec_perf), float(vec_perf), float(novec_perf)/float(vec_perf)  )
+                            print("Warning outlier " , compiler, category,
+                                parameters, test, float(novec_perf),
+                                float(vec_perf), float(novec_perf)/float(vec_perf))
                         else:
                             data[compiler][category][parameters][test] = [
                                 float(vec_perf),
@@ -131,168 +131,109 @@ def load_data(compiler,category,parameters,parameters_path):
                     else:
                         print("Warning, some lines are different!")
 
-
-print("Loading data...")
-for compiler in getfolders(datadir):
-    print(compiler)
-    compiler_path = os.path.join(datadir,compiler)
-    for category in getfolders(compiler_path):
-        category_path = os.path.join(compiler_path,category)
-        load_data(compiler,category,'original',category_path)
-        for parameters in getfolders(category_path):
-            parameters_path = os.path.join(category_path,parameters)
-            load_data(compiler,category,parameters,parameters_path)
-
-
-#print "Compilers: ", len(data.keys())
-#for com in data.keys():
-#    print "  Categories: ", len(data[com].keys())
-#    for cat in data[com].keys():
-#        print "    Parameters: ", len(data[com][cat].keys())
-#        for par in data[com][cat].keys():
-#            print "      Tests:", len(data[com][cat][par].keys())
-
-
-print("Ploting charts...")
-print("- Compiler comparison")
-# all compilers, all categories, original tsc
-vals = []
-labs = []
-
-def all_categories():
+def all_categories(data):
     categories = set()
     for compiler in data.keys():
         for cat in data[compiler].keys():
             categories.add(cat)
     return list(categories)
 
-for cat in all_categories(): 
-    labs.append(cat)
-    vals2 = []
-    for comp in data.keys():
-        par = 'original'
-        vals2.append(np.mean([x[2] for x in data[comp][cat][par].values()]))
-    vals.append(vals2)
 
-vals = [list(i) for i in zip(*vals)]
-labs = [x.title().replace("_"," ") for x in labs]
-char = [x.split("_")[0] for x in data.keys()]
-plot_chart(char, labs , vals, 'compiler.png')
+def plot_compilers(data, output, title="", speedup_vs=None):
+    # all compilers, all categories, original tsc
+    vals = []
+    labs = []
+    for cat in all_categories(data): 
+        labs.append(cat)
+        vals2 = []
+        for comp in data.keys():
+            par = 'original'
+            if speedup_vs != None:
+                baseline = np.mean([x[0] for x in data[speedup_vs][cat][par].values()])
+                vals2.append(baseline / np.mean([x[0] for x in data[comp][cat][par].values()]))
+            else:
+                vals2.append(np.mean([x[2] for x in data[comp][cat][par].values()]))
+        vals.append(vals2)
 
-# all compilers, all categories, original tsc
-vals = []
-labs = []
+    vals = [list(i) for i in zip(*vals)]
+    labs = [x.title().replace("_"," ") for x in labs]
+    char = [x.split("_")[0] for x in data.keys()]
+    plot_chart(char, labs , vals, output, ylabel = title)
 
-for cat in all_categories():
-    labs.append(cat)
-    vals2 = []
-    for comp in data.keys():
-        par = 'original'
-        gcc_vec = np.mean([x[0] for x in data['gcc_unsafe'][cat][par].values()])
-        vals2.append(gcc_vec / np.mean([x[0] for x in data[comp][cat][par].values()]))
-    vals.append(vals2)
+def plot_categories(data, comp, output, title="", speedup=False):
+    labs = []
+    vals = []
+    char = ('original', 'RUNTIME_INDEX',
+            'RUNTIME_CONDITIONS', 'RUNTIME_LOOP_BOUNDS', 'RUNTIME_ALL')
 
-vals = [list(i) for i in zip(*vals)]
-labs = [x.title().replace("_"," ") for x in labs]
-char = [x.split("_")[0] for x in data.keys()]
-plot_chart(char, labs , vals, 'compiler_speedup.png', ylabel = 'Performance against gcc')
+    for cat in data[comp].keys():
+        labs.append(cat)
+        vals2 = []
+        for par in char:
+            if speedup:
+                baseline = np.mean([x[0] for x in data[comp][cat]['original'].values()])
+                vals2.append( baseline / np.mean([x[0] for x in data[comp][cat][par].values()]) )
+            else:
+                vals2.append(np.mean([x[2] for x in data[comp][cat][par].values()]))
+        vals.append(vals2)
 
-print("- icc hidden info")
-comp = 'icc_unsafe'
-labs = []
-vals = []
-char = ('original', 'RUNTIME_INDEX',
-        'RUNTIME_CONDITIONS', 'RUNTIME_LOOP_BOUNDS', 'RUNTIME_ALL')
-
-for cat in data[comp].keys():
-    labs.append(cat)
-    vals2 = []
-    for par in char:
-        vals2.append(np.mean([x[2] for x in data[comp][cat][par].values()]))
-    vals.append(vals2)
-
-vals = [list(i) for i in zip(*vals)]
-labs = [x.title().replace("_"," ") for x in labs]
-
-#for i,chart in enumerate(char):
-#    print chart, vals[i]
-#    print np.mean(vals[i])
-
-plot_chart(char, labs , vals, 'icc.png')
-
-print("- gcc hidden info")
-comp = 'gcc_unsafe'
-labs = []
-vals = []
-char = ('original', 'RUNTIME_INDEX',
-        'RUNTIME_CONDITIONS', 'RUNTIME_LOOP_BOUNDS', 'RUNTIME_ALL')
-
-for cat in data[comp].keys():
-    labs.append(cat)
-    vals2 = []
-    for par in char:
-        vals2.append(np.mean([x[2] for x in data[comp][cat][par].values()]))
-    vals.append(vals2)
+    vals = [list(i) for i in zip(*vals)]
+    labs = [x.title().replace("_"," ") for x in labs]
+    plot_chart(char, labs , vals, output, ylabel = title)
 
 
+ 
+def main():
 
-vals = [list(i) for i in zip(*vals)]
-labs = [x.title().replace("_"," ") for x in labs]
+    # Get argv 1 and error checking
+    if len(sys.argv) != 2:
+        print("Expecting an argument with a path to a results foler")
+        exit(-1)
+    datadir = sys.argv[1]
+    if not os.path.exists(datadir):
+        print("Results folder does not exist")
+        exit(-2)
 
+    #Nested dictionary of: compiler, category, parameters, test : [performance vec, performance novec, vector eff]
+    data = defaultdict(lambda : defaultdict(lambda :defaultdict(dict)))
 
-#for i,chart in enumerate(char):
-#    print chart, vals[i]
-#    print np.mean(vals[i])
-
-plot_chart(char, labs , vals, 'gcc.png')
-
-exit(0)
-print("- icc perf against original")
-comp = 'icc'
-labs = []
-vals = []
-char = ('original', 'RUNTIME_INDEX',
-        'RUNTIME_CONDITIONS', 'RUNTIME_LOOP_BOUNDS', 'RUNTIME_ALL')
-
-for cat in data[comp].keys():
-    labs.append(cat)
-    vals2 = []
-    for par in char:
-        original_vec = np.mean([x[0] for x in data[comp][cat]['original'].values()])
-        vals2.append( original_vec / np.mean([x[0] for x in data[comp][cat][par].values()]) )
-    vals.append(vals2)
-
-vals = [list(i) for i in zip(*vals)]
-labs = [x.title().replace("_"," ") for x in labs]
-
-#for i,chart in enumerate(char):
-#    print chart, vals[i]
-#    print np.mean(vals[i])
-
-plot_chart(char, labs , vals, 'icc_speedup.png', ylabel='Performance against original')
-
-print("- gcc perf against original")
-comp = 'gcc_unsafe'
-labs = []
-vals = []
-char = ('original', 'RUNTIME_INDEX',
-        'RUNTIME_CONDITIONS', 'RUNTIME_LOOP_BOUNDS', 'RUNTIME_ALL')
-
-for cat in data[comp].keys():
-    labs.append(cat)
-    vals2 = []
-    for par in char:
-        original_vec = np.mean([x[0] for x in data[comp][cat]['original'].values()])
-        vals2.append( original_vec / np.mean([x[0] for x in data[comp][cat][par].values()]) )
-    vals.append(vals2)
-
-vals = [list(i) for i in zip(*vals)]
-labs = [x.title().replace("_"," ") for x in labs]
-
-#for i,chart in enumerate(char):
-#    print chart, vals[i]
-#    print np.mean(vals[i])
-
-plot_chart(char, labs , vals, 'gcc_unsafe_speedup.png', ylabel='Performance against original')
+    print("Loading data...")
+    for compiler in getfolders(datadir):
+        print(compiler)
+        compiler_path = os.path.join(datadir,compiler)
+        for category in getfolders(compiler_path):
+            category_path = os.path.join(compiler_path,category)
+            load_data(data, compiler,category,'original',category_path)
+            for parameters in getfolders(category_path):
+                parameters_path = os.path.join(category_path,parameters)
+                load_data(data, compiler,category,parameters,parameters_path)
 
 
+    #print "Compilers: ", len(data.keys())
+    #for com in data.keys():
+    #    print "  Categories: ", len(data[com].keys())
+    #    for cat in data[com].keys():
+    #        print "    Parameters: ", len(data[com][cat].keys())
+    #        for par in data[com][cat].keys():
+    #            print "      Tests:", len(data[com][cat][par].keys())
+
+
+    print("Ploting charts...")
+
+    print("- Compiler comparison")
+    plot_compilers(data, 'compilers.png', 'Compiler comparison')
+    exit()
+    plot_compilers(data, 'compilers_vs_gcc.png', 'Performance against gcc', speedup_vs='gcc_unsafe')
+
+    print("- Categories comparison")
+    plot_categories(data, 'icc_unsafe', 'icc.png', title="ICC Auto-vectorization", speedup=False)
+    plot_categories(data, 'icc_unsafe', 'icc_speedup.png', title="ICC performance angainst original", speedup=True)
+    plot_categories(data, 'gcc_unsafe', 'gcc.png', title="GCC Auto-vectorization", speedup=False)
+    plot_categories(data, 'gcc_unsafe', 'gcc_speedup.png', title="GCC performance angainst original", speedup=True)
+    plot_categories(data, 'clang', 'clang.png', title="Clang Auto-vectorization", speedup=False)
+    plot_categories(data, 'clang', 'clang_speedup.png', title="Clang performance angainst original", speedup=True)
+
+    # TODO: also add ISA comparsion and architecture comparison
+
+if __name__ == "__main__":
+    main()
