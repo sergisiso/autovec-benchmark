@@ -1738,7 +1738,455 @@ int s162(int k)
 	return 0;
 }
 
+
+int s271()
+{
+
+//	control flow
+//	loop with singularity handling
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s271 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < 4*ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			if (b[i] > (TYPE) cp_n0) {
+				a[i] += b[i] * c[i];
+			}
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S271\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
+// %2.7
+
+int s272(TYPE t)
+{
+
+//	control flow
+//	loop with independent conditional
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s272 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			if (e[i] >= t) {
+				a[i] += c[i] * d[i];
+				b[i] += c[i] * c[i];
+			}
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S272\t %.2f \t\t", clock_dif_sec);;
+	check(12);
+	return 0;
+}
+
+// %2.7
+
+int s273()
+{
+
+//	control flow
+//	simple loop with dependent conditional
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s273 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			a[i] += d[i] * e[i];
+			if (a[i] < (TYPE) cp_n0)
+				b[i] += d[i] * e[i];
+			c[i] += a[i] * d[i];
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S273\t %.2f \t\t", clock_dif_sec);;
+	check(123);
+	return 0;
+}
+
+// %2.7
+
+int s274()
+{
+
+//	control flow
+//	complex loop with dependent conditional
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s274 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			a[i] = c[i] + e[i] * d[i];
+			if (a[i] > (TYPE) cp_n0) {
+				b[i] = a[i] + b[i];
+			} else {
+				a[i] = d[i] * e[i];
+			}
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S274\t %.2f \t\t", clock_dif_sec);;
+	check(12);
+	return 0;
+}
+
+// %2.7
+
+int s275()
+{
+
+//	control flow
+//	if around inner loop, interchanging needed
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s275 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < 10*(ntimes/LEN2); nl++) {
+		for (int i = 0; i < LEN2; i++) {
+			if (aa[0*LEN2+i] > (TYPE) cp_n0) {
+				for (int j = 1; j < LEN2; j++) {
+					aa[j*LEN2+i] = aa[(j-1)*LEN2+i] + bb[j*LEN2+i] * cc[j*LEN2+i];
+				}
+			}
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S275\t %.2f \t\t", clock_dif_sec);;
+	check(11);
+	return 0;
+}
+
+int s2275()
+{
+
+//	loop distribution is needed to be able to interchange
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s275 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < 100*(ntimes/LEN2); nl++) {
+		for (int i = 0; i < LEN2; i++) {
+			for (int j = 0; j < LEN2; j++) {
+				aa[j*LEN2+i] = aa[j*LEN2+i] + bb[j*LEN2+i] * cc[j*LEN2+i];
+			}
+			a[i] = b[i] + c[i] * d[i];
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S2275\t %.2f \t\t", clock_dif_sec);;
+	check(11);
+	return 0;
+}
+
+// %2.7
+
+int s276()
+{
+
+//	control flow
+//	if test using loop index
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s276 ");
+	start_t = clock();
+
+	int mid = (LEN/2);
+	for (int nl = 0; nl < 4*ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			if (i+ cp_n1 < mid) {
+				a[i] += b[i] * c[i];
+			} else {
+				a[i] += b[i] * d[i];
+			}
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S276\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
+// %2.7
+int s277()
+{
+
+//	control flow
+//	test for dependences arising from guard variable computation.
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s277 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes; nl++) {
+		for (int i = 0; i < LEN-1; i++) {
+				if (a[i] >= (TYPE) cp_n0) {
+					goto L20;
+				}
+				if (b[i] >= (TYPE) cp_n0) {
+					goto L30;
+				}
+				a[i] += c[i] * d[i];
+L30:
+				b[i+1] = c[i] + d[i] * e[i];
+L20:
+;
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S277\t %.2f \t\t", clock_dif_sec);;
+	check(12);
+	return 0;
+}
+
+// %2.7
+
+int s278()
+{
+
+//	control flow
+//	if/goto to block if-then-else
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s278 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			if (a[i] > (TYPE) cp_n0) {
+				goto L20;
+			}
+			b[i] = -b[i] + d[i] * e[i];
+			goto L30;
+L20:
+			c[i] = -c[i] + d[i] * e[i];
+L30:
+			a[i] = b[i] + c[i] * d[i];
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S278\t %.2f \t\t", clock_dif_sec);;
+	check(123);
+	return 0;
+}
+
+// %2.7
+
+int s279()
+{
+
+//	control flow
+//	vector if/gotos
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s279 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes/2; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			if (a[i] > (TYPE) cp_n0) {
+				goto L20;
+			}
+			b[i] = -b[i] + d[i] * d[i];
+			if (b[i] <= a[i]) {
+				goto L30;
+			}
+			c[i] += d[i] * e[i];
+			goto L30;
+L20:
+			c[i] = -c[i] + e[i] * e[i];
+L30:
+			a[i] = b[i] + c[i] * d[i];
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S279\t %.2f \t\t", clock_dif_sec);;
+	check(123);
+	return 0;
+}
+
+int s1279()
+{
+
+//	control flow
+//	vector if/gotos
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s279 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			if (a[i] < (TYPE) cp_n0) {
+				if (b[i] > a[i]) {
+					c[i] += d[i] * e[i];
+				}
+			}
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S1279\t %.2f \t\t", clock_dif_sec);;
+	check(123);
+	return 0;
+}
+
+// %2.7
+
+int s2710( TYPE x)
+{
+
+//	control flow
+//	scalar and vector ifs
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s2710");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes/2; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			if (a[i] > b[i]) {
+				a[i] += b[i] * d[i];
+				if (LEN > cp_n10) {
+					c[i] += d[i] * d[i];
+				} else {
+					c[i] = d[i] * e[i] + (TYPE)ap_n1;
+				}
+			} else {
+				b[i] = a[i] + e[i] * e[i];
+				if (x > (TYPE) cp_n0) {
+					c[i] = a[i] + d[i] * d[i];
+				} else {
+					c[i] += e[i] * e[i];
+				}
+			}
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S2710\t %.2f \t\t", clock_dif_sec);;
+	check(123);
+	return 0;
+}
+
+// %2.7
+
+int s2711()
+{
+
+//	control flow
+//	semantic if removal
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+	init( "s2711");
+	start_t = clock();
+
+	for (int nl = 0; nl < 4*ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			if (b[i] != (TYPE)cp_n0) {
+				a[i] += b[i] * c[i];
+			}
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S2711\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
+// %2.7
+
+int s2712()
+{
+
+//	control flow
+//	if to elemental min
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s2712");
+	start_t = clock();
+
+	for (int nl = 0; nl < 4*ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			if (a[i] > b[i]) {
+				a[i] += b[i] * c[i];
+			}
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S2712\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
 #endif // CONTROL_FLOW
+
 
 #if SYMBOLICS
 
@@ -2377,7 +2825,7 @@ int s1244()
 {
 
 //	node splitting
-//	cycle with ture and anti dependency
+//	cycle with true and anti dependency
 
 	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
 
@@ -2403,7 +2851,7 @@ int s2244()
 {
 
 //	node splitting
-//	cycle with ture and anti dependency
+//	cycle with true and anti dependency
 
 	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
 
@@ -2763,7 +3211,7 @@ int s261()
 {
 
 //	scalar and array expansion
-//	wrap-around scalar under an if
+//	2 scalar expansions
 
 	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
 
@@ -2789,457 +3237,6 @@ int s261()
 }
 
 #endif // EXPANSION
-
-#if CONTROL_FLOW
-
-int s271()
-{
-
-//	control flow
-//	loop with singularity handling
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s271 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < 4*ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			if (b[i] > (TYPE) cp_n0) {
-				a[i] += b[i] * c[i];
-			}
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S271\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-// %2.7
-
-int s272(TYPE t)
-{
-
-//	control flow
-//	loop with independent conditional
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s272 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			if (e[i] >= t) {
-				a[i] += c[i] * d[i];
-				b[i] += c[i] * c[i];
-			}
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S272\t %.2f \t\t", clock_dif_sec);;
-	check(12);
-	return 0;
-}
-
-// %2.7
-
-int s273()
-{
-
-//	control flow
-//	simple loop with dependent conditional
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s273 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			a[i] += d[i] * e[i];
-			if (a[i] < (TYPE) cp_n0)
-				b[i] += d[i] * e[i];
-			c[i] += a[i] * d[i];
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S273\t %.2f \t\t", clock_dif_sec);;
-	check(123);
-	return 0;
-}
-
-// %2.7
-
-int s274()
-{
-
-//	control flow
-//	complex loop with dependent conditional
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s274 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			a[i] = c[i] + e[i] * d[i];
-			if (a[i] > (TYPE) cp_n0) {
-				b[i] = a[i] + b[i];
-			} else {
-				a[i] = d[i] * e[i];
-			}
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S274\t %.2f \t\t", clock_dif_sec);;
-	check(12);
-	return 0;
-}
-
-// %2.7
-
-int s275()
-{
-
-//	control flow
-//	if around inner loop, interchanging needed
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s275 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < 10*(ntimes/LEN2); nl++) {
-		for (int i = 0; i < LEN2; i++) {
-			if (aa[0*LEN2+i] > (TYPE) cp_n0) {
-				for (int j = 1; j < LEN2; j++) {
-					aa[j*LEN2+i] = aa[(j-1)*LEN2+i] + bb[j*LEN2+i] * cc[j*LEN2+i];
-				}
-			}
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S275\t %.2f \t\t", clock_dif_sec);;
-	check(11);
-	return 0;
-}
-
-int s2275()
-{
-
-//	loop distribution is needed to be able to interchange
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s275 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < 100*(ntimes/LEN2); nl++) {
-		for (int i = 0; i < LEN2; i++) {
-			for (int j = 0; j < LEN2; j++) {
-				aa[j*LEN2+i] = aa[j*LEN2+i] + bb[j*LEN2+i] * cc[j*LEN2+i];
-			}
-			a[i] = b[i] + c[i] * d[i];
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S2275\t %.2f \t\t", clock_dif_sec);;
-	check(11);
-	return 0;
-}
-
-// %2.7
-
-int s276()
-{
-
-//	control flow
-//	if test using loop index
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s276 ");
-	start_t = clock();
-
-	int mid = (LEN/2);
-	for (int nl = 0; nl < 4*ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			if (i+ cp_n1 < mid) {
-				a[i] += b[i] * c[i];
-			} else {
-				a[i] += b[i] * d[i];
-			}
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S276\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-// %2.7
-int s277()
-{
-
-//	control flow
-//	test for dependences arising from guard variable computation.
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s277 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes; nl++) {
-		for (int i = 0; i < LEN-1; i++) {
-				if (a[i] >= (TYPE) cp_n0) {
-					goto L20;
-				}
-				if (b[i] >= (TYPE) cp_n0) {
-					goto L30;
-				}
-				a[i] += c[i] * d[i];
-L30:
-				b[i+1] = c[i] + d[i] * e[i];
-L20:
-;
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S277\t %.2f \t\t", clock_dif_sec);;
-	check(12);
-	return 0;
-}
-
-// %2.7
-
-int s278()
-{
-
-//	control flow
-//	if/goto to block if-then-else
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s278 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			if (a[i] > (TYPE) cp_n0) {
-				goto L20;
-			}
-			b[i] = -b[i] + d[i] * e[i];
-			goto L30;
-L20:
-			c[i] = -c[i] + d[i] * e[i];
-L30:
-			a[i] = b[i] + c[i] * d[i];
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S278\t %.2f \t\t", clock_dif_sec);;
-	check(123);
-	return 0;
-}
-
-// %2.7
-
-int s279()
-{
-
-//	control flow
-//	vector if/gotos
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s279 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes/2; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			if (a[i] > (TYPE) cp_n0) {
-				goto L20;
-			}
-			b[i] = -b[i] + d[i] * d[i];
-			if (b[i] <= a[i]) {
-				goto L30;
-			}
-			c[i] += d[i] * e[i];
-			goto L30;
-L20:
-			c[i] = -c[i] + e[i] * e[i];
-L30:
-			a[i] = b[i] + c[i] * d[i];
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S279\t %.2f \t\t", clock_dif_sec);;
-	check(123);
-	return 0;
-}
-
-int s1279()
-{
-
-//	control flow
-//	vector if/gotos
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s279 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			if (a[i] < (TYPE) cp_n0) {
-				if (b[i] > a[i]) {
-					c[i] += d[i] * e[i];
-				}
-			}
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S1279\t %.2f \t\t", clock_dif_sec);;
-	check(123);
-	return 0;
-}
-
-// %2.7
-
-int s2710( TYPE x)
-{
-
-//	control flow
-//	scalar and vector ifs
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s2710");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes/2; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			if (a[i] > b[i]) {
-				a[i] += b[i] * d[i];
-				if (LEN > cp_n10) {
-					c[i] += d[i] * d[i];
-				} else {
-					c[i] = d[i] * e[i] + (TYPE)ap_n1;
-				}
-			} else {
-				b[i] = a[i] + e[i] * e[i];
-				if (x > (TYPE) cp_n0) {
-					c[i] = a[i] + d[i] * d[i];
-				} else {
-					c[i] += e[i] * e[i];
-				}
-			}
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S2710\t %.2f \t\t", clock_dif_sec);;
-	check(123);
-	return 0;
-}
-
-// %2.7
-
-int s2711()
-{
-
-//	control flow
-//	semantic if removal
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-	init( "s2711");
-	start_t = clock();
-
-	for (int nl = 0; nl < 4*ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			if (b[i] != (TYPE)cp_n0) {
-				a[i] += b[i] * c[i];
-			}
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S2711\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-// %2.7
-
-int s2712()
-{
-
-//	control flow
-//	if to elemental min
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s2712");
-	start_t = clock();
-
-	for (int nl = 0; nl < 4*ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			if (a[i] > b[i]) {
-				a[i] += b[i] * c[i];
-			}
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S2712\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-#endif // CONTROL_FLOW
-
 #if CROSSING_THRESHOLDS
 
 // %2.8

@@ -53,7 +53,7 @@ def add_box(ax, name, values, labels):
 
     mean = np.mean([v for v in values if not np.isnan(v)])
     ax.axhline(mean,0,1,color='black',linestyle="--")
-    ax.text(0.1, mean+0.05, "Avg. Mean = " + "{:.2f}".format(mean), ha='center', va='bottom', fontsize=10)
+    ax.text(0.5, mean+0.05, "Avg. Mean = " + "{:.2f}".format(mean), ha='center', va='bottom', fontsize=10)
     ax.set_ylim(bottom=0, top=16)
     ax.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
     ax.set_xlabel(name.title().replace("_","\n"), rotation=-15)
@@ -67,15 +67,35 @@ def plot_chart(charts, labels, values, outputfile, ylabel='Vector efficiency' ):
     #Find existing elements
     fig, axis = plt.subplots(1,len(charts) + 1)
 
+    for ax in axis:
+        ax.set_facecolor('none')
+
     for ax, c, v in zip(axis[:-1],list(charts),list(values)):
         add_box(ax, c, v, labels) 
 
+    for idx, val in enumerate(labels):
+        axis[-1].text(0.3,idx*(1/len(labels)),val, ha='left', va='bottom', fontsize=10)
+    
+    for ax in axis:
+        ax.set_facecolor('none')
+
+   
+
     xy = (0.5,12)
-    con = ConnectionPatch(xyA=xy, xyB=xy, coordsA="data",coordsB="data", axesA=axis[0], axesB=axis[1], color="red")
+    con = ConnectionPatch(xyA=xy, xyB=xy, coordsA="data",coordsB="data", axesA=axis[1], axesB=axis[2], color="red")
     axis[1].add_artist(con)
+    xy = (0.5,11)
+    con = ConnectionPatch(xyA=xy, xyB=xy, coordsA="data",coordsB="data", axesA=axis[0], axesB=axis[1], color="red")
+    axis[0].add_artist(con)
+    
+    xy = (1,6)
+    xy2 = (0.1,0.25)
+    con = ConnectionPatch(xyA=xy, xyB=xy2, coordsA="data",coordsB="data", axesA=axis[2], axesB=axis[3], color="red", connectionstyle="arc,angleA=0,angleB=-180,armA=90,armB=45,rad=0")
+    #con = ConnectionPatch(xyA=xy, xyB=xy, coordsA="data",coordsB="data", axesA=axis[2], axesB=axis[3], color="red", connectionstyle="bar,angle=180,fraction=-0.2")
+    axis[2].add_artist(con)
     
 
-   #for ax, ax2, v, v2 in zip():
+        #for ax, ax2, v, v2 in zip():
 
     # Remove all labels but leftmost
     axis[0].set_ylabel(ylabel)
@@ -84,7 +104,6 @@ def plot_chart(charts, labels, values, outputfile, ylabel='Vector efficiency' ):
 
     # Remove rightmost box to place the legend
     axis[-1].axis('off')
-    axis[-2].legend(loc="center left", bbox_to_anchor=(1.2,0.5), fontsize = 'small')
 
     fig.suptitle('Test auto-vectorization')
     fig.set_size_inches(9,6)
