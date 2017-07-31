@@ -58,7 +58,7 @@ def add_box(ax, name, values, labels):
     ax.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
     ax.set_xlabel(name.title().replace("_","\n"), rotation=-15)
 
-def plot_chart(charts, labels, values, outputfile, ylabel='Vector efficiency' ):
+def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization", ylabel='Vector efficiency' ):
 
     if len(list(values)) != len(list(charts)):
         print("Error: Inconsistent number of charts/values")
@@ -73,28 +73,28 @@ def plot_chart(charts, labels, values, outputfile, ylabel='Vector efficiency' ):
     for ax, c, v in zip(axis[:-1],list(charts),list(values)):
         add_box(ax, c, v, labels) 
 
-    for idx, val in enumerate(labels):
-        axis[-1].text(0.3,idx*(1/len(labels)),val, ha='left', va='bottom', fontsize=10)
+    for idx, (val,lab) in enumerate(sorted(zip(values[-1],labels))):
+        v_loc = idx*(1/len(labels))
+        axis[-1].text(0.22,v_loc,lab, ha='left', va='center', fontsize=10)
+        xy = (1,val)
+        xy2 = (0.2,v_loc)
+        con = ConnectionPatch(xyA=xy, xyB=xy2, coordsA="data",coordsB="data", axesA=axis[-2], axesB=axis[-1], color=palette[lab], connectionstyle="arc,angleA=-180,angleB=-180,armA=-20,armB=20,rad=0")
+        axis[-2].add_artist(con)
     
+
     for ax in axis:
         ax.set_facecolor('none')
 
    
 
-    xy = (0.5,12)
-    con = ConnectionPatch(xyA=xy, xyB=xy, coordsA="data",coordsB="data", axesA=axis[1], axesB=axis[2], color="red")
-    axis[1].add_artist(con)
-    xy = (0.5,11)
-    con = ConnectionPatch(xyA=xy, xyB=xy, coordsA="data",coordsB="data", axesA=axis[0], axesB=axis[1], color="red")
-    axis[0].add_artist(con)
+    #xy = (0.5,12)
+    #con = ConnectionPatch(xyA=xy, xyB=xy, coordsA="data",coordsB="data", axesA=axis[1], axesB=axis[2], color="red")
+    #axis[1].add_artist(con)
+    #xy = (0.5,11)
+    #con = ConnectionPatch(xyA=xy, xyB=xy, coordsA="data",coordsB="data", axesA=axis[0], axesB=axis[1], color="red")
+    #axis[0].add_artist(con)
     
-    xy = (1,6)
-    xy2 = (0.1,0.25)
-    con = ConnectionPatch(xyA=xy, xyB=xy2, coordsA="data",coordsB="data", axesA=axis[2], axesB=axis[3], color="red", connectionstyle="arc,angleA=0,angleB=-180,armA=90,armB=45,rad=0")
-    #con = ConnectionPatch(xyA=xy, xyB=xy, coordsA="data",coordsB="data", axesA=axis[2], axesB=axis[3], color="red", connectionstyle="bar,angle=180,fraction=-0.2")
-    axis[2].add_artist(con)
     
-
         #for ax, ax2, v, v2 in zip():
 
     # Remove all labels but leftmost
@@ -105,7 +105,17 @@ def plot_chart(charts, labels, values, outputfile, ylabel='Vector efficiency' ):
     # Remove rightmost box to place the legend
     axis[-1].axis('off')
 
-    fig.suptitle('Test auto-vectorization')
+    # We need to draw the canvas, otherwise the labels won't be positioned and 
+    # won't have values yet.
+    fig.canvas.draw()
+
+    labels = axis[0].get_yticks().tolist()
+    print(labels)
+    labels[-1] = '(AVX512 vector length) ' + str(labels[-1])
+    print(labels)
+    axis[0].set_xticklabels(labels)
+
+    fig.suptitle(title)
     fig.set_size_inches(9,6)
     plt.savefig(outputfile, dpi=100)
 
@@ -165,7 +175,7 @@ def plot_compilers(data, output, title="", speedup_vs=None):
     for cat in all_categories(data): 
         labs.append(cat)
         vals2 = []
-        for comp in data.keys():
+        for comp in ['icc_unsafe']:# data.keys():
             par = 'original'
             if speedup_vs != None:
                 baseline = np.mean([x[0] for x in data[speedup_vs][cat][par].values()])
@@ -176,8 +186,8 @@ def plot_compilers(data, output, title="", speedup_vs=None):
 
     vals = [list(i) for i in zip(*vals)]
     labs = [x.title().replace("_"," ") for x in labs]
-    char = [x.split("_")[0] for x in data.keys()]
-    plot_chart(char, labs , vals, output, ylabel = title)
+    char = ['icc 16']#[x.split("_")[0] for x in data.keys()]
+    plot_chart(char, labs , vals, output, title=title, ylabel = "Vector Efficiency")
 
 def plot_categories(data, comp, output, title="", speedup=False):
     labs = []
@@ -198,7 +208,7 @@ def plot_categories(data, comp, output, title="", speedup=False):
 
     vals = [list(i) for i in zip(*vals)]
     labs = [x.title().replace("_"," ") for x in labs]
-    plot_chart(char, labs , vals, output, ylabel = title)
+    plot_chart(char, labs , vals, output, title=title, ylabel = "Vector Efficiency")
 
 
  
