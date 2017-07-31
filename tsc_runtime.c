@@ -27,6 +27,9 @@
 #define RUNTIME_ARITHMETIC_PARAMETERS 1
 #define RUNTIME_INDEX_PARAMETERS 1
 #define CONDITION_EVAL_PARAMETERS 1
+#define RESTRICT_ATTRIBUTE 1
+#define ALIGNMENT_ATTRIBUTE 1
+#define INLINE_FUNCTIONS 1
 */
 
 #include <stdlib.h>
@@ -48,6 +51,7 @@ static int digits = digits_default;
 // Type can not be changes without adaption load_parameters
 #ifndef TYPE
 #define TYPE float
+#define USE_FLOAT_TRIG
 #endif
 
 #ifndef X_TYPE
@@ -197,16 +201,6 @@ TYPE sum1d(TYPE * arr){
 	for (int i = 0; i < LEN; i++)
 		ret += arr[i];
 	return ret;
-}
-
-static inline int s471s(void)
-{
-// --  dummy subroutine call made in s471
-	return 0;
-}
-
-static inline TYPE f(TYPE a, TYPE b){
-	return a*b;
 }
 
 void check(int name){
@@ -1480,6 +1474,34 @@ int s128()
 	return 0;
 }
 
+int s453()
+{
+
+//	induction varibale recognition
+
+	TYPE s;
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s453 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes*2; nl++) {
+		s = 0.;
+		for (int i = 0; i < LEN; i++) {
+			s += (TYPE)ap_n2;
+			a[i] = s * b[i];
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S453\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
+
 #endif //  INDUCTION_VARIABLE
 
 // %1.3
@@ -1635,6 +1657,160 @@ int s152()
 	check(1);
 	return 0;
 }
+
+int s431()
+{
+
+//	parameters
+//	parameter statement
+
+	int k1=1;
+	int k2=2;
+	int k=2*k1-k2;
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s431 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes*10; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			a[i] = a[i+k] + b[i];
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S431\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
+
+int s451()
+{
+
+//	intrinsic functions
+//	intrinsics
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s451 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes/5; nl++) {
+		for (int i = 0; i < LEN; i++) {
+#ifdef USE_FLOAT_TRIG
+			a[i] = sinf(b[i]) + cosf(c[i]);
+#else
+			a[i] = sin(b[i]) + cos(c[i]);
+#endif
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S451\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
+// %4.5
+
+int s452()
+{
+
+//	intrinsic functions
+//	seq function
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s452 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < 4*ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			a[i] = b[i] + c[i] * (TYPE) (i+1);
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S452\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
+static inline int s471s(void)
+{
+// --  dummy subroutine call made in s471
+	return 0;
+}
+
+int s471(){
+
+//	call statements
+
+	int m = LEN;
+	set1d(x, 0., 1);
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s471 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes/2; nl++) {
+		for (int i = 0; i < m; i++) {
+			x[i] = b[i] + d[i] * d[i];
+			s471s();
+			b[i] = c[i] + d[i] * e[i];
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S471\t %.2f \t\t", clock_dif_sec);;
+	temp = 0.;
+	for (int i = 0; i < LEN; i++){
+		temp += x[i];
+	}
+	check(-12);
+	return 0;
+}
+
+
+static inline TYPE f(TYPE a, TYPE b){
+	return a*b;
+}
+
+int s4121()
+{
+
+//	statement functions
+//	elementwise multiplication
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s4121");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			a[i] += f(b[i],c[i]);
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S4121\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
+
 
 #endif // GLOBAL_DATA_FLOW
 
@@ -2184,6 +2360,179 @@ int s2712()
 	check(1);
 	return 0;
 }
+
+int s441()
+{
+
+//	non-logical if's
+//	arithmetic if
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s441 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			if (d[i] < (TYPE)cp_n0) {
+				a[i] += b[i] * c[i];
+			} else if (d[i] == (TYPE)cp_n0) {
+				a[i] += b[i] * b[i];
+			} else {
+				a[i] += c[i] * c[i];
+			}
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S441\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
+// %4.4
+
+int s442()
+{
+
+//	non-logical if's
+//	computed goto
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s442 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes/2; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			switch (indx[i]) {
+				case 1:  goto L15;
+				case 2:  goto L20;
+				case 3:  goto L30;
+				case 4:  goto L40;
+			}
+L15:
+			a[i] += b[i] * b[i];
+			goto L50;
+L20:
+			a[i] += c[i] * c[i];
+			goto L50;
+L30:
+			a[i] += d[i] * d[i];
+			goto L50;
+L40:
+			a[i] += e[i] * e[i];
+L50:
+			;
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S442\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
+// %4.4
+
+int s443()
+{
+
+//	non-logical if's
+//	arithmetic if
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s443 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < 2*ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			if (d[i] <= (TYPE)cp_n0) {
+				goto L20;
+			} else {
+				goto L30;
+			}
+L20:
+			a[i] += b[i] * c[i];
+			goto L50;
+L30:
+			a[i] += b[i] * b[i];
+L50:
+			;
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S443\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
+int s481()
+{
+
+//	non-local goto's
+//	stop statement
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s481 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			if (d[i] < (TYPE)cp_n0) {
+				exit (0);
+			}
+			a[i] += b[i] * c[i];
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S481\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
+// %4.8
+
+// %4.8
+int s482()
+{
+
+//	non-local goto's
+//	other loop exit with code before exit
+
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+
+
+	init( "s482 ");
+	start_t = clock();
+
+	for (int nl = 0; nl < ntimes; nl++) {
+		for (int i = 0; i < LEN; i++) {
+			a[i] += b[i] * c[i];
+			if (c[i] > b[i]) break;
+		}
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
+	}
+	end_t = clock(); clock_dif = end_t - start_t;
+	clock_dif_sec = (double) (clock_dif/1000000.0);
+	printf("S482\t %.2f \t\t", clock_dif_sec);;
+	check(1);
+	return 0;
+}
+
+
 
 #endif // CONTROL_FLOW
 
@@ -4573,354 +4922,7 @@ int s424()
 }
 
 #endif // EQUIVALENCING
-// %4.3
 
-#if GLOBAL_DATA_FLOW
-
-int s431()
-{
-
-//	parameters
-//	parameter statement
-
-	int k1=1;
-	int k2=2;
-	int k=2*k1-k2;
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s431 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes*10; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			a[i] = a[i+k] + b[i];
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S431\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-#endif // GLOBAL_DATA_FLOW
-// %4.4
-
-#if CONTROL_FLOW
-
-int s441()
-{
-
-//	non-logical if's
-//	arithmetic if
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s441 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			if (d[i] < (TYPE)cp_n0) {
-				a[i] += b[i] * c[i];
-			} else if (d[i] == (TYPE)cp_n0) {
-				a[i] += b[i] * b[i];
-			} else {
-				a[i] += c[i] * c[i];
-			}
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S441\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-// %4.4
-
-int s442()
-{
-
-//	non-logical if's
-//	computed goto
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s442 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes/2; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			switch (indx[i]) {
-				case 1:  goto L15;
-				case 2:  goto L20;
-				case 3:  goto L30;
-				case 4:  goto L40;
-			}
-L15:
-			a[i] += b[i] * b[i];
-			goto L50;
-L20:
-			a[i] += c[i] * c[i];
-			goto L50;
-L30:
-			a[i] += d[i] * d[i];
-			goto L50;
-L40:
-			a[i] += e[i] * e[i];
-L50:
-			;
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S442\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-// %4.4
-
-int s443()
-{
-
-//	non-logical if's
-//	arithmetic if
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s443 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < 2*ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			if (d[i] <= (TYPE)cp_n0) {
-				goto L20;
-			} else {
-				goto L30;
-			}
-L20:
-			a[i] += b[i] * c[i];
-			goto L50;
-L30:
-			a[i] += b[i] * b[i];
-L50:
-			;
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S443\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-#endif // CONTROL_FLOW
-
-#if GLOBAL_DATA_FLOW
-
-// %4.5
-
-int s451()
-{
-
-//	intrinsic functions
-//	intrinsics
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s451 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes/5; nl++) {
-		for (int i = 0; i < LEN; i++) {
-#ifdef USE_FLOAT_TRIG
-			a[i] = sinf(b[i]) + cosf(c[i]);
-#else
-			a[i] = sin(b[i]) + cos(c[i]);
-#endif
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S451\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-// %4.5
-
-int s452()
-{
-
-//	intrinsic functions
-//	seq function
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s452 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < 4*ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			a[i] = b[i] + c[i] * (TYPE) (i+1);
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S452\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-#endif // GLOBAL_DATA_FLOW
-
-#if INDUCTION_VARIABLE
-
-// %4.5
-
-int s453()
-{
-
-//	induction varibale recognition
-
-	TYPE s;
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s453 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes*2; nl++) {
-		s = 0.;
-		for (int i = 0; i < LEN; i++) {
-			s += (TYPE)ap_n2;
-			a[i] = s * b[i];
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S453\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-#endif // INDUCTION_VARIABLE
-
-// %4.7
-
-#if GLOBAL_DATA_FLOW
-
-int s471(){
-
-//	call statements
-
-	int m = LEN;
-	set1d(x, 0., 1);
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s471 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes/2; nl++) {
-		for (int i = 0; i < m; i++) {
-			x[i] = b[i] + d[i] * d[i];
-			s471s();
-			b[i] = c[i] + d[i] * e[i];
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S471\t %.2f \t\t", clock_dif_sec);;
-	temp = 0.;
-	for (int i = 0; i < LEN; i++){
-		temp += x[i];
-	}
-	check(-12);
-	return 0;
-}
-
-#endif // GLOBAL_DATA_FLOW
-
-#if CONTROL_FLOW
-
-// %4.8
-
-int s481()
-{
-
-//	non-local goto's
-//	stop statement
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s481 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			if (d[i] < (TYPE)cp_n0) {
-				exit (0);
-			}
-			a[i] += b[i] * c[i];
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S481\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-// %4.8
-
-// %4.8
-int s482()
-{
-
-//	non-local goto's
-//	other loop exit with code before exit
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s482 ");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			a[i] += b[i] * c[i];
-			if (c[i] > b[i]) break;
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S482\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-
-#endif // CONTROL_FLOW
 
 int min(int a, int b){
   return (a < b) ? a : b;
@@ -5134,37 +5136,6 @@ int s4117()
 }
 
 #endif // INDIRECT_ADDRESSING
-
-#if GLOBAL_DATA_FLOW
-
-// %4.12
-
-int s4121()
-{
-
-//	statement functions
-//	elementwise multiplication
-
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
-
-
-	init( "s4121");
-	start_t = clock();
-
-	for (int nl = 0; nl < ntimes; nl++) {
-		for (int i = 0; i < LEN; i++) {
-			a[i] += f(b[i],c[i]);
-		}
-		dummy(a, b, c, d, e, aa, bb, cc, 0.);
-	}
-	end_t = clock(); clock_dif = end_t - start_t;
-	clock_dif_sec = (double) (clock_dif/1000000.0);
-	printf("S4121\t %.2f \t\t", clock_dif_sec);;
-	check(1);
-	return 0;
-}
-
-#endif // GLOBAL_DATA_FLOW
 
 #if CONTROL_LOOPS
 
