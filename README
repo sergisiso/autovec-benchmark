@@ -1,0 +1,6 @@
+Extended TSVC test
+
+References:
+- http://polaris.cs.uiuc.edu/~maleki1/TSVC.tar.gz
+- https://github.com/llvm-mirror/test-suite/blob/master/MultiSource/Benchmarks/TSVC/tsc.inc
+- https://github.com/UoB-HPC/TSVC_2/
