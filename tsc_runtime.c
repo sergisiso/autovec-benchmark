@@ -58,21 +58,34 @@ static int digits = digits_default;
 #define X_TYPE TYPE
 #endif
 
-#ifndef ALIGNMENT
-#define ALIGNMENT 16
+#define ALIGNMENT 64
+#if defined(ALIGNMENT_ATTRIBUTE)
+    #define ALIGN __attribute__ ((aligned(ALIGNMENT))) 
+#else
+    #define ALIGN 
 #endif
 
+
+#if defined(RESTRICT_ATTRIBUTE)
+    #define RESTRICT __restrict__
+#endif
 
 #if defined(RUNTIME_LOOP_BOUNDS_PARAMETERS)
     int LEN;
     int LEN2;
     int lll;
+    int bp_n0;
+    int bp_n1;
     int bp_n4;
+    int bp_n5;
 #else
     #define LEN 32000
     #define LEN2 256
     #define lll LEN
+    #define bp_n0 0
+    #define bp_n1 1
     #define bp_n4 4
+    #define bp_n5 5
 #endif
 
 #if defined(RUNTIME_ARITHMETIC_PARAMETERS)
@@ -95,10 +108,20 @@ static int digits = digits_default;
 
 #if defined(RUNTIME_INDEX_PARAMETERS)
     int ip_n0;
+    int ip_n1;
     int ip_n_2;
+    int ip_n2;
+    int ip_n3;
+    int ip_n4;
+    int ip_n5;
 #else
     #define ip_n0 0
-    #define ip_n_2 0
+    #define ip_n1 1
+    #define ip_n_2 -2
+    #define ip_n2 2
+    #define ip_n3 3
+    #define ip_n4 4
+    #define ip_n5 5
 #endif
 
 #if defined(CONDITION_EVAL_PARAMETERS)
@@ -116,21 +139,19 @@ static int digits = digits_default;
 
 
 //Declare arrays with but don't allocate them
-__attribute__ ((aligned(ALIGNMENT))) X_TYPE * X,* Y, * Z, * U, * V; //size lll
-TYPE * array __attribute__((aligned(ALIGNMENT))); // size LEN2*LEN2
-TYPE * x __attribute__((aligned(ALIGNMENT))); //size LEN
-__attribute__((aligned(ALIGNMENT))) TYPE * a, * b, * c, * d, * e; //size LEN
-__attribute__((aligned(ALIGNMENT))) TYPE * aa, * bb, * cc, * tt; //size LEN2*LEN2
-int * indx __attribute__((aligned(ALIGNMENT))); // size LEN
+ALIGN RESTRICT X_TYPE * X,* Y, * Z, * U, * V; //size lll
+ALIGN RESTRICT TYPE * array; // size LEN2*LEN2
+ALIGN RESTRICT TYPE * x __attribute__((aligned(ALIGNMENT))); //size LEN
+ALIGN RESTRICT TYPE * a, * b, * c, * d, * e; //size LEN
+ALIGN RESTRICT TYPE * aa, * bb, * cc, * tt; //size LEN2*LEN2
+ALIGN RESTRICT int * indx; // size LEN
 
 TYPE temp;
 int temp_int;
-TYPE* __restrict__ xx;
-TYPE* yy;
+ALIGN RESTICT TYPE* xx;
+ALIGN RESTRICT TYPE* yy;
 
-//int dummy(TYPE[LEN], TYPE[LEN], TYPE[LEN], TYPE[LEN], TYPE[LEN], TYPE[LEN2][LEN2], TYPE[LEN2][LEN2], TYPE[LEN2][LEN2], TYPE);
 int dummy(TYPE *, TYPE *, TYPE *, TYPE *, TYPE *, TYPE *, TYPE *, TYPE*, TYPE);
-
 int dummy_media(short[], char[], int);
 
 int set1d(TYPE * arr, TYPE value, int stride)
@@ -834,8 +855,6 @@ int s000()
 
 	for (int nl = 0; nl < 2*ntimes; nl++) {
 		for (int i = 0; i < lll; i++) {
-//			a[i] = b[i] + c[i];
-//			X[i] = (Y[i] * Z[i])+(U[i]*V[i]);
 			X[i] = Y[i] + ap_n1;
 		}
 		dummy((TYPE*)X, (TYPE*)Y, (TYPE*)Z, (TYPE*)U, (TYPE*)V, aa, bb, cc, 0.);
@@ -861,9 +880,8 @@ int s111()
 	start_t = clock();
 
 	for (int nl = 0; nl < 2*ntimes; nl++) {
-//		#pragma vector always
 		for (int i = 1; i < LEN; i += 2) {
-			a[i] = a[i - 1] + b[i];
+			a[i] = a[i - ip_n1] + b[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -886,7 +904,7 @@ int s1111()
 	start_t = clock();
 	for (int nl = 0; nl < 2*ntimes; nl++) {
 		for (int i = 0; i < LEN/2; i++) {
-			a[2*i] = c[i] * b[i] + d[i] * b[i] + c[i] * c[i] + d[i] * b[i] + d[i] * c[i];
+			a[ip_n2*i] = c[i] * b[i] + d[i] * b[i] + c[i] * c[i] + d[i] * b[i] + d[i] * c[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -913,9 +931,8 @@ int s112()
 	start_t = clock();
 
 	for (int nl = 0; nl < 3*ntimes; nl++) {
-//		#pragma vector always
-		for (int i = LEN - 2; i >= 0; i--) {
-			a[i+1] = a[i] + b[i];
+		for (int i = LEN - 2; i >= bp_n0; i--) {
+			a[i+ip_n1] = a[i] + b[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -940,7 +957,7 @@ int s1112()
 	start_t = clock();
 
 	for (int nl = 0; nl < ntimes*3; nl++) {
-		for (int i = LEN - 1; i >= 0; i--) {
+		for (int i = LEN - 1; i >= bp_n0; i--) {
 			a[i] = b[i] + (TYPE) ap_n1;
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -968,8 +985,8 @@ int s113()
 	start_t = clock();
 
 	for (int nl = 0; nl < 4*ntimes; nl++) {
-		for (int i = 1; i < LEN; i++) {
-			a[i] = a[0] + b[i];
+		for (int i = bp_n1; i < LEN; i++) {
+			a[i] = a[ip_n0] + b[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -994,7 +1011,7 @@ int s1113()
 
 	for (int nl = 0; nl < 2*ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			a[i] = a[LEN/2] + b[i];
+			a[i] = a[LEN/ip_n2] + b[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -1052,7 +1069,7 @@ int s115()
 
 	for (int nl = 0; nl < 1000*(ntimes/LEN2); nl++) {
 		for (int j = 0; j < LEN2; j++) {
-			for (int i = j+1; i < LEN2; i++) {
+			for (int i = j+bp_n1; i < LEN2; i++) {
 				a[i] -= aa[j*LEN2+i] * a[j];
 			}
 		}
@@ -1106,12 +1123,12 @@ int s116()
 	start_t = clock();
 
 	for (int nl = 0; nl < ntimes*10; nl++) {
-		for (int i = 0; i < LEN - 5; i += 5) {
-			a[i] = a[i + 1] * a[i];
-			a[i + 1] = a[i + 2] * a[i + 1];
-			a[i + 2] = a[i + 3] * a[i + 2];
-			a[i + 3] = a[i + 4] * a[i + 3];
-			a[i + 4] = a[i + 5] * a[i + 4];
+		for (int i = 0; i < LEN - bp_n5; i += bp_n5) {
+			a[i] = a[i + ip_n1] * a[i];
+			a[i + ip_n1] = a[i + ip_n2] * a[i + ip_n1];
+			a[i + ip_n2] = a[i + ip_n3] * a[i + ip_n2];
+			a[i + ip_n3] = a[i + ip_n4] * a[i + ip_n3];
+			a[i + ip_n4] = a[i + ip_n5] * a[i + ip_n4];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -1138,8 +1155,8 @@ int s118()
 
 	for (int nl = 0; nl < 200*(ntimes/LEN2); nl++) {
 		for (int i = 1; i < LEN2; i++) {
-			for (int j = 0; j <= i - 1; j++) {
-				a[i] += bb[j*LEN2+i] * a[i-j-1];
+			for (int j = 0; j <= i - bp_n1; j++) {
+				a[i] += bb[j*LEN2+i] * a[i-j-ip_n1];
 			}
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -1168,7 +1185,7 @@ int s119()
 	for (int nl = 0; nl < 200*(ntimes/(LEN2)); nl++) {
 		for (int i = 1; i < LEN2; i++) {
 			for (int j = 1; j < LEN2; j++) {
-				aa[i*LEN2+j] = aa[(i-1)*LEN2+(j-1)] + bb[i*LEN2+j];
+				aa[i*LEN2+j] = aa[(i-ip_n1)*LEN2+(j-ip_n1)] + bb[i*LEN2+j];
 			}
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -1197,7 +1214,7 @@ int s1119()
 	for (int nl = 0; nl < 200*(ntimes/(LEN2)); nl++) {
 		for (int i = 1; i < LEN2; i++) {
 			for (int j = 0; j < LEN2; j++) {
-				aa[i*LEN2+j] = aa[(i-1)*LEN2+j] + bb[i*LEN2+j];
+				aa[i*LEN2+j] = aa[(i-ip_n1)*LEN2+j] + bb[i*LEN2+j];
 			}
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -1231,8 +1248,8 @@ int s121()
 
 	int j;
 	for (int nl = 0; nl < 3*ntimes; nl++) {
-		for (int i = 0; i < LEN-1; i++) {
-			j = i + 1;
+		for (int i = 0; i < LEN-bp_n1; i++) {
+			j = i + ip_n1;
 			a[i] = a[j] + b[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -1261,9 +1278,9 @@ int s122(int n1, int n3)
 
 	int j, k;
 	for (int nl = 0; nl < ntimes; nl++) {
-		j = 1;
-		k = 0;
-		for (int i = n1-1; i < LEN; i += n3) {
+		j = ip_n1;
+		k = ip_n0;
+		for (int i = n1-bp_n1; i < LEN; i += n3) {
 			k += j;
 			a[i] += b[LEN - k];
 		}
@@ -1395,7 +1412,7 @@ int s126()
 		k = 1;
 		for (int i = 0; i < LEN2; i++) {
 			for (int j = 1; j < LEN2; j++) {
-				bb[j*LEN2+i] = bb[(j-1)*LEN2+i] + array[k-1] * cc[j*LEN2+i];
+				bb[j*LEN2+i] = bb[(j-ip_n1)*LEN2+i] + array[k-ip_n1] * cc[j*LEN2+i];
 				++k;
 			}
 			++k;
@@ -1460,9 +1477,9 @@ int s128()
 	for (int nl = 0; nl < 2*ntimes; nl++) {
 		j = -1;
 		for (int i = 0; i < LEN/2; i++) {
-			k = j + 1;
+			k = j + ip_n1;
 			a[i] = b[k] - d[i];
-			j = k + 1;
+			j = k + ip_n1;
 			b[k] = a[i] + c[k];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 1.);
@@ -1519,7 +1536,7 @@ int s131()
 	init( "s131 ");
 	start_t = clock();
 
-	int m  = 1;
+	int m  = ip_n1;
 	for (int nl = 0; nl < 5*ntimes; nl++) {
 		for (int i = 0; i < LEN - 1; i++) {
 			a[i] = a[i + m] + b[i];
@@ -1579,10 +1596,10 @@ int s141()
 	int k;
 	for (int nl = 0; nl < 200*(ntimes/LEN2); nl++) {
 		for (int i = 0; i < LEN2; i++) {
-			k = (i+1) * ((i+1) - 1) / 2 + (i+1)-1;
+			k = (i+ip_n1) * ((i+ip_n1) - ip_n1) / ip_n2 + (i+ip_n1)-ip_n1;
 			for (int j = i; j < LEN2; j++) {
 				array[k] += bb[j*LEN2+i];
-				k += j+1;
+				k += j+ip_n1;
 			}
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -1615,7 +1632,7 @@ int s151()
 	start_t = clock();
 
 	for (int nl = 0; nl < 5*ntimes; nl++) {
-		s151s(a, b,  1);
+		s151s(a, b, ip_n1);
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
@@ -1664,8 +1681,8 @@ int s431()
 //	parameters
 //	parameter statement
 
-	int k1=1;
-	int k2=2;
+	int k1=ip_n1;
+	int k2=ip_n2;
 	int k=2*k1-k2;
 	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
 
@@ -1732,7 +1749,7 @@ int s452()
 
 	for (int nl = 0; nl < 4*ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			a[i] = b[i] + c[i] * (TYPE) (i+1);
+			a[i] = b[i] + c[i] * (TYPE) (i+ap_n1);
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -1839,7 +1856,7 @@ int s161()
 			a[i] = c[i] + d[i] * e[i];
 			goto L10;
 L20:
-			c[i+1] = a[i] + d[i] * d[i];
+			c[i+ip_n1] = a[i] + d[i] * d[i];
 L10:
 			;
 		}
@@ -2050,9 +2067,9 @@ int s275()
 
 	for (int nl = 0; nl < 10*(ntimes/LEN2); nl++) {
 		for (int i = 0; i < LEN2; i++) {
-			if (aa[0*LEN2+i] > (TYPE) cp_n0) {
+			if (aa[ip_n0*LEN2+i] > (TYPE) cp_n0) {
 				for (int j = 1; j < LEN2; j++) {
-					aa[j*LEN2+i] = aa[(j-1)*LEN2+i] + bb[j*LEN2+i] * cc[j*LEN2+i];
+					aa[j*LEN2+i] = aa[(j-ip_n1)*LEN2+i] + bb[j*LEN2+i] * cc[j*LEN2+i];
 				}
 			}
 		}
@@ -2109,7 +2126,7 @@ int s276()
 	int mid = (LEN/2);
 	for (int nl = 0; nl < 4*ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			if (i+ cp_n1 < mid) {
+			if (i + cp_n1 < mid) {
 				a[i] += b[i] * c[i];
 			} else {
 				a[i] += b[i] * d[i];
@@ -2147,7 +2164,7 @@ int s277()
 				}
 				a[i] += c[i] * d[i];
 L30:
-				b[i+1] = c[i] + d[i] * e[i];
+				b[i+ip_n1] = c[i] + d[i] * e[i];
 L20:
 ;
 		}
@@ -2271,7 +2288,7 @@ int s2710( TYPE x)
 //	control flow
 //	scalar and vector ifs
 
-	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
+	clock_t start_t, end_1t, clock_dif; double clock_dif_sec;
 
 
 	init( "s2710");
@@ -2690,7 +2707,7 @@ int s176()
 	for (int nl = 0; nl < 4*(ntimes/LEN); nl++) {
 		for (int j = 0; j < (LEN/2); j++) {
 			for (int i = 0; i < m; i++) {
-				a[i] += b[i+m-j-1] * c[j];
+				a[i] += b[i+m-j-ip_n1] * c[j];
 			}
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -2703,12 +2720,6 @@ int s176()
 }
 
 #endif // SYMBOLICS
-
-// **********************************************************
-// *							    *
-// *			VECTORIZATION			    *
-// *							    *
-// **********************************************************
 
 #if STATEMENT_REORDERING
 
@@ -2728,8 +2739,8 @@ int s211()
 
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 1; i < LEN-1; i++) {
-			a[i] = b[i - 1] + c[i] * d[i];
-			b[i] = b[i + 1] - e[i] * d[i];
+			a[i] = b[i - ip_n1] + c[i] * d[i];
+			b[i] = b[i + ip_n1] - e[i] * d[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -2780,8 +2791,8 @@ int s1213()
 
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 1; i < LEN-1; i++) {
-			a[i] = b[i-1]+c[i];
-			b[i] = a[i+1]*d[i];
+			a[i] = b[i-ip_n1]+c[i];
+			b[i] = a[i+ip_n1]*d[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -2813,7 +2824,7 @@ int s221()
 	for (int nl = 0; nl < ntimes/2; nl++) {
 		for (int i = 1; i < LEN; i++) {
 			a[i] += c[i] * d[i];
-			b[i] = b[i - 1] + a[i] + d[i];
+			b[i] = b[i - ip_n1] + a[i] + d[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -2837,7 +2848,7 @@ int s1221()
 
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 4; i < LEN; i++) {
-			b[i] = b[i - 4] + a[i];
+			b[i] = b[i - ip_n4] + a[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -2865,7 +2876,7 @@ int s222()
 	for (int nl = 0; nl < ntimes/2; nl++) {
 		for (int i = 1; i < LEN; i++) {
 			a[i] += b[i] * c[i];
-			e[i] = e[i - 1] * e[i - 1];
+			e[i] = e[i - ip_n1] * e[i - ip_n1];
 			a[i] -= b[i] * c[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -2893,7 +2904,7 @@ int s231()
 	for (int nl = 0; nl < 100*(ntimes/LEN2); nl++) {
 		for (int i = 0; i < LEN2; ++i) {
 			for (int j = 1; j < LEN2; j++) {
-				aa[j*LEN2+i] = aa[(j - 1)*LEN2+i] + bb[j*LEN2+i];
+				aa[j*LEN2+i] = aa[(j - ip_n1)*LEN2+i] + bb[j*LEN2+i];
 			}
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -2922,7 +2933,7 @@ int s232()
 	for (int nl = 0; nl < 100*(ntimes/(LEN2)); nl++) {
 		for (int j = 1; j < LEN2; j++) {
 			for (int i = 1; i <= j; i++) {
-				aa[j*LEN2+i] = aa[j*LEN2+(i-1)]*aa[j*LEN2+(i-1)]+bb[j*LEN2+i];
+				aa[j*LEN2+i] = aa[j*LEN2+(i-ip_n1)]*aa[j*LEN2+(i-ip_n1)]+bb[j*LEN2+i];
 			}
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 1.);
@@ -2978,10 +2989,10 @@ int s233()
 	for (int nl = 0; nl < 100*(ntimes/LEN2); nl++) {
 		for (int i = 1; i < LEN2; i++) {
 			for (int j = 1; j < LEN2; j++) {
-				aa[j*LEN2+i] = aa[(j-1)*LEN2+i] + cc[j*LEN2+i];
+				aa[j*LEN2+i] = aa[(j-ip_n1)*LEN2+i] + cc[j*LEN2+i];
 			}
 			for (int j = 1; j < LEN2; j++) {
-				bb[j*LEN2+i] = bb[j*LEN2+(i-1)] + cc[j*LEN2+i];
+				bb[j*LEN2+i] = bb[j*LEN2+(i-ip_n1)] + cc[j*LEN2+i];
 			}
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -3008,10 +3019,10 @@ int s2233()
 	for (int nl = 0; nl < 100*(ntimes/LEN2); nl++) {
 		for (int i = 1; i < LEN2; i++) {
 			for (int j = 1; j < LEN2; j++) {
-				aa[j*LEN2+i] = aa[(j-1)*LEN2+i] + cc[j*LEN2+i];
+				aa[j*LEN2+i] = aa[(j-ip_n1)*LEN2+i] + cc[j*LEN2+i];
 			}
 			for (int j = 1; j < LEN2; j++) {
-				bb[i*LEN2+j] = bb[(i-1)*LEN2+j] + cc[i*LEN2+j];
+				bb[i*LEN2+j] = bb[(i-ip_n1)*LEN2+j] + cc[i*LEN2+j];
 			}
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -3040,7 +3051,7 @@ int s235()
 		for (int i = 0; i < LEN2; i++) {
 			a[i] += b[i] * c[i];
 			for (int j = 1; j < LEN2; j++) {
-				aa[j*LEN2+i] = aa[(j-1)*LEN2+i] + bb[j*LEN2+i] * a[i];
+				aa[j*LEN2+i] = aa[(j-ip_n1)*LEN2+i] + bb[j*LEN2+i] * a[i];
 			}
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -3074,7 +3085,7 @@ int s241()
 	for (int nl = 0; nl < 2*ntimes; nl++) {
 		for (int i = 0; i < LEN-1; i++) {
 			a[i] = b[i] * c[i  ] * d[i];
-			b[i] = a[i] * a[i+1] * d[i];
+			b[i] = a[i] * a[i+ip_n1] * d[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -3185,7 +3196,7 @@ int s1244()
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN-1; i++) {
 			a[i] = b[i] + c[i] * c[i] + b[i]*b[i] + c[i];
-			d[i] = a[i] + a[i+1];
+			d[i] = a[i] + a[i+ip_n1];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -3210,7 +3221,7 @@ int s2244()
 
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN-1; i++) {
-			a[i+1] = b[i] + e[i];
+			a[i+ip_n1] = b[i] + e[i];
 			a[i] = b[i] + c[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -3324,7 +3335,7 @@ int s3251()
 
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN-1; i++){
-			a[i+1] = b[i]+c[i];
+			a[i+ip_n1] = b[i]+c[i];
 			b[i]   = c[i]*e[i];
 			d[i]   = a[i]*e[i];
 		}
@@ -3480,7 +3491,7 @@ int s256()
 	for (int nl = 0; nl < 10*(ntimes/LEN2); nl++) {
 		for (int i = 0; i < LEN2; i++) {
 			for (int j = 1; j < LEN2; j++) {
-				a[j] = (TYPE) ap_n1 - a[j - 1];
+				a[j] = (TYPE) ap_n1 - a[j - ip_n1];
 				cc[j*LEN2+i] = a[j] + bb[j*LEN2+i]*d[j];
 			}
 		}
@@ -3510,7 +3521,7 @@ int s257()
 	for (int nl = 0; nl < 10*(ntimes/LEN2); nl++) {
 		for (int i = 1; i < LEN2; i++) {
 			for (int j = 0; j < LEN2; j++) {
-				a[i] = aa[j*LEN2+i] - a[i-1];
+				a[i] = aa[j*LEN2+i] - a[i-ip_n1];
 				aa[j*LEN2+i] = a[i] + bb[j*LEN2+i];
 			}
 		}
@@ -3539,11 +3550,11 @@ int s258()
 	for (int nl = 0; nl < ntimes/10; nl++) {
 		s = 0.;
 		for (int i = 0; i < LEN; ++i) {
-			if (a[i] > 0.) {
+			if (a[i] > cp_n0) {
 				s = d[i] * d[i];
 			}
 			b[i] = s * c[i] + d[i];
-			e[i] = (s + (TYPE) ap_n1) * aa[0*LEN2+i];
+			e[i] = (s + (TYPE) ap_n1) * aa[ip_n0*LEN2+i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -3572,7 +3583,7 @@ int s261()
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 1; i < LEN; ++i) {
 			t = a[i] + b[i];
-			a[i] = t + c[i-1];
+			a[i] = t + c[i-ip_n1];
 			t = c[i] * d[i];
 			c[i] = t;
 		}
@@ -3606,7 +3617,7 @@ int s281()
 	TYPE x;
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			x = a[LEN-i-1] + b[i] * c[i];
+			x = a[LEN-i-ip_n1] + b[i] * c[i];
 			a[i] = x-(TYPE)ap_n1;
 			b[i] = x;
 		}
@@ -3664,7 +3675,7 @@ int s291()
 
 	int im1;
 	for (int nl = 0; nl < 2*ntimes; nl++) {
-		im1 = LEN-1;
+		im1 = LEN-ip_n1;
 		for (int i = 0; i < LEN; i++) {
 			a[i] = (b[i] + b[im1]) * (TYPE)ap_n05;
 			im1 = i;
@@ -3695,8 +3706,8 @@ int s292()
 
 	int im1, im2;
 	for (int nl = 0; nl < ntimes; nl++) {
-		im1 = LEN-1;
-		im2 = LEN-2;
+		im1 = LEN-ip_n1;
+		im2 = LEN-ip_n2;
 		for (int i = 0; i < LEN; i++) {
 			a[i] = (b[i] + b[im1] + b[im2]) * (TYPE)ap_n0333;
 			im2 = im1;
@@ -3726,7 +3737,7 @@ int s293()
 
 	for (int nl = 0; nl < 4*ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			a[i] = a[0];
+			a[i] = a[ip_n0];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -3810,7 +3821,7 @@ int s2111()
 	for (int nl = 0; nl < 100*(ntimes/(LEN2)); nl++) {
 		for (int j = 1; j < LEN2; j++) {
 			for (int i = 1; i < LEN2; i++) {
-				aa[j*LEN2+i] = aa[j*LEN2+(i-1)] + aa[(j-1)*LEN2+i];
+				aa[j*LEN2+i] = aa[j*LEN2+(i-ip_n1)] + aa[(j-ip_n1)*LEN2+i];
 			}
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -3828,12 +3839,6 @@ int s2111()
 }
 
 #endif // CROSSING_THRESHOLDS
-
-// **********************************************************
-//							    *
-//			IDIOM RECOGNITION		    *
-//							    *
-// **********************************************************
 
 #if REDUCTIONS
 
@@ -3868,9 +3873,7 @@ int s311()
 
 TYPE test(TYPE* A){
   TYPE s = (TYPE)ap_n0;
-//  #pragma nosimd
-  for (int i = 0; i < bp_n4; i++)
-    s += A[i];
+  for (int i = 0; i < bp_n4; i++) s += A[i];
   return s;
 }
 
@@ -4365,7 +4368,7 @@ int s321()
 
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 1; i < LEN; i++) {
-			a[i] += a[i-1] * b[i];
+			a[i] += a[i-ip_n1] * b[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -4392,7 +4395,7 @@ int s322()
 
 	for (int nl = 0; nl < ntimes/2; nl++) {
 		for (int i = 2; i < LEN; i++) {
-			a[i] = a[i] + a[i - 1] * b[i] + a[i - 2] * c[i];
+			a[i] = a[i] + a[i - ip_n1] * b[i] + a[i - ip_n2] * c[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -4419,7 +4422,7 @@ int s323()
 
 	for (int nl = 0; nl < ntimes/2; nl++) {
 		for (int i = 1; i < LEN; i++) {
-			a[i] = b[i-1] + c[i] * d[i];
+			a[i] = b[i-ip_n1] + c[i] * d[i];
 			b[i] = a[i] + c[i] * e[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
@@ -4467,14 +4470,6 @@ int s331()
 	temp = j+1;
 	check(-1);
 	return 0;
-}
-
-int max(int a1, int b1)
-{
-	if (b1 > a1)
-		return b1;
-	else
-		return a1;
 }
 
 // %3.3
@@ -4640,12 +4635,12 @@ int s351()
 
 	TYPE alpha = c[0];
 	for (int nl = 0; nl < 8*ntimes; nl++) {
-		for (int i = 0; i < LEN; i += 5) {
+		for (int i = 0; i < LEN; i += ip_n5) {
 			a[i] += alpha * b[i];
-			a[i + 1] += alpha * b[i + 1];
-			a[i + 2] += alpha * b[i + 2];
-			a[i + 3] += alpha * b[i + 3];
-			a[i + 4] += alpha * b[i + 4];
+			a[i + ip_n1] += alpha * b[i + ip_n1];
+			a[i + ip_n2] += alpha * b[i + ip_n2];
+			a[i + ip_n3] += alpha * b[i + ip_n3];
+			a[i + ip_n4] += alpha * b[i + ip_n4];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -4668,9 +4663,9 @@ int s1351()
 	start_t = clock();
 
 	for (int nl = 0; nl < 8*ntimes; nl++) {
-		TYPE* __restrict__ A = a;
-		TYPE* __restrict__ B = b;
-		TYPE* __restrict__ C = c;
+		ALIGN TYPE* RESTRICT A = a;
+		ALIGN TYPE* RESTRICT B = b;
+		ALIGN TYPE* RESTRICT C = c;
 		for (int i = 0; i < LEN; i++) {
 			*A = *B+*C;
 			A++;
@@ -4703,9 +4698,8 @@ int s352()
 	TYPE dot;
 	for (int nl = 0; nl < 8*ntimes; nl++) {
 		dot = (TYPE)0.;
-		for (int i = 0; i < LEN; i += 5) {
-			dot = dot + a[i] * b[i] + a[i + 1] * b[i + 1] + a[i + 2]
-				* b[i + 2] + a[i + 3] * b[i + 3] + a[i + 4] * b[i + 4];
+		for (int i = 0; i < LEN; i += ip_n5) {
+			dot = dot + a[i] * b[i] + a[i + ip_n1] * b[i + ip_n1] + a[i + ip_n2] * b[i + ip_n2] + a[i + ip_n3] * b[i + ip_n3] + a[i + ip_n4] * b[i + ip_n4];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, dot);
 	}
@@ -4719,7 +4713,7 @@ int s352()
 
 // %3.5
 
-int s353(int* __restrict__ ip)
+int s353(ALIGN int* RESTRICT ip)
 {
 
 //	loop rerolling
@@ -4734,12 +4728,12 @@ int s353(int* __restrict__ ip)
 
 	TYPE alpha = c[0];
 	for (int nl = 0; nl < ntimes; nl++) {
-		for (int i = 0; i < LEN; i += 5) {
+		for (int i = 0; i < LEN; i += ip_n5) {
 			a[i] += alpha * b[ip[i]];
-			a[i + 1] += alpha * b[ip[i + 1]];
-			a[i + 2] += alpha * b[ip[i + 2]];
-			a[i + 3] += alpha * b[ip[i + 3]];
-			a[i + 4] += alpha * b[ip[i + 4]];
+			a[i + ip_n1] += alpha * b[ip[i + ip_n1]];
+			a[i + ip_n2] += alpha * b[ip[i + ip_n2]];
+			a[i + ip_n3] += alpha * b[ip[i + ip_n3]];
+			a[i + ip_n4] += alpha * b[ip[i + ip_n4]];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -4752,15 +4746,8 @@ int s353(int* __restrict__ ip)
 
 #endif // LOOP_REROLLING
 
-// **********************************************************
-//							    *
-//			 LANGUAGE COMPLETENESS		    *
-//							    *
-// **********************************************************
-
 #if EQUIVALENCING
 
-// %4.1
 // %4.2
 
 int s421()
