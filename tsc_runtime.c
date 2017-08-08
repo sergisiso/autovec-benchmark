@@ -4765,7 +4765,7 @@ int s421()
 	for (int nl = 0; nl < 4*ntimes; nl++) {
 		yy = xx;
 		for (int i = 0; i < LEN - 1; i++) {
-			xx[i] = yy[i+1] + a[i];
+			xx[i] = yy[i+ip_n1] + a[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 1.);
 	}
@@ -4828,7 +4828,7 @@ int s422()
 
 	for (int nl = 0; nl < 8*ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			xx[i] = array[i + 8] + a[i];
+			xx[i] = array[i + ip_n8] + a[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -4859,7 +4859,7 @@ int s423()
 	start_t = clock();
 	for (int nl = 0; nl < 4*ntimes; nl++) {
 		for (int i = 0; i < LEN - 1; i++) {
-			array[i+1] = xx[i] + a[i];
+			array[i+ip_n1] = xx[i] + a[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 1.);
 	}
@@ -4893,7 +4893,7 @@ int s424()
 
 	for (int nl = 0; nl < 4*ntimes; nl++) {
 		for (int i = 0; i < LEN - 1; i++) {
-			xx[i+1] = array[i] + a[i];
+			xx[i+ip_n1] = array[i] + a[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 1.);
 	}
@@ -4919,7 +4919,7 @@ int min(int a, int b){
 
 // %4.9
 
-int s491(int* __restrict__ ip)
+int s491(int* RESTRICT ip)
 {
 
 //	vector semantics
@@ -4947,7 +4947,7 @@ int s491(int* __restrict__ ip)
 
 // %4.11
 
-int s4112(int* __restrict__ ip, TYPE s)
+int s4112(int* RESTRICT ip, TYPE s)
 {
 
 //	indirect addressing
@@ -4974,7 +4974,7 @@ int s4112(int* __restrict__ ip, TYPE s)
 
 // %4.11
 
-int s4113(int* __restrict__ ip)
+int s4113(int* RESTRICT ip)
 {
 
 //	indirect addressing
@@ -5002,7 +5002,7 @@ int s4113(int* __restrict__ ip)
 
 // %4.11
 
-int s4114(int* ip, int n1)
+int s4114(int* RESTRICT ip, int n1)
 {
 
 //	indirect addressing
@@ -5020,7 +5020,7 @@ int s4114(int* ip, int n1)
 		for (int i = n1-1; i < LEN; i++) {
 			k = ip[i];
 			a[i] = b[i] + c[LEN-k+1-2] * d[i];
-			k += 5;
+			k += ip_n5;
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
@@ -5033,7 +5033,7 @@ int s4114(int* ip, int n1)
 
 // %4.11
 
-int s4115(int* __restrict__ ip)
+int s4115(int* RESTRICT ip)
 {
 
 //	indirect addressing
@@ -5064,7 +5064,7 @@ int s4115(int* __restrict__ ip)
 
 // %4.11
 
-int s4116(int* __restrict__ ip, int j, int inc)
+int s4116(int* RESTRICT ip, int j, int inc)
 {
 
 //	indirect addressing
@@ -5111,7 +5111,7 @@ int s4117()
 
 	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
-			a[i] = b[i] + c[i/2] * d[i];
+			a[i] = b[i] + c[i/ip_n2] * d[i];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
