@@ -1,5 +1,9 @@
 LEN 32000
 LEN2 256
+bp_n0 0
+bp_n1 1
+bp_n4 4
+bp_n5 5
 ap_n0 0
 ap_n0333 0.333
 ap_n05 0.5
@@ -7,12 +11,17 @@ ap_n099 0.99
 ap_n1 1
 ap_n2 2
 ap_n5 5
-bp_n4 4
 ip_n0 0
+ip_n1 1
 ip_n_2 -2
+ip_n2 2
+ip_n3 3
+ip_n4 4
+ip_n5 5
+ip_n8 8
 cp_n0 0
+cp_n0i 0
 cp_n1 1
 cp_n10 10
 cp_n_1 -1
-
 

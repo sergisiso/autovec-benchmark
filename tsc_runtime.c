@@ -48,10 +48,10 @@
 static int ntimes = ntimes_default;
 static int digits = digits_default;
 
-// Type can not be changes without adaption load_parameters
+// Type can not be changed without adaption load_parameters
 #ifndef TYPE
-#define TYPE float
-#define USE_FLOAT_TRIG
+    #define TYPE float
+    #define USE_FLOAT_TRIG
 #endif
 
 #ifndef X_TYPE
@@ -114,6 +114,7 @@ static int digits = digits_default;
     int ip_n3;
     int ip_n4;
     int ip_n5;
+    int ip_n8;
 #else
     #define ip_n0 0
     #define ip_n1 1
@@ -122,6 +123,7 @@ static int digits = digits_default;
     #define ip_n3 3
     #define ip_n4 4
     #define ip_n5 5
+    #define ip_n8 8
 #endif
 
 #if defined(CONDITION_EVAL_PARAMETERS)
@@ -141,14 +143,14 @@ static int digits = digits_default;
 
 
 //Declare arrays with but don't allocate them
-ALIGN RESTRICT X_TYPE * X,* Y, * Z, * U, * V; //size lll
-ALIGN RESTRICT TYPE * array; // size LEN2*LEN2
-ALIGN RESTRICT TYPE * x __attribute__((aligned(ALIGNMENT))); //size LEN
-ALIGN RESTRICT TYPE * a, * b, * c, * d, * e; //size LEN
-ALIGN RESTRICT TYPE * aa, * bb, * cc, * tt; //size LEN2*LEN2
-ALIGN RESTRICT int * indx; // size LEN
-ALIGN RESTICT TYPE* xx;
-ALIGN RESTRICT TYPE* yy;
+X_TYPE * X,* Y, * Z, * U, * V; //size lll
+TYPE * array; // size LEN2*LEN2
+TYPE * x; //size LEN
+TYPE * a, * b, * c, * d, * e; //size LEN
+TYPE * aa, * bb, * cc, * tt; //size LEN2*LEN2
+int * indx; // size LEN
+TYPE* xx;
+TYPE* yy;
 
 
 TYPE temp;
@@ -2290,7 +2292,7 @@ int s2710( TYPE x)
 //	control flow
 //	scalar and vector ifs
 
-	clock_t start_t, end_1t, clock_dif; double clock_dif_sec;
+	clock_t start_t, end_t, clock_dif; double clock_dif_sec;
 
 
 	init( "s2710");
@@ -4665,9 +4667,9 @@ int s1351()
 	start_t = clock();
 
 	for (int nl = 0; nl < 8*ntimes; nl++) {
-		ALIGN TYPE* RESTRICT A = a;
-		ALIGN TYPE* RESTRICT B = b;
-		ALIGN TYPE* RESTRICT C = c;
+		ALIGN TYPE*  A = a;
+		ALIGN TYPE*  B = b;
+		ALIGN TYPE*  C = c;
 		for (int i = 0; i < LEN; i++) {
 			*A = *B+*C;
 			A++;
@@ -4715,7 +4717,7 @@ int s352()
 
 // %3.5
 
-int s353(ALIGN int* RESTRICT ip)
+int s353(ALIGN int*  ip)
 {
 
 //	loop rerolling
@@ -4921,7 +4923,7 @@ int min(int a, int b){
 
 // %4.9
 
-int s491(int* RESTRICT ip)
+int s491(int*  ip)
 {
 
 //	vector semantics
@@ -4949,7 +4951,7 @@ int s491(int* RESTRICT ip)
 
 // %4.11
 
-int s4112(int* RESTRICT ip, TYPE s)
+int s4112(int*  ip, TYPE s)
 {
 
 //	indirect addressing
@@ -4976,7 +4978,7 @@ int s4112(int* RESTRICT ip, TYPE s)
 
 // %4.11
 
-int s4113(int* RESTRICT ip)
+int s4113(int*  ip)
 {
 
 //	indirect addressing
@@ -5004,7 +5006,7 @@ int s4113(int* RESTRICT ip)
 
 // %4.11
 
-int s4114(int* RESTRICT ip, int n1)
+int s4114(int*  ip, int n1)
 {
 
 //	indirect addressing
@@ -5035,7 +5037,7 @@ int s4114(int* RESTRICT ip, int n1)
 
 // %4.11
 
-int s4115(int* RESTRICT ip)
+int s4115(int*  ip)
 {
 
 //	indirect addressing
@@ -5066,7 +5068,7 @@ int s4115(int* RESTRICT ip)
 
 // %4.11
 
-int s4116(int* RESTRICT ip, int j, int inc)
+int s4116(int*  ip, int j, int inc)
 {
 
 //	indirect addressing
@@ -5558,8 +5560,14 @@ void load_parameters(){
             lll = LEN;
         }else if(!strcmp(parameter, "LEN2")){
             LEN2 = atoi(value);
+        }else if(!strcmp(parameter, "bp_n0")){
+            bp_n0 = atoi(value);
+        }else if(!strcmp(parameter, "bp_n1")){
+            bp_n1 = atoi(value);
         }else if(!strcmp(parameter, "bp_n4")){
             bp_n4 = atoi(value);
+        }else if(!strcmp(parameter, "bp_n5")){
+            bp_n5 = atoi(value);
 #endif
 #if defined(RUNTIME_ARITHMETIC_PARAMETERS)
         }else if(!strcmp(parameter, "ap_n0")){
@@ -5580,12 +5588,26 @@ void load_parameters(){
 #if defined(RUNTIME_INDEX_PARAMETERS)
         }else if(!strcmp(parameter, "ip_n0")){
             ip_n0 = atoi(value);
+        }else if(!strcmp(parameter, "ip_n1")){
+            ip_n1 = atoi(value);
         }else if(!strcmp(parameter, "ip_n_2")){
             ip_n_2 = atoi(value);
+        }else if(!strcmp(parameter, "ip_n2")){
+            ip_n2 = atoi(value);
+        }else if(!strcmp(parameter, "ip_n3")){
+            ip_n3 = atoi(value);
+        }else if(!strcmp(parameter, "ip_n4")){
+            ip_n4 = atoi(value);
+        }else if(!strcmp(parameter, "ip_n5")){
+            ip_n5 = atoi(value);
+        }else if(!strcmp(parameter, "ip_n8")){
+            ip_n8 = atoi(value);
 #endif
 #if defined(CONDITION_EVAL_PARAMETERS)
         }else if(!strcmp(parameter, "cp_n0")){
             cp_n0 = atof(value);
+        }else if(!strcmp(parameter, "cp_n0i")){
+            cp_n0i = atoi(value);
         }else if(!strcmp(parameter, "cp_n1")){
             cp_n1 = atof(value);
         }else if(!strcmp(parameter, "cp_n_1")){
@@ -5651,7 +5673,7 @@ void free_arrays(){
 }
 
 int main(int argc, char *argv[]){
-	ALIGN int* RESTRICT ip;
+	ALIGN int*  ip;
 
     // Print TEST info
     printf("Runing extended TSVC test with dynamic arrays\n");
@@ -5900,7 +5922,7 @@ int main(int argc, char *argv[]){
 	s4113(ip);fflush(stdout);
 	s4114(ip,bp_n1);fflush(stdout);
 	s4115(ip);fflush(stdout);
-	s4116(ip, LEN2/2, n1);fflush(stdout);
+	s4116(ip, LEN2/2, ip_n1);fflush(stdout);
 	s4117();fflush(stdout);
 #endif
 
@@ -5913,7 +5935,7 @@ int main(int argc, char *argv[]){
 	vpv();fflush(stdout);
 	vtv();fflush(stdout);
 	vpvtv();fflush(stdout);
-	vpvts(s1);fflush(stdout);
+	vpvts(ap_n1);fflush(stdout);
 	vpvpv();fflush(stdout);
 	vtvtv();fflush(stdout);
 	vsumr();fflush(stdout);

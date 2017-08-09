@@ -13,12 +13,13 @@ alltests += -DNODE_SPLITTING -DEXPANSION -DCROSSING_THRESHOLDS -DREDUCTIONS -DRE
 alltests += -DPACKING -DLOOP_REROLLING -DEQUIVALENCING -DINDIRECT_ADDRESSING -DCONTROL_LOOPS
 
 params = 
-#params += -DRUNTIME_LOOP_BOUNDS_PARAMETERS
-#params += -DRUNTIME_ARITHMETIC_PARAMETERS
-#params += -DRUNTIME_INDEX_PARAMETERS
-#params += -DCONDITION_EVAL_PARAMETERS
+params += -DRUNTIME_LOOP_BOUNDS_PARAMETERS
+params += -DRUNTIME_ARITHMETIC_PARAMETERS
+params += -DRUNTIME_INDEX_PARAMETERS
+params += -DCONDITION_EVAL_PARAMETERS
 
-all : runvec runnovec runrtvec runrtnovec
+all : runrtvec
+#all : runvec runnovec runrtvec runrtnovec
 
 runnovec : tscnovec.o dummy.o
 	$(CC) $(noopt) dummy.o tscnovec.o -o runnovec $(libs)
