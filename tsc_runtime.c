@@ -126,11 +126,13 @@ static int digits = digits_default;
 
 #if defined(CONDITION_EVAL_PARAMETERS)
     TYPE cp_n0;
+    int cp_n0i;
     TYPE cp_n1;
     TYPE cp_n_1;
     TYPE cp_n10;
 #else
     #define cp_n0 0.
+    #define cp_n0i 0
     #define cp_n1 1.
     #define cp_n_1 -1.
     #define cp_n10 10.
@@ -145,12 +147,12 @@ ALIGN RESTRICT TYPE * x __attribute__((aligned(ALIGNMENT))); //size LEN
 ALIGN RESTRICT TYPE * a, * b, * c, * d, * e; //size LEN
 ALIGN RESTRICT TYPE * aa, * bb, * cc, * tt; //size LEN2*LEN2
 ALIGN RESTRICT int * indx; // size LEN
-
-TYPE temp;
-int temp_int;
 ALIGN RESTICT TYPE* xx;
 ALIGN RESTRICT TYPE* yy;
 
+
+TYPE temp;
+int temp_int;
 int dummy(TYPE *, TYPE *, TYPE *, TYPE *, TYPE *, TYPE *, TYPE *, TYPE*, TYPE);
 int dummy_media(short[], char[], int);
 
@@ -1917,7 +1919,7 @@ int s162(int k)
 	start_t = clock();
 
 	for (int nl = 0; nl < ntimes; nl++) {
-		if (k > ip_n0) {
+		if (k > cp_n0i) {
 			for (int i = 0; i < LEN-1; i++) {
 				a[i] = a[i + k] + b[i] * c[i];
 			}
@@ -5507,7 +5509,7 @@ int vbor()
 
 #endif // CONTROL_LOOPS
 
-void set(int* ip, TYPE* s1, TYPE* s2){
+void set(int* ip){
     int err  = posix_memalign((void **) &xx, ALIGNMENT, LEN*sizeof(TYPE));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
 	printf("\n");
@@ -5532,8 +5534,6 @@ void set(int* ip, TYPE* s1, TYPE* s2){
 	for (int i = 0; i < LEN; i++){
 		indx[i] = (i+1) % 4+1;
 	}
-	*s1 = 1.0;
-	*s2 = 2.0;
 
 }
 
@@ -5651,13 +5651,11 @@ void free_arrays(){
 }
 
 int main(int argc, char *argv[]){
-	int n1 = 1;
-	int n3 = 1;
-	int* ip;
-	TYPE s1,s2;
+	ALIGN int* RESTRICT ip;
 
-// Print TEST info
+    // Print TEST info
     printf("Runing extended TSVC test with dynamic arrays\n");
+
 #if defined(RUNTIME_LOOP_BOUNDS_PARAMETERS)
     printf("Test with Runtime Loop Bounds\n");
 #endif
@@ -5671,6 +5669,17 @@ int main(int argc, char *argv[]){
 #if defined(CONDITION_EVAL_PARAMETERS)
     printf("Test with Runtime Conditional Parameters\n");
 #endif
+
+#if defined(RESTRICT_ATTRIBUTE)
+    printf("Test with 'restrict' attribute\n");
+#endif
+#if defined(ALIGNMENT_ATTRIBUTE)
+    printf("Test with 'alignment' attribute equal to %d\n", ALIGNMENT);
+#endif
+#if defined(INLINE_FUNCTIONS)
+    printf("Test with inlined functions (not implemented yet)\n");
+#endif
+
 
 #if defined(RUNTIME_LOOP_BOUNDS_PARAMETERS) || defined(RUNTIME_ARITHMETIC_PARAMETERS) || defined(RUNTIME_INDEX_PARAMETERS) || defined(CONDITION_EVAL_PARAMETERS)
     load_parameters();
@@ -5686,7 +5695,7 @@ int main(int argc, char *argv[]){
 
     if (argc > 2) digits = atoi(argv[2]);
 
-	set(ip, &s1, &s2);
+	set(ip);
 	printf("Loop \t Time(Sec) \t Checksum \n");fflush(stdout);
 
 #if LINEAR_DEPENDENCE
@@ -5710,7 +5719,7 @@ int main(int argc, char *argv[]){
 #if INDUCTION_VARIABLE
     printf("Testing Induction Variable Loops\n");fflush(stdout);
 	s121();fflush(stdout);
-	s122(n1,n3);fflush(stdout);
+	s122(bp_n1,ip_n1);fflush(stdout);
 	s123();fflush(stdout);
 	s124();fflush(stdout);
 	s125();fflush(stdout);
@@ -5738,9 +5747,9 @@ int main(int argc, char *argv[]){
     printf("Testing Control Flow Loops\n");
 	s161();fflush(stdout);
 	s1161();fflush(stdout);
-	s162(n1);fflush(stdout);
+	s162(ip_n1);fflush(stdout);
 	s271();fflush(stdout);
-	s272(s1);fflush(stdout);
+	s272(cp_n1);fflush(stdout);
 	s273();fflush(stdout);
 	s274();fflush(stdout);
 	s275();fflush(stdout);
@@ -5750,7 +5759,7 @@ int main(int argc, char *argv[]){
 	s278();fflush(stdout);
 	s279();fflush(stdout);
 	s1279();fflush(stdout);
-	s2710(s1);fflush(stdout);
+	s2710(cp_n1);fflush(stdout);
 	s2711();fflush(stdout);
 	s2712();fflush(stdout);
 	s441();fflush(stdout);
@@ -5762,11 +5771,11 @@ int main(int argc, char *argv[]){
 
 #if SYMBOLICS
     printf("Testing Symbolics Loops\n");
-	s171(n1);fflush(stdout);
-	s172(n1,n3);fflush(stdout);
+	s171(ip_n1);fflush(stdout);
+	s172(bp_n1,ip_n3);fflush(stdout);
 	s173();fflush(stdout);
 	s174(LEN/2);fflush(stdout);
-	s175(n1);fflush(stdout);
+	s175(ip_n1);fflush(stdout);
 	s176();fflush(stdout);
 #endif
 
@@ -5793,7 +5802,7 @@ int main(int argc, char *argv[]){
 #if NODE_SPLITTING
     printf("Testing Node Splitting Loops\n");
 	s241();fflush(stdout);
-	s242(s1, s2);fflush(stdout);
+	s242(ap_n1, ap_n2);fflush(stdout);
 	s243();fflush(stdout);
 	s244();fflush(stdout);
 	s1244();fflush(stdout);
@@ -5838,7 +5847,7 @@ int main(int argc, char *argv[]){
 	s315();fflush(stdout);
 	s316();fflush(stdout);
 	s317();fflush(stdout);
-	s318(n1);fflush(stdout);
+	s318(ip_n1);fflush(stdout);
 	s319();fflush(stdout);
 	s3110();fflush(stdout);
 	s13110();fflush(stdout);
@@ -5857,7 +5866,7 @@ int main(int argc, char *argv[]){
 #if SEARCHING
     printf("Testing Searching Loops\n");
 	s331();fflush(stdout);
-	s332(s1);fflush(stdout);
+	s332(cp_n1);fflush(stdout);
 #endif
 
 #if PACKING
@@ -5887,9 +5896,9 @@ int main(int argc, char *argv[]){
 #if INDIRECT_ADDRESSING
     printf("Testing Indirect Addressing Loops\n");
 	s491(ip);fflush(stdout);
-	s4112(ip, s1);fflush(stdout);
+	s4112(ip, ap_n1);fflush(stdout);
 	s4113(ip);fflush(stdout);
-	s4114(ip,n1);fflush(stdout);
+	s4114(ip,bp_n1);fflush(stdout);
 	s4115(ip);fflush(stdout);
 	s4116(ip, LEN2/2, n1);fflush(stdout);
 	s4117();fflush(stdout);
