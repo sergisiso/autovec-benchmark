@@ -6,14 +6,13 @@ import subprocess
 import re
 from datetime import datetime
 
-#    "LINEAR_DEPENDENCE",
-#    "INDUCTION_VARIABLE",
-#    "GLOBAL_DATA_FLOW",
-#    "CONTROL_FLOW",
-#    "SYMBOLICS",
- 
 benchmarks = [
-   "STATEMENT_REORDERING",
+    "LINEAR_DEPENDENCE",
+    "INDUCTION_VARIABLE",
+    "GLOBAL_DATA_FLOW",
+    "CONTROL_FLOW",
+    "SYMBOLICS",
+    "STATEMENT_REORDERING",
     "LOOP_RESTRUCTURING",
     "NODE_SPLITTING",
     "EXPANSION",
@@ -28,14 +27,14 @@ benchmarks = [
     "CONTROL_LOOPS"
 ]
 
-c_flags = {"gcc_unsafe" : {
+c_flags = {"gcc" : {
                 "vec" : " -march=native ",
                 "novec" : " -fno-tree-vectorize ",
-                "common" : " gcc -std=c99 -O3 -fivopts -flax-vector-conversions -funsafe-math-optimizations -ffast-math -fassociative-math ",
+                "common" : " gcc -std=c99 -O3 -fivopts -flax-vector-conversions -funsafe-math-optimizations -ffast-math -fassociative-math",
                 "report" : " -ftree-vectorizer-verbose=5 ",
                 "unopt" : " gcc -O0 "
             },
-            "icc_unsafe" : {
+            "icc" : {
                 "vec" : " -xHost ",
                 "novec" : " -no-simd -no-vec ",
                 "common" : " icc -std=c99 -Ofast -fp-model fast=2 -prec-sqrt -ftz -fma ",
@@ -48,27 +47,9 @@ c_flags = {"gcc_unsafe" : {
                 "common" : " clang -std=c99 -O3 ",
                 "report" : " ",
                 "unopt" : " clang -O0 "
-            },
-	   
+            }
+}
 
-        }
-
-
-""" "gcc" : {
-                "vec" : " -march=native ",
-                "novec" : " -fno-tree-vectorize ",
-                "common" : "gcc -std=c99 -O3 ",
-                "report" : " -ftree-vectorizer-verbose=5 ",
-                "unopt" : "gcc -O0"
-                },
-            "icc" : {
-                "vec" : " -xHost ",
-                "novec" : " -no-simd -no-vec ",
-                "common" : "icc -std=c99 -O3 ",
-                "report" : " -qopt-report=5 " ,
-                "unopt" : "icc -O0 "
-            },
-"""
 
 parameterflags = {
     "None":" ",
