@@ -12,15 +12,15 @@ def rgb(x):
     return [float(x[0])/255, float(x[1])/255, float(x[2])/255]
 
 palette = {
-        "Control Flow" : rgb([240,163,255]),
-        "Crossing Thresholds": rgb([0,117,220]),
-        "Expansion": rgb([153,63,0]),
-        "Global Data Flow": rgb([76,0,92]),
-        "Induction Variable": rgb([25,25,25]),
-        "Linear Dependence": rgb([0,92,49]),
-        "Loop Restructuring": rgb([43,206,72]),
-        "Node Splitting": rgb([255,204,153]),
-        "Recurrences": rgb([128,128,128]),
+        "Icc-Xeon" : rgb([240,163,255]),
+        "Gcc-Xeon": rgb([0,117,220]),
+        "Pgi-Xeon": rgb([153,63,0]),
+        "Clang-Xeon": rgb([76,0,92]),
+        "xlc": rgb([25,25,25]),
+        "Icc-Knl": rgb([0,92,49]),
+        "Clang-Knl": rgb([43,206,72]),
+        "Gcc-Knl": rgb([255,204,153]),
+        "Pgi-Knl": rgb([128,128,128]),
         "Reductions": rgb([148,255,181]),
         "Statement Reordering": rgb([143,124,0]),
         "Symbolics": rgb([157,204,0]),
@@ -52,14 +52,16 @@ def add_box(ax, name, values, labels):
             ax.axhline(value, 0, 1, color=palette[label], label=label)
 
     mean = np.mean([v for v in values if not np.isnan(v)])
-    ax.axhline(mean,0,1,color='black',linestyle="--")
-    ax.text(0.5, mean+0.05, "Avg. Mean = " + "{:.2f}".format(mean), ha='center', va='bottom', fontsize=10)
-    ax.set_ylim(bottom=0, top=16)
+    #ax.axhline(mean,0,1,color='black',linestyle="--")
+    #ax.text(0.5, mean+0.05, "Avg. Mean = " + "{:.2f}".format(mean), ha='center', va='bottom', fontsize=10)
+    ax.set_ylim(bottom=0, top=4)
     ax.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
-    ax.set_xlabel(name.title().replace("_","\n"), rotation=-15)
+    ax.set_xlabel(name.title().replace("_","\n"), rotation=0)
 
 def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization", ylabel='Vector efficiency' ):
 
+    print(values)
+    print(charts)
     if len(list(values)) != len(list(charts)):
         print("Error: Inconsistent number of charts/values")
         exit(-1)
@@ -74,10 +76,12 @@ def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization", 
         add_box(ax, c, v, labels) 
 
     for idx, (val,lab) in enumerate(sorted(zip(values[-1],labels))):
-        v_loc = idx*(1/len(labels))
-        axis[-1].text(0.22,v_loc,lab, ha='left', va='center', fontsize=10)
+        v_loc = idx*(float(1)/len(labels))
+        print(idx)
+        print(len(labels))
+        axis[-1].text(0.5,v_loc,lab, ha='left', va='center', fontsize=10)
         xy = (1,val)
-        xy2 = (0.2,v_loc)
+        xy2 = (0.45,v_loc)
         con = ConnectionPatch(xyA=xy, xyB=xy2, coordsA="data",coordsB="data", axesA=axis[-2], axesB=axis[-1], color=palette[lab], connectionstyle="arc,angleA=-180,angleB=-180,armA=-20,armB=20,rad=0")
         axis[-2].add_artist(con)
     
@@ -87,12 +91,12 @@ def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization", 
 
    
 
-    #xy = (0.5,12)
-    #con = ConnectionPatch(xyA=xy, xyB=xy, coordsA="data",coordsB="data", axesA=axis[1], axesB=axis[2], color="red")
-    #axis[1].add_artist(con)
-    #xy = (0.5,11)
-    #con = ConnectionPatch(xyA=xy, xyB=xy, coordsA="data",coordsB="data", axesA=axis[0], axesB=axis[1], color="red")
-    #axis[0].add_artist(con)
+    for val1, val2, lab in zip(values[0],values[1],labels):
+        con = ConnectionPatch( xyA=(1,val1), xyB=(0,val2),
+                           coordsA="data", coordsB="data",
+                           axesA=axis[0], axesB=axis[1],
+                           color=palette[lab])
+        axis[0].add_artist(con)
     
     
         #for ax, ax2, v, v2 in zip():
@@ -116,7 +120,7 @@ def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization", 
     axis[0].set_xticklabels(labels)
 
     fig.suptitle(title)
-    fig.set_size_inches(9,6)
+    fig.set_size_inches(4,4)
     plt.savefig(outputfile, dpi=100)
 
 
@@ -211,6 +215,35 @@ def plot_categories(data, comp, output, title="", speedup=False):
     plot_chart(char, labs , vals, output, title=title, ylabel = "Vector Efficiency")
 
 
+def plot_loop_bound(data, output, title="", speedup=False):
+    labs = []
+    vals_ct = []
+    vals_rt = []
+    char = ('Compile Time \n Known', 'Compile Time \n Hidden')
+    
+    for compiler in data.keys():
+        labs.append(compiler)
+        none_sum = 0
+        none_count = 0
+        bounds_sum = 0
+        bounds_count = 0
+        for category in data[compiler].keys():
+            for test in data[compiler][category]['None'].values():
+                none_sum = none_sum + test[2]
+                none_count = none_count + 1
+            for test in data[compiler][category]['RUNTIME_LOOP_BOUNDS'].values():
+                bounds_sum = bounds_sum + test[2]
+                bounds_count = bounds_count + 1
+        vals_ct.append(none_sum/none_count)
+        vals_rt.append(bounds_sum/bounds_count)
+    
+    vals = [vals_ct,vals_rt]
+       
+    labs = [x.title() for x in labs]
+    plot_chart(char, labs , vals, output, title=title, ylabel = "Vector Efficiency")
+
+
+
  
 def main():
 
@@ -227,16 +260,18 @@ def main():
     data = defaultdict(lambda : defaultdict(lambda :defaultdict(dict)))
 
     print("Loading data...")
-    for compiler in getfolders(datadir):
-        print(compiler)
-        compiler_path = os.path.join(datadir,compiler)
-        for category in getfolders(compiler_path):
-            category_path = os.path.join(compiler_path,category)
-            load_data(data, compiler,category,'original',category_path)
-            for parameters in getfolders(category_path):
-                parameters_path = os.path.join(category_path,parameters)
-                load_data(data, compiler,category,parameters,parameters_path)
+    for folder in getfolders(datadir):
+        folder_path = os.path.join(datadir,folder)
+        for compiler in getfolders(folder_path):
+            print(compiler)
+            compiler_path = os.path.join(folder_path,compiler)
+            for category in getfolders(compiler_path):
+                category_path = os.path.join(compiler_path,category)
+                for parameters in getfolders(category_path):
+                    parameters_path = os.path.join(category_path,parameters)
+                    load_data(data, compiler,category,parameters,parameters_path)
 
+    #exit(0)
 
     #print "Compilers: ", len(data.keys())
     #for com in data.keys():
@@ -248,7 +283,9 @@ def main():
 
 
     print("Ploting charts...")
+    plot_loop_bound(data, 'loop_bound.png', 'Loop Bound')
 
+    exit(0)
     print("- Compiler comparison")
     plot_compilers(data, 'compilers.png', 'Compiler comparison')
     exit()
