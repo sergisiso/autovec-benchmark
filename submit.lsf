@@ -1,0 +1,60 @@
+#BSUB -J tsvc
+#BSUB -e tsvc.err
+#BSUB -o tsvc.out
+#BSUB -q panther
+#BSUB -x
+#BSUB -n 1
+#BSUB -R "span[ptile=1]"
+#BSUB -W 04:00
+#BSUB -data /gpfs/fairthorpe/local/SCD/jpf02/sss33-jpf02/tsvc-runtimeparameters
+
+export mydir=/gpfs/panther/local/SCD/jpf02/sss33-jpf02/tsvc-runtimeparameters
+rm -rf $mydir
+mkdir -p $mydir
+cd $mydir
+
+
+bstage in -src /gpfs/fairthorpe/local/SCD/jpf02/sss33-jpf02/tsvc-runtimeparameters -dst /gpfs/panther/local/SCD/jpf02/sss33-jpf02/tsvc-runtimeparameters
+
+
+module load pgi/17.4
+
+#export foutput=pgi-rall
+#./bench.py --results $foutput --parameters RUNTIME_ALL --compiler pgi
+#export foutput=pgi-rarith
+#./bench.py --results $foutput --parameters RUNTIME_ARITHMETIC --compiler pgi
+#export foutput=pgi-rindex
+#./bench.py --results $foutput --parameters RUNTIME_INDEX --compiler pgi
+export foutput=pgi-rcond
+./bench.py --results $foutput --parameters RUNTIME_CONDITIONS --compiler pgi
+#export foutput=pgi-rbound
+#./bench.py --results $foutput --parameters RUNTIME_LOOP_BOUNDS --compiler pgi
+
+#module load ibm
+
+#export foutput=ibm-rall
+#./bench.py --results $foutput --parameters RUNTIME_ALL --compiler ibm
+#export foutput=ibm-rarith
+#./bench.py --results $foutput --parameters RUNTIME_ARITHMETIC --compiler ibm
+#export foutput=ibm-rindex
+#./bench.py --results $foutput --parameters RUNTIME_INDEX --compiler ibm
+#export foutput=ibm-rcond
+#./bench.py --results $foutput --parameters RUNTIME_CONDITIONS --compiler ibm
+#export foutput=ibm-rbound
+#./bench.py --results $foutput --parameters RUNTIME_LOOP_BOUNDS --compiler ibm
+
+
+#export foutput=gcc-rall
+#./bench.py --results $foutput --parameters RUNTIME_ALL --compiler gcc
+#export foutput=gcc-rarith
+#./bench.py --results $foutput --parameters RUNTIME_ARITHMETIC --compiler gcc
+#export foutput=gcc-rindex
+#./bench.py --results $foutput --parameters RUNTIME_INDEX --compiler gcc
+#export foutput=gcc-rcond
+#./bench.py --results $foutput --parameters RUNTIME_CONDITIONS --compiler gcc
+#export foutput=gcc-rbound
+#./bench.py --results $foutput --parameters RUNTIME_LOOP_BOUNDS --compiler gcc
+
+tar -cf $foutput.tar results-$foutput
+bstage out -src $foutput.tar 
+

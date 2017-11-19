@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import os
+import sys
 import shutil
 import subprocess
 import re
@@ -47,6 +48,20 @@ c_flags = {"gcc" : {
                 "common" : " clang -std=c99 -O3 ",
                 "report" : " ",
                 "unopt" : " clang -O0 "
+            },
+            "pgi" : {
+                "vec" : " -Mvect ",
+                "novec" : " -Mnovect ",
+                "common" : " pgcc -O3 -fast -fastsse",
+                "report" : " ",
+                "unopt" : " pgcc -O0 "
+            },
+	   "ibm" : {
+                "vec" : " -qaltivec -qhot=vector:fastmath -qsimd=auto ",
+                "novec" : " -qnoaltivec -qhot=novector:fastmath -qsimd=noauto",
+                "common" : " xlc -O5",
+                "report" : " ",
+                "unopt" : " xlc -O0 "
             }
 }
 
@@ -69,6 +84,7 @@ def main():
             ", ".join(benchmarks), metavar='')
     parser.add_argument('--compiler', nargs='+', choices=c_flags.keys(), help="Select compiler", default="ALL") 
     parser.add_argument('--parameters', nargs='+', choices=parameterflags.keys(), help="Select compiler", default="ALL") 
+    parser.add_argument('--results', required=True, help="Specify output folder")
     args = parser.parse_args()
 
 
@@ -86,8 +102,9 @@ def main():
 
 
     # Create Output folder
-    timestamp = datetime.now().strftime('%Y-%m-%d-%H:%M')
-    basedir = "results-"+timestamp
+    #timestamp = datetime.now().strftime('%Y-%m-%d-%H:%M')
+    basedir = "results-"+str(args.results)
+
     if os.path.exists(basedir):
         print "Error: ", basedir, "already exists!"
         return -1
@@ -103,23 +120,6 @@ def main():
             test_dir = os.path.join(os.path.join(basedir,c),b)
             print "Creating ", test_dir , " folder"
             os.makedirs(test_dir)
-            shutil.copyfile("dummy.c",os.path.join(test_dir,"dummy.c"))
-            shutil.copyfile("tsc.c",os.path.join(test_dir,"tsc.c"))
-
-            print "Compiling tsc ", b
-            exec_comp(c_flags[c]['unopt'] + ' -c -o dummy.o dummy.c', test_dir)
-            exec_comp(c_flags[c]['common'] + c_flags[c]['vec'] + c_flags[c]['report'] +' -c -o tscvec.o tsc.c' + ' -D' + b, test_dir)
-            exec_comp(c_flags[c]['common'] + c_flags[c]['vec'] +' -S -o tscvec.s tsc.c' + ' -D' + b, test_dir)
-            exec_comp(c_flags[c]['common'] + c_flags[c]['novec'] +' -c -o tscnovec.o tsc.c' + ' -D' + b, test_dir)
-            exec_comp(c_flags[c]['common'] + c_flags[c]['novec'] +' -S -o tscnovec.s tsc.c' + ' -D' + b, test_dir)
-            exec_comp(c_flags[c]['unopt'] + ' dummy.o tscvec.o -o runvec -lm', test_dir)
-            exec_comp(c_flags[c]['unopt'] + ' dummy.o tscnovec.o -o runnovec -lm', test_dir)
-     
-            print "Run vector tsc", b
-            run_cmd('./runvec > runvec.txt', test_dir)
-            print "Run scalar tsc", b
-            run_cmd('./runnovec > runnovec.txt', test_dir)
-
 
             for p in p_list:
                 test_dir = os.path.join(os.path.join(os.path.join(basedir,c),b),p)
@@ -134,9 +134,9 @@ def main():
                 exec_comp(c_flags[c]['unopt'] + ' -c -o dummy.o dummy.c', test_dir)
                 exec_comp(c_flags[c]['common'] + c_flags[c]['vec'] + c_flags[c]['report'] +
                     ' -c -o tscrtvec.o tsc_runtime.c' + ' -D' + b + p_flags, test_dir, 'compilervec_output.txt')
-                exec_comp(c_flags[c]['common'] + c_flags[c]['vec']  + ' -S -o tscrtvec.s tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
+                #exec_comp(c_flags[c]['common'] + c_flags[c]['vec']  + ' -S -o tscrtvec.s tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
                 exec_comp(c_flags[c]['common'] + c_flags[c]['novec'] +' -c -o tscrtnovec.o tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
-                exec_comp(c_flags[c]['common'] + c_flags[c]['novec'] +' -S -o tscrtnovec.s tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
+                #exec_comp(c_flags[c]['common'] + c_flags[c]['novec'] +' -S -o tscrtnovec.s tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
                 exec_comp(c_flags[c]['unopt'] + ' dummy.o tscrtvec.o -o runrtvec -lm', test_dir)
                 exec_comp(c_flags[c]['unopt'] + ' dummy.o tscrtnovec.o -o runrtnovec -lm', test_dir)
 
