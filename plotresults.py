@@ -7,38 +7,61 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 
+test_sets = {
+        "RUNTIME_ARITHMETIC" : [ "S000", "S1112", "S453", "S452", "S242", "S2251", "S252", \
+    "S254", "S255", "S256", "S258", "S281", "S1281", "S291", "S292", "S2102", \
+    "S31111", "S317", "S4112"],
+
+        "RUNTIME_INDEX" : [ "S111", "S1111", "S112", "S113", "S1113", "S116", "S118",\
+    "S119", "S1119", "S121", "S122", "S126", "S128", "S131", "S141", "S151",\
+    "S431", "S161", "S275", "S277", "S171", "S172", "S173", "S174", "S175",\
+    "S176", "S211", "S212", "S1213", "S221", "S1221", "S222", "S231", "S232",\
+    "S233", "S2233", "S235", "S241", "S242", "S243", "S244", "S1244", "S2244",\
+    "S3251", "S256", "S257", "S258", "S261", "S281", "S291", "S292", "S293",\
+    "S2111", "S321", "S322", "S323", "S351", "S352", "S353", "S421", "S422",\
+    "S423", "S424", "S4114", "S4116", "S4117"],
+
+        "RUNTIME_CONDITIONS" : [ "S123", "S124", "S161", "S1161", "S162", "S271", "S272",\
+    "S273", "S274", "S275", "S276", "S277", "S278", "S279", "S1279", "S2710",\
+    "S2711", "S441", "S443", "S481", "S258", "S314", "S315", "S316", "S3111",\
+    "S331", "S341", "S342", "S343"]
+}
 
 def rgb(x):
     return [float(x[0])/255, float(x[1])/255, float(x[2])/255]
 
 palette = {
-        "Icc-Xeon" : rgb([240,163,255]),
-        "Gcc-Xeon": rgb([0,117,220]),
-        "Pgi-Xeon": rgb([153,63,0]),
-        "Clang-Xeon": rgb([76,0,92]),
-        "xlc": rgb([25,25,25]),
-        "Icc-Knl": rgb([0,92,49]),
-        "Clang-Knl": rgb([43,206,72]),
-        "Gcc-Knl": rgb([255,204,153]),
-        "Pgi-Knl": rgb([128,128,128]),
-        "Reductions": rgb([148,255,181]),
-        "Statement Reordering": rgb([143,124,0]),
-        "Symbolics": rgb([157,204,0]),
-        "Searching": rgb([194,0,136]),
-        "Recurrences": rgb([0,51,128]),
-        "Equivalencing": rgb([255,164,5]),
-        "Packing": rgb([255,168,187]),
-        "Indirect Addressing": rgb([66,102,0]),
-        "Loop Rerolling": rgb([255,0,16]),
-        "": rgb([94,241,242]),
-        "": rgb([0,152,143]),
-        "": rgb([224,255,102]),
-        "": rgb([116,10,255]),
-        "": rgb([153,0,0]),
-        "": rgb([255,255,128]),
-        "": rgb([255,255,0]),
-        "": rgb([255,80,5]),
+        "Xeon-Icc" : rgb([240,163,255]),
+        "Xeon-Gcc": rgb([0,117,220]),
+        "Xeon-PGI": rgb([153,63,0]),
+        "Xeon-Clang": rgb([76,0,92]),
+        "Pwr8-Xlc": rgb([25,25,25]),
+        "Pwr8-Gcc": rgb([0,92,49]),
+        "Pwr8-Pgi": rgb([43,206,72]),
+        "Knl-Gcc": rgb([255,204,153]),
+        "Knl-PGI": rgb([128,128,128]),
     }
+
+categories = [
+    "LINEAR_DEPENDENCE",
+    "INDUCTION_VARIABLE",
+    "GLOBAL_DATA_FLOW",
+    "CONTROL_FLOW",
+    "SYMBOLICS",
+    "STATEMENT_REORDERING",
+    "LOOP_RESTRUCTURING",
+    "NODE_SPLITTING",
+    "EXPANSION",
+    "CROSSING_THRESHOLDS",
+    "REDUCTIONS",
+    "RECURRENCES",
+    "SEARCHING",
+    "PACKING",
+    "LOOP_REROLLING",
+    "EQUIVALENCING",
+    "INDIRECT_ADDRESSING",
+    "CONTROL_LOOPS"
+]
 
 
 def add_box(ax, name, values, labels):
@@ -60,8 +83,8 @@ def add_box(ax, name, values, labels):
 
 def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization", ylabel='Vector efficiency' ):
 
-    print(values)
-    print(charts)
+    #print(values)
+    #print(charts)
     if len(list(values)) != len(list(charts)):
         print("Error: Inconsistent number of charts/values")
         exit(-1)
@@ -77,8 +100,8 @@ def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization", 
 
     for idx, (val,lab) in enumerate(sorted(zip(values[-1],labels))):
         v_loc = idx*(float(1)/len(labels))
-        print(idx)
-        print(len(labels))
+        #print(idx)
+        #print(len(labels))
         axis[-1].text(0.5,v_loc,lab, ha='left', va='center', fontsize=10)
         xy = (1,val)
         xy2 = (0.45,v_loc)
@@ -114,9 +137,9 @@ def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization", 
     fig.canvas.draw()
 
     labels = axis[0].get_yticks().tolist()
-    print(labels)
+    #print(labels)
     labels[-1] = '(AVX512 vector length) ' + str(labels[-1])
-    print(labels)
+    #print(labels)
     axis[0].set_xticklabels(labels)
 
     fig.suptitle(title)
@@ -215,7 +238,7 @@ def plot_categories(data, comp, output, title="", speedup=False):
     plot_chart(char, labs , vals, output, title=title, ylabel = "Vector Efficiency")
 
 
-def plot_loop_bound(data, output, title="", speedup=False):
+def plot_new(data, detailed_summary, parameter, output, title="", speedup=False):
     labs = []
     vals_ct = []
     vals_rt = []
@@ -225,25 +248,59 @@ def plot_loop_bound(data, output, title="", speedup=False):
         labs.append(compiler)
         none_sum = 0
         none_count = 0
-        bounds_sum = 0
-        bounds_count = 0
+        par_sum = 0
+        par_count = 0
         for category in data[compiler].keys():
-            for test in data[compiler][category]['None'].values():
-                none_sum = none_sum + test[2]
-                none_count = none_count + 1
-            for test in data[compiler][category]['RUNTIME_LOOP_BOUNDS'].values():
-                bounds_sum = bounds_sum + test[2]
-                bounds_count = bounds_count + 1
-        vals_ct.append(none_sum/none_count)
-        vals_rt.append(bounds_sum/bounds_count)
-    
+            # average of none and average of parameter (of should I compute each test and then avg diff?)
+            cat_none_sum = 0
+            cat_none_count = 0
+            for test, value in data[compiler][category]['None'].items():
+                if (parameter not in test_sets) or (test in test_sets[parameter]): 
+                    cat_none_sum = none_sum + value[2]
+                    cat_none_count = none_count + 1
+            detailed_summary[compiler]['None'][category] = float(cat_none_sum/cat_none_count)
+            none_sum = none_sum + cat_none_sum
+            none_count = none_count + cat_none_count
+
+            cat_par_sum = 0
+            cat_par_count = 0
+            for test, value in data[compiler][category][parameter].items():
+                if (parameter not in test_sets) or (test in test_sets[parameter]): 
+                    cat_par_sum = par_sum + value[2]
+                    cat_par_count = par_count + 1
+            detailed_summary[compiler][parameter][category] = float(cat_par_sum/cat_par_count)
+            par_sum = par_sum + cat_par_sum
+            par_count = par_count + cat_par_count
+
+        if (none_count != par_count):
+            print("Warrning!: " + str(compiler)+ " mismatching number of tests. Set to 0")
+        if(none_count==0):
+            print("Warrning!: " + str(compiler)+ " NONE contains no tests. Set to 0")
+            vals_rt.append(0)
+        else:
+            vals_rt.append(none_sum/none_count)
+
+        if(par_count==0):
+            print("Warrning!: " + str(compiler)+ " " + str(parameter) + " contains no tests. Set to 0")
+            vals_ct.append(0)
+        else:
+            vals_ct.append(par_sum/par_count)
+
     vals = [vals_ct,vals_rt]
        
     labs = [x.title() for x in labs]
     plot_chart(char, labs , vals, output, title=title, ylabel = "Vector Efficiency")
 
 
+def print_summary(detailed_summary):
+    # Print latex table
 
+    print("Header: "+ str(categories))
+    for compiler in detailed_summary.keys():
+        print(compiler)
+        for parameter in detailed_summary[compiler].keys():
+            values = [str(x) + " " +str(detailed_summary[compiler][parameter][x]) for x in categories ]
+            print(parameter + " : " + str(values))
  
 def main():
 
@@ -258,34 +315,29 @@ def main():
 
     #Nested dictionary of: compiler, category, parameters, test : [performance vec, performance novec, vector eff]
     data = defaultdict(lambda : defaultdict(lambda :defaultdict(dict)))
+    #Nested dictionary of: compiler, parameter, category : avg_vector_eff
+    detailed_summary = defaultdict(lambda : defaultdict(lambda :defaultdict(float)))
 
     print("Loading data...")
-    for folder in getfolders(datadir):
-        folder_path = os.path.join(datadir,folder)
-        for compiler in getfolders(folder_path):
-            print(compiler)
-            compiler_path = os.path.join(folder_path,compiler)
-            for category in getfolders(compiler_path):
-                category_path = os.path.join(compiler_path,category)
-                for parameters in getfolders(category_path):
-                    parameters_path = os.path.join(category_path,parameters)
-                    load_data(data, compiler,category,parameters,parameters_path)
+    for compiler in getfolders(datadir):
+        print(compiler)
+        compiler_path = os.path.join(datadir,compiler)
+        for category in getfolders(compiler_path):
+            category_path = os.path.join(compiler_path,category)
+            for parameters in getfolders(category_path):
+                parameters_path = os.path.join(category_path,parameters)
+                load_data(data, compiler,category,parameters,parameters_path)
 
-    #exit(0)
-
-    #print "Compilers: ", len(data.keys())
-    #for com in data.keys():
-    #    print "  Categories: ", len(data[com].keys())
-    #    for cat in data[com].keys():
-    #        print "    Parameters: ", len(data[com][cat].keys())
-    #        for par in data[com][cat].keys():
-    #            print "      Tests:", len(data[com][cat][par].keys())
-
-
+    print("")
     print("Ploting charts...")
-    plot_loop_bound(data, 'loop_bound.png', 'Loop Bound')
-
+    plot_new(data, detailed_summary, 'RUNTIME_INDEX','rindex.png', 'Index Parameters')
+    plot_new(data, detailed_summary, 'RUNTIME_LOOP_BOUNDS','rbound.png', 'Loop Bounds Parameters')
+    plot_new(data, detailed_summary, 'RUNTIME_CONDITIONS','rcond.png', 'Conditional Parameters')
+    plot_new(data, detailed_summary, 'RUNTIME_ARITHMETIC','rarith.png', 'Arithmetic Parameters')
+    plot_new(data, detailed_summary, 'RUNTIME_ALL','rall.png', 'All Parameters')
+    #print_summary(detailed_summary)
     exit(0)
+
     print("- Compiler comparison")
     plot_compilers(data, 'compilers.png', 'Compiler comparison')
     exit()
