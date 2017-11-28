@@ -31,34 +31,35 @@ def rgb(x):
     return [float(x[0])/255, float(x[1])/255, float(x[2])/255]
 
 palette = {
-        "Bdw-Icc" : rgb([240,163,255]),
-        "Bdw-Gcc": rgb([0,117,220]),
-        "Bdw-Pgi": rgb([153,63,0]),
-        "Xeon-Clang": rgb([76,0,92]),
-        "Pwr8-Xlc": rgb([25,25,25]),
-        "Pwr8-Gcc": rgb([0,92,49]),
-        "Pwr8-Pgi": rgb([43,206,72]),
-        "Knl-Gcc": rgb([255,204,153]),
-        "Knl-Icc": rgb([255,204,153]),
-        "Knl-Clang": rgb([128,128,128]),
-        "Linear Dependence" : rgb([240,163,255]),
-        "Induction Variable": rgb([0,117,220]),
-        "Global Data Flow": rgb([153,63,0]),
-        "Control Flow": rgb([76,0,92]),
-        "Symbolics": rgb([25,25,25]),
-        "Statement Reordering": rgb([0,92,49]),
-        "Loop Restructuring": rgb([43,206,72]),
-        "Node Splitting": rgb([255,204,153]),
-        "Expansion": rgb([128,128,128]),
-        "Crossing Thresholds" : rgb([240,163,255]),
-        "Reductions": rgb([0,117,220]),
-        "Recurrences": rgb([153,63,0]),
-        "Searching": rgb([76,0,92]),
-        "Packing": rgb([25,25,25]),
-        "Loop Rerolling": rgb([0,92,49]),
-        "Equivalencing": rgb([43,206,72]),
-        "Indirect Addressing": rgb([255,204,153]),
-        "Control Loops": rgb([128,128,128]),
+        "Avx2-Icc" : rgb([67,0,167]),
+        "Avx2-Gcc": rgb([162,255,105]),
+        "Avx2-Pgi": rgb([255,93,171]),
+        "Avx2-Clang": rgb([51,161,0]),
+        "Altivec-Xlc": rgb([30,0,33]),
+        "Altivec-Gcc": rgb([255,166,69]),
+        "Altivec-Pgi": rgb([1,92,135]),
+        "Avx512-Gcc": rgb([150,89,0]),
+        "Avx512-Icc": rgb([99,183,80]),
+        "Avx512-Clang": rgb([121,0,7]),
+
+        "Linear Dependence" : rgb([218,145,51]),
+        "Induction Variable": rgb([89,112,216]),
+        "Global Data Flow": rgb([180,179,53]),
+        "Control Flow": rgb([164,91,207]),
+        "Symbolics": rgb([99,183,80]),
+        "Statement Reordering": rgb([202,73,160]),
+        "Loop Restructuring": rgb([78,182,152]),
+        "Node Splitting": rgb([ 215,60,102]),
+        "Expansion": rgb([85,122,52]),
+        "Crossing Thresholds" : rgb([206,139,203]),
+        "Reductions": rgb([174,159,89]),
+        "Recurrences": rgb([121,96,164]),
+        "Searching": rgb([206,77,51]),
+        "Packing": rgb([94,155,213]),
+        "Loop Rerolling": rgb([146,93,39]),
+        "Equivalencing": rgb([224,122,139]),
+        "Indirect Addressing": rgb([220,136,102]),
+        "Control Loops": rgb([156,70,96]),
     }
 
 categories = [
@@ -102,7 +103,7 @@ def add_box(ax, name, values, labels, draw_mean=False):
     ax.set_xlabel(name.title().replace("_","\n"), rotation=0)
 
 def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization",
-        ylabel='Vector efficiency', connect=False, draw_mean=False ):
+        ylabel='Vector efficiency', connect=False, draw_mean=False, size=(4,4) ):
 
     if len(list(values)) != len(list(charts)):
         print("Error: Inconsistent number of charts/values")
@@ -168,7 +169,7 @@ def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization",
     axis[0].set_xticklabels(labels)
 
     fig.suptitle(title)
-    fig.set_size_inches(4,4)
+    fig.set_size_inches(size[0],size[1])
     plt.savefig(outputfile, dpi=100)
 
 
@@ -247,7 +248,7 @@ def plot_compilers(data, output, architecture, title="", speedup_vs=None):
     #print("charts",char)
     #print("LABS", labs)
     #print("vals", vals)
-    plot_chart(char, labs , vals, output, title=title, ylabel = "Vector Efficiency", connect=False, draw_mean=True)
+    plot_chart(char, labs , vals, output, title=title, ylabel = "Vector Efficiency", connect=False, draw_mean=True, size=(5,4))
 
 def plot_categories(data, comp, output, title="", speedup=False):
     labs = []
@@ -269,7 +270,7 @@ def plot_categories(data, comp, output, title="", speedup=False):
     vals = [list(i) for i in zip(*vals)]
     labs = [x.title().replace("_"," ") for x in labs]
 
-    plot_chart(char, labs , vals, output, title=title, ylabel = "Vector Efficiency", connect=False, draw_mean=True)
+    plot_chart(char, labs , vals, output, title=title, ylabel = "Vector Efficiency", connect=False, draw_mean=True, size=(7,4))
 
 
 def plot_new(data, detailed_summary, parameter, output, title="", speedup=False):
@@ -334,6 +335,11 @@ def plot_new(data, detailed_summary, parameter, output, title="", speedup=False)
     labs = [x.title() for x in labs]
     plot_chart(char, labs , vals, output, title=title, ylabel = "Vector Efficiency", connect=True)
 
+def to_string(f):
+    if f == 0.0:
+        return "-"
+    else:
+        return "{:2.1f}".format(f)
 
 def print_summary(detailed_summary,categories):
     # Print latex table
@@ -354,12 +360,12 @@ def print_summary(detailed_summary,categories):
         #f.write("\\begin{table}[hpt] \n")
         #f.write("\\centering \n")
         f.write("\\begin{adjustbox}{center} \n")
-        f.write("\\begin{longtable}{|c|c" + ("|c"*(cat_num-5)) +"|}\n")
+        f.write("\\begin{tabular}{|c|c" + ("|c"*(cat_num)) +"|}\n")
         f.write("\\hline\n")
         f.write("\\begin{turn}{"+str(rotation)+"}Architecture-Compiler\\end{turn} & ")
         #f.write("\\begin{turn}{"+str(rotation)+"}Compiler\\end{turn} & ")
         f.write("\\begin{turn}{"+str(rotation)+"}Parameters\\end{turn} ")
-        for cat in categories[:-5]:
+        for cat in categories:
             f.write(" & \\begin{turn}{"+str(rotation)+"}"+cat.title().replace("_"," ") +"\\end{turn} ")
 
         f.write("\\\\ \n")
@@ -369,11 +375,20 @@ def print_summary(detailed_summary,categories):
             #print(arch)
             #print(comp)
             f.write("\\hline \n")
-            f.write("  \multirow{"+str(par_num)+"}{*}{"+archcomp+"} & P "+ ("& 1.0 "*(cat_num-5))  +" \\\\ \n")
-            for i in range(par_num-1):
-                f.write(" & P "+ ("& 1.0 "*(cat_num-5))  +" \\\\ \n")
+            f.write("  \multirow{"+str(par_num)+"}{*}{\\begin{turn}{90}"+archcomp+"\\end{turn}} & CT ALL &") 
+            f.write(" & ".join([to_string(detailed_summary[archcomp]['None'][x]) for x in categories])+" \\\\ \n")
+            f.write(" & RT LOOP BOUNDS & ")
+            f.write(" & ".join([to_string(detailed_summary[archcomp]['RUNTIME_LOOP_BOUNDS'][x]) for x in categories])+" \\\\ \n")
+            f.write(" & RT INDICES & ")
+            f.write(" & ".join([to_string(detailed_summary[archcomp]['RUNTIME_INDEX'][x]) for x in categories])+" \\\\ \n")
+            f.write(" & RT CONDITIONALS & ")
+            f.write(" & ".join([to_string(detailed_summary[archcomp]['RUNTIME_CONDITIONS'][x]) for x in categories])+" \\\\ \n")
+            f.write(" & RT ARITHMETIC & ")
+            f.write(" & ".join([to_string(detailed_summary[archcomp]['RUNTIME_ARITHMETIC'][x]) for x in categories])+" \\\\ \n")
+            f.write(" & RT ALL & ")
+            f.write(" & ".join([to_string(detailed_summary[archcomp]['RUNTIME_ALL'][x]) for x in categories])+" \\\\ \n")
         f.write("\\hline \n")
-        f.write("\\end{longtable}\n")
+        f.write("\\end{tabular}\n")
         f.write("\\end{adjustbox}\n")
 
 
@@ -421,22 +436,25 @@ def main():
     plot_new(data, detailed_summary, 'RUNTIME_ALL','rall.png', 'All Parameters')
     print_summary(detailed_summary, all_categories(data))
 
-    exit(0)
+    #exit(0)
     print("- Compiler comparison")
-    plot_compilers(data, 'compilers-bdw.png', 'bdw', 'Broadwell Compiler comparison')
-    plot_compilers(data, 'compilers-pwr8.png', 'pwr8', 'Power8 Compiler comparison')
-    plot_compilers(data, 'compilers_bdw_vs_gcc.png', 'bdw', 'Broadwell Performance against gcc', speedup_vs='bdw-gcc')
-    plot_compilers(data, 'compilers_pwr8_vs_gcc.png', 'pwr8', 'Power8 Performance against gcc', speedup_vs='pwr8-gcc')
+    plot_compilers(data, 'compilers-avx2.png', 'avx2', 'Broadwell Compiler comparison')
+    plot_compilers(data, 'compilers-altivec.png', 'altivec', 'Power8 Compiler comparison')
+    plot_compilers(data, 'compilers-avx512.png', 'avx512', 'KNL Compiler comparison')
+    plot_compilers(data, 'compilers_avx2_vs_gcc.png', 'avx2', 'Broadwell Performance against gcc', speedup_vs='avx2-gcc')
+    #plot_compilers(data, 'compilers_altivec_vs_gcc.png', 'altivec', 'Power8 Performance against gcc', speedup_vs='alitvec-gcc')
+    plot_compilers(data, 'compilers_avx512_vs_gcc.png', 'avx512', 'KNL Performance against gcc', speedup_vs='avx512-gcc')
 
     print("- Categories comparison")
-    plot_categories(data, 'bdw-icc', 'bdw-icc.png', title="BDW ICC Auto-vectorization", speedup=False)
-    plot_categories(data, 'bdw-gcc', 'bdw-gcc.png', title="BDW GCC Auto-vectorization", speedup=False)
-    plot_categories(data, 'bdw-pgi', 'bdw-pgi.png', title="BDW PGI Auto-vectorization", speedup=False)
-    plot_categories(data, 'pwr8-gcc', 'pwr8-gcc.png', title="Power8 GCC Auto-vectorization", speedup=False)
-    plot_categories(data, 'pwr8-xlc', 'pwr8-xlc.png', title="Power8 XLC Auto-vectorization", speedup=False)
-    plot_categories(data, 'knl-icc', 'knl-icc.png', title="KNL ICC Auto-vectorization", speedup=False)
+    plot_categories(data, 'avx2-icc', 'avx2-icc.png', title="BDW ICC Auto-vectorization", speedup=False)
+    plot_categories(data, 'avx2-gcc', 'avx2-gcc.png', title="BDW GCC Auto-vectorization", speedup=False)
+    plot_categories(data, 'avx2-pgi', 'avx2-pgi.png', title="BDW PGI Auto-vectorization", speedup=False)
+    plot_categories(data, 'altivec-gcc', 'altivec-gcc.png', title="Power8 GCC Auto-vectorization", speedup=False)
+    plot_categories(data, 'altivec-xlc', 'altivec-xlc.png', title="Power8 XLC Auto-vectorization", speedup=False)
+    plot_categories(data, 'avx512-icc', 'avx512-icc.png', title="KNL ICC Auto-vectorization", speedup=False)
     #plot_categories(data, 'pwr8-pgi', 'pwr8-pgi.png', title="Power8 PGI Auto-vectorization", speedup=False)
     #plot_categories(data, 'pwr8-clang', 'pwr8-clang.png', title="Power8 Clang Auto-vectorization", speedup=False)
+
     exit(0)
     plot_categories(data, 'icc_unsafe', 'icc_speedup.png', title="ICC performance angainst original", speedup=True)
     plot_categories(data, 'gcc_unsafe', 'gcc.png', title="GCC Auto-vectorization", speedup=False)
