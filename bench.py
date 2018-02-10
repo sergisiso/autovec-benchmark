@@ -28,41 +28,52 @@ benchmarks = [
     "CONTROL_LOOPS"
 ]
 
-c_flags = {"gcc" : {
-                "vec" : " -march=native ",
-                "novec" : " -fno-tree-vectorize ",
-                "common" : " gcc -std=c99 -O3 -fivopts -flax-vector-conversions -funsafe-math-optimizations -ffast-math -fassociative-math",
-                "report" : " -ftree-vectorizer-verbose=5 ",
-                "unopt" : " gcc -O0 "
-            },
-            "icc" : {
-                "vec" : " -xHost ",
-                "novec" : " -no-simd -no-vec ",
-                "common" : " icc -std=c99 -Ofast -fp-model fast=2 -prec-sqrt -ftz -fma ",
-                "report" : " -qopt-report=5 ",
-                "unopt" : " icc -O0 "
-            },
-	    "clang" : {
-                "vec" : " -march=native ",
-                "novec" : " -fno-vectorize ",
-                "common" : " clang -std=c99 -O3 ",
-                "report" : " ",
-                "unopt" : " clang -O0 "
-            },
-            "pgi" : {
-                "vec" : " -Mvect ",
-                "novec" : " -Mnovect ",
-                "common" : " pgcc -O3 -fast -fastsse",
-                "report" : " ",
-                "unopt" : " pgcc -O0 "
-            },
-	   "ibm" : {
-                "vec" : " -qaltivec -qhot=vector:fastmath -qsimd=auto ",
-                "novec" : " -qnoaltivec -qhot=novector:fastmath -qsimd=noauto",
-                "common" : " xlc -O5",
-                "report" : " ",
-                "unopt" : " xlc -O0 "
-            }
+c_flags = {
+    "gcc" : {
+        "call": "gcc",
+        "vec" : " -march=native -flax-vector-conversions ",
+        "novec" : " -fno-tree-vectorize ",
+        "opt" : " -O3 -fivopts -funsafe-math-optimizations -ffast-math -fassociative-math",
+        "unopt" : " -O0 ",
+        "report" : " -fopt-info-optall",
+        "assem" : " -S"
+    },
+    "icc" : {
+        "call": "icc",
+        "vec" : " -xHost ",
+        "novec" : " -no-simd -no-vec ",
+        "opt" : " -Ofast -fp-model fast=2 -prec-sqrt -ftz -fma ",
+        "unopt" : " -O0 ",
+        "report" : " -qopt-report=5 ",
+        "assem" : " -Fa"
+    },
+    "clang" : {
+        "call": "clang",
+        "vec" : " -march=native ",
+        "novec" : " -fno-vectorize ",
+        "opt" : " -O3 ",
+        "unopt" : " -O0 ",
+        "report" : " ",
+        "assem" : " -S"
+    },
+    "pgi" : {
+        "call": " pgcc",
+        "vec" : " -Mvect ",
+        "novec" : " -Mnovect ",
+        "opt" : " -O3 -fast -fastsse",
+        "unopt" : " -O0 ",
+        "report" : " ",
+        "assem" : " -S"
+    },
+    "ibm" : {
+        "call": "xlc",
+        "vec" : " -qaltivec -qhot=vector:fastmath -qsimd=auto ",
+        "novec" : " -qnoaltivec -qhot=novector:fastmath -qsimd=noauto",
+        "opt" : " -O5",
+        "unopt" : " -O0 ",
+        "report" : " ",
+        "assem" : " -S"
+    }
 }
 
 
@@ -102,48 +113,64 @@ def main():
 
 
     # Create Output folder
-    #timestamp = datetime.now().strftime('%Y-%m-%d-%H:%M')
     basedir = "results-"+str(args.results)
-
     if os.path.exists(basedir):
         print "Error: ", basedir, "already exists!"
         return -1
     else:
         os.makedirs(basedir)
 
-    for c in c_list:
+    # Prepare all folders with compiled tests inside
+    for c in c_list: # All selected compilers
         test_dir = os.path.join(basedir,c)
         print "Creating ", test_dir , " folder"
         os.makedirs(test_dir)
             
-        for b in b_list:
+        for b in b_list: # All selected benchmarks/categories
             test_dir = os.path.join(os.path.join(basedir,c),b)
             print "Creating ", test_dir , " folder"
             os.makedirs(test_dir)
 
-            for p in p_list:
+            for p in p_list: # All selected parameters
                 test_dir = os.path.join(os.path.join(os.path.join(basedir,c),b),p)
                 p_flags = parameterflags[p]
                 print "Creating ", test_dir , " folder"
                 os.makedirs(test_dir)
-                shutil.copyfile("dummy.c",os.path.join(test_dir,"dummy.c"))
-                shutil.copyfile("tsc_runtime.c",os.path.join(test_dir,"tsc_runtime.c"))
-                shutil.copyfile("parameters.dat",os.path.join(test_dir,"parameters.dat"))
 
-                print "Compiling tsc_runtime ", b, p
-                exec_comp(c_flags[c]['unopt'] + ' -c -o dummy.o dummy.c', test_dir)
-                exec_comp(c_flags[c]['common'] + c_flags[c]['vec'] + c_flags[c]['report'] +
-                    ' -c -o tscrtvec.o tsc_runtime.c' + ' -D' + b + p_flags, test_dir, 'compilervec_output.txt')
-                #exec_comp(c_flags[c]['common'] + c_flags[c]['vec']  + ' -S -o tscrtvec.s tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
-                exec_comp(c_flags[c]['common'] + c_flags[c]['novec'] +' -c -o tscrtnovec.o tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
-                #exec_comp(c_flags[c]['common'] + c_flags[c]['novec'] +' -S -o tscrtnovec.s tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
-                exec_comp(c_flags[c]['unopt'] + ' dummy.o tscrtvec.o -o runrtvec -lm', test_dir)
-                exec_comp(c_flags[c]['unopt'] + ' dummy.o tscrtnovec.o -o runrtnovec -lm', test_dir)
+                # Copy TSVC inside the new folder
+                shutil.copyfile("src/dummy.c",os.path.join(test_dir,"dummy.c"))
+                shutil.copyfile("src/tsc_runtime.c",os.path.join(test_dir,"tsc_runtime.c"))
+                shutil.copyfile("src/parameters.dat",os.path.join(test_dir,"parameters.dat"))
 
-                print "Run tsc_runtime", p , "vector test", b
-                run_cmd('./runrtvec > runrtvec.txt', test_dir)
-                print "Run rsc_runtime ", p, "scalar test", b
-                run_cmd('./runrtnovec > runrtnovec.txt', test_dir)
+                print "Compiling TSVC ", b, p
+                exec_comp( c_flags[c]['call'] + c_flags[c]['unopt'] +
+                        ' -c -o dummy.o dummy.c', test_dir)
+
+                exec_comp( c_flags[c]['call'] + c_flags[c]['opt'] +c_flags[c]['vec']
+                        + c_flags[c]['report'] + '=vecreport.txt'  +
+                        ' -c -o tscrtvec.o tsc_runtime.c' +
+                        ' -D' + b + p_flags, test_dir, 'compiler_vec.out')
+
+                exec_comp( c_flags[c]['call'] +c_flags[c]['opt'] + c_flags[c]['novec']
+                        + c_flags[c]['report'] + '=novecreport.txt' +
+                        ' -c -o tscrtnovec.o tsc_runtime.c' +
+                        ' -D' + b + p_flags, test_dir, 'compiler_novec.out')
+
+                # Generate assembly files
+                exec_comp( c_flags[c]['call'] + c_flags[c]['opt'] + c_flags[c]['vec']  +
+                        ' -S -o tscrtvec.s tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
+
+                exec_comp( c_flags[c]['call'] + c_flags[c]['opt'] + c_flags[c]['novec'] +
+                        ' -S -o tscrtnovec.s tsc_runtime.c' + ' -D' + b +
+                        p_flags, test_dir)
+
+                # Link  tsvc vector and scalar versions
+                exec_comp( c_flags[c]['call'] + c_flags[c]['unopt'] + ' dummy.o tscrtvec.o -o runrtvec -lm', test_dir)
+                exec_comp( c_flags[c]['call'] + c_flags[c]['unopt'] + ' dummy.o tscrtnovec.o -o runrtnovec -lm', test_dir)
+
+                # Run commands
+                run_cmd('./runrtvec > runrtvec.txt', test_dir, args.results)
+                run_cmd('./runrtnovec > runrtnovec.txt', test_dir, args.results)
 
 
 def exec_comp(cmd, test_dir, save=None):
@@ -156,10 +183,11 @@ def exec_comp(cmd, test_dir, save=None):
             f.write(out)
             f.write(err)
 
-def run_cmd(cmd, test_dir):
-    if False:
-        print "No job submitted, just compiling"
-    elif True:
+def run_cmd(cmd, test_dir, name):
+    if True:
+        with open('runall_'+name+'.sh','a') as f:
+            f.write('cd '+ test_dir+';'+cmd+';cd -;\n')
+    elif False:
         print "Executing: ", cmd
         p = subprocess.Popen(cmd, cwd=test_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         out, err = p.communicate()
