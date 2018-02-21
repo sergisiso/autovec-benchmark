@@ -14,6 +14,7 @@ params += -DRUNTIME_LOOP_BOUNDS_PARAMETERS
 params += -DRUNTIME_ARITHMETIC_PARAMETERS
 params += -DRUNTIME_INDEX_PARAMETERS
 params += -DCONDITION_EVAL_PARAMETERS
+params += -DVARIABLE_ATTRIBUTES
 
 all : runvec runnovec runrtvec runrtnovec
 

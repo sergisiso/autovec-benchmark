@@ -27,8 +27,7 @@
 #define RUNTIME_ARITHMETIC_PARAMETERS 1
 #define RUNTIME_INDEX_PARAMETERS 1
 #define CONDITION_EVAL_PARAMETERS 1
-#define RESTRICT_ATTRIBUTE 1
-#define ALIGNMENT_ATTRIBUTE 1
+#define VARIABLE_ATTRIBUTES 1
 #define INLINE_FUNCTIONS 1
 */
 
@@ -54,21 +53,18 @@ static int digits = digits_default;
     #define USE_FLOAT_TRIG
 #endif
 
-#ifndef X_TYPE
-#define X_TYPE TYPE
-#endif
-
 #define ALIGNMENT 64
-#if defined(ALIGNMENT_ATTRIBUTE)
+#if defined(VARIABLE_ATTRIBUTES)
     #define ALIGN __attribute__ ((aligned(ALIGNMENT))) 
+    #define ASSUMEALIGN(x) x = __builtin_assume_aligned(x,ALIGNMENT); 
+    #define RESTRICT restrict
 #else
-    #define ALIGN 
+    #define ALIGN
+    #define ASSUMEALIGN(x)
+    #define RESTRICT 
 #endif
 
 
-#if defined(RESTRICT_ATTRIBUTE)
-    #define RESTRICT __restrict__
-#endif
 
 #if defined(RUNTIME_LOOP_BOUNDS_PARAMETERS)
     int LEN;
@@ -143,23 +139,45 @@ static int digits = digits_default;
 
 
 //Declare arrays with but don't allocate them
-X_TYPE * X,* Y, * Z, * U, * V; //size lll
-TYPE * array; // size LEN2*LEN2
-TYPE * x; //size LEN
-TYPE * a, * b, * c, * d, * e; //size LEN
-TYPE * aa, * bb, * cc, * tt; //size LEN2*LEN2
-int * indx; // size LEN
-TYPE* xx;
-TYPE* yy;
+TYPE* RESTRICT X ALIGN;
+TYPE* RESTRICT Y ALIGN;
+TYPE* RESTRICT Z ALIGN;
+TYPE* RESTRICT U ALIGN;
+TYPE* RESTRICT V ALIGN;
+TYPE* RESTRICT array ALIGN;
+TYPE* RESTRICT x ALIGN;
+TYPE* RESTRICT a ALIGN;
+TYPE* RESTRICT b ALIGN;
+TYPE* RESTRICT c ALIGN;
+TYPE* RESTRICT d ALIGN;
+TYPE* RESTRICT e ALIGN; 
+TYPE* RESTRICT aa ALIGN;
+TYPE* RESTRICT bb ALIGN;
+TYPE* RESTRICT cc ALIGN;
+TYPE* RESTRICT tt ALIGN; 
+TYPE* RESTRICT xx ALIGN;
+int* RESTRICT indx ALIGN; 
 
 
 TYPE temp;
 int temp_int;
 int dummy(TYPE *, TYPE *, TYPE *, TYPE *, TYPE *, TYPE *, TYPE *, TYPE*, TYPE);
 int dummy_media(short[], char[], int);
+void allocate_arrays(
+        TYPE *X, TYPE *Y, TYPE *Z, TYPE *U, TYPE *V,
+        TYPE *a, TYPE *b, TYPE *c, TYPE *d, TYPE *e,
+        TYPE *array, TYPE * x, int * indx,
+        TYPE *aa, TYPE *bb, TYPE *cc, TYPE *tt );
+void free_arrays(
+        TYPE *X, TYPE *Y, TYPE *Z, TYPE *U, TYPE *V,
+        TYPE *a, TYPE *b, TYPE *c, TYPE *d, TYPE *e,
+        TYPE *array, TYPE * x, int * indx,
+        TYPE *aa, TYPE *bb, TYPE *cc, TYPE *tt );
 
-int set1d(TYPE * arr, TYPE value, int stride)
+int set1d(TYPE* RESTRICT arr, TYPE value, int stride)
 {
+    ASSUMEALIGN(arr)
+
 	if (stride == -1) {
 		for (int i = 0; i < LEN; i++) {
 			arr[i] = 1. / (TYPE) (i+1);
@@ -176,8 +194,9 @@ int set1d(TYPE * arr, TYPE value, int stride)
 	return 0;
 }
 
-int set1ds(int _n, TYPE * arr, TYPE value, int stride)
+int set1ds(int _n, TYPE* RESTRICT arr, TYPE value, int stride)
 {
+    ASSUMEALIGN(arr)
 	if (stride == -1) {
 		for (int i = 0; i < LEN; i++) {
 			arr[i] = 1. / (TYPE) (i+1);
@@ -194,8 +213,9 @@ int set1ds(int _n, TYPE * arr, TYPE value, int stride)
 	return 0;
 }
 
-int set2d(TYPE * arr, TYPE value, int stride)
+int set2d(TYPE * RESTRICT arr, TYPE value, int stride)
 {
+    ASSUMEALIGN(arr)
 
 //  -- initialize two-dimensional arraysft
 
@@ -221,7 +241,8 @@ int set2d(TYPE * arr, TYPE value, int stride)
 	return 0;
 }
 
-TYPE sum1d(TYPE * arr){
+TYPE sum1d(TYPE * RESTRICT arr){
+    ASSUMEALIGN(arr)
 	TYPE ret = 0.;
 	for (int i = 0; i < LEN; i++)
 		ret += arr[i];
@@ -3875,7 +3896,9 @@ int s311()
 	return 0;
 }
 
-TYPE test(TYPE* A){
+TYPE test(TYPE * RESTRICT A){
+  
+  ASSUMEALIGN(A)
   TYPE s = (TYPE)ap_n0;
   for (int i = 0; i < bp_n4; i++) s += A[i];
   return s;
@@ -4717,8 +4740,9 @@ int s352()
 
 // %3.5
 
-int s353(ALIGN int*  ip)
+int s353(int * RESTRICT ip)
 {
+    ASSUMEALIGN(ip)
 
 //	loop rerolling
 //	unrolled sparse saxpy
@@ -4754,6 +4778,7 @@ int s353(ALIGN int*  ip)
 
 // %4.2
 
+TYPE* yy ALIGN; // Aliased to xx (DO NOT USE restrict attribute)
 int s421()
 {
 
@@ -4923,8 +4948,9 @@ int min(int a, int b){
 
 // %4.9
 
-int s491(int*  ip)
+int s491(int* RESTRICT ip)
 {
+    ASSUMEALIGN(ip)
 
 //	vector semantics
 //	indirect addressing on lhs, store in sequence
@@ -4951,8 +4977,9 @@ int s491(int*  ip)
 
 // %4.11
 
-int s4112(int*  ip, TYPE s)
+int s4112(int* RESTRICT ip, TYPE s)
 {
+    ASSUMEALIGN(ip)
 
 //	indirect addressing
 //	sparse saxpy
@@ -4978,8 +5005,9 @@ int s4112(int*  ip, TYPE s)
 
 // %4.11
 
-int s4113(int*  ip)
+int s4113(int* RESTRICT ip)
 {
+    ASSUMEALIGN(ip)
 
 //	indirect addressing
 //	indirect addressing on rhs and lhs
@@ -5006,8 +5034,9 @@ int s4113(int*  ip)
 
 // %4.11
 
-int s4114(int*  ip, int n1)
+int s4114(int* RESTRICT ip, int n1)
 {
+    ASSUMEALIGN(ip)
 
 //	indirect addressing
 //	mix indirect addressing with variable lower and upper bounds
@@ -5037,8 +5066,9 @@ int s4114(int*  ip, int n1)
 
 // %4.11
 
-int s4115(int*  ip)
+int s4115(int* RESTRICT ip)
 {
+    ASSUMEALIGN(ip)
 
 //	indirect addressing
 //	sparse dot product
@@ -5068,8 +5098,9 @@ int s4115(int*  ip)
 
 // %4.11
 
-int s4116(int*  ip, int j, int inc)
+int s4116(int* RESTRICT ip, int j, int inc)
 {
+    ASSUMEALIGN(ip)
 
 //	indirect addressing
 //	more complicated sparse sdot
@@ -5158,8 +5189,9 @@ int va()
 
 // %5.1
 
-int vag( int* __restrict__ ip)
+int vag( int* RESTRICT ip)
 {
+    ASSUMEALIGN(ip)
 
 //	control loops
 //	vector assignment, gather
@@ -5186,8 +5218,9 @@ int vag( int* __restrict__ ip)
 
 // %5.1
 
-int vas( int* __restrict__ ip)
+int vas( int* RESTRICT ip)
 {
+    ASSUMEALIGN(ip)
 
 //	control loops
 //	vector assignment, scatter
@@ -5511,9 +5544,8 @@ int vbor()
 
 #endif // CONTROL_LOOPS
 
-void set(int* ip){
-    int err  = posix_memalign((void **) &xx, ALIGNMENT, LEN*sizeof(TYPE));
-    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
+void set(int* RESTRICT ip){
+    ASSUMEALIGN(ip)
 	printf("\n");
 	for (int i = 0; i < LEN; i = i+5){
 		ip[i]	= (i+4);
@@ -5625,55 +5657,10 @@ void load_parameters(){
 
 }
 
-void allocate_arrays(){
-    int err;
 
-    err = posix_memalign((void **) &X, ALIGNMENT, lll*sizeof(TYPE));
-    err = posix_memalign((void **) &Y, ALIGNMENT, lll*sizeof(TYPE));
-    err = posix_memalign((void **) &Z, ALIGNMENT, lll*sizeof(TYPE));
-    err = posix_memalign((void **) &U, ALIGNMENT, lll*sizeof(TYPE));
-    err = posix_memalign((void **) &V, ALIGNMENT, lll*sizeof(TYPE));
-
-    err = posix_memalign((void **) &x, ALIGNMENT, LEN*sizeof(TYPE));
-    err = posix_memalign((void **) &a, ALIGNMENT, LEN*sizeof(TYPE));
-    err = posix_memalign((void **) &b, ALIGNMENT, LEN*sizeof(TYPE));
-    err = posix_memalign((void **) &c, ALIGNMENT, LEN*sizeof(TYPE));
-    err = posix_memalign((void **) &d, ALIGNMENT, LEN*sizeof(TYPE));
-    err = posix_memalign((void **) &e, ALIGNMENT, LEN*sizeof(TYPE));
-    err = posix_memalign((void **) &indx, ALIGNMENT, LEN*sizeof(TYPE));
-
-    err = posix_memalign((void **) &array, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
-    err = posix_memalign((void **) &aa, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
-    err = posix_memalign((void **) &bb, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
-    err = posix_memalign((void **) &cc, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
-    err = posix_memalign((void **) &tt, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
-
-    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-
-}
-
-void free_arrays(){
-    free(X);
-    free(Y);
-    free(Z);
-    free(U);
-    free(V);
-    free(x);
-    free(a);
-    free(b);
-    free(c);
-    free(d);
-    free(e);
-    free(indx);
-    free(array);
-    free(aa);
-    free(bb);
-    free(cc);
-    free(tt);
-}
 
 int main(int argc, char *argv[]){
-	ALIGN int*  ip;
+
 
     // Print TEST info
     printf("Runing extended TSVC test with dynamic arrays\n");
@@ -5693,11 +5680,9 @@ int main(int argc, char *argv[]){
 #endif
 
 #if defined(RESTRICT_ATTRIBUTE)
-    printf("Test with 'restrict' attribute\n");
+    printf("Test with 'restrict' and  'alignment' attributes\n");
 #endif
-#if defined(ALIGNMENT_ATTRIBUTE)
-    printf("Test with 'alignment' attribute equal to %d\n", ALIGNMENT);
-#endif
+
 #if defined(INLINE_FUNCTIONS)
     printf("Test with inlined functions (not implemented yet)\n");
 #endif
@@ -5707,10 +5692,16 @@ int main(int argc, char *argv[]){
     load_parameters();
 #endif
 
-    allocate_arrays();
-
+	int * RESTRICT ip ALIGN;
     int err = posix_memalign((void **) &ip, ALIGNMENT, LEN*sizeof(TYPE));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
+
+    allocate_arrays(
+        X, Y, Z, U, V,
+        a, b, c, d, e,
+        array, x, indx,
+        aa, bb, cc, tt );
+
 
     if (argc > 1) ntimes = atoi(argv[1]);
     printf("Running each loop %d times...\n", ntimes);
@@ -5943,7 +5934,11 @@ int main(int argc, char *argv[]){
 	vbor();fflush(stdout);
 #endif
 
-    free_arrays();
+    free_arrays(
+        X, Y, Z, U, V,
+        a, b, c, d, e,
+        array, x, indx,
+        aa, bb, cc, tt );
 	return 0;
 }
 
