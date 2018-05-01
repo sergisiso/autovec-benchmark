@@ -164,15 +164,15 @@ int temp_int;
 int dummy(TYPE *, TYPE *, TYPE *, TYPE *, TYPE *, TYPE *, TYPE *, TYPE*, TYPE);
 int dummy_media(short[], char[], int);
 void allocate_arrays(
-        TYPE *X, TYPE *Y, TYPE *Z, TYPE *U, TYPE *V,
-        TYPE *a, TYPE *b, TYPE *c, TYPE *d, TYPE *e,
-        TYPE *array, TYPE * x, int * indx,
-        TYPE *aa, TYPE *bb, TYPE *cc, TYPE *tt );
+        TYPE **X, TYPE **Y, TYPE **Z, TYPE **U, TYPE **V,
+        TYPE **a, TYPE **b, TYPE **c, TYPE **d, TYPE **e,
+        TYPE **array, TYPE **x, int **indx,
+        TYPE **aa, TYPE **bb, TYPE **cc, TYPE **tt, TYPE **xx );
 void free_arrays(
         TYPE *X, TYPE *Y, TYPE *Z, TYPE *U, TYPE *V,
         TYPE *a, TYPE *b, TYPE *c, TYPE *d, TYPE *e,
         TYPE *array, TYPE * x, int * indx,
-        TYPE *aa, TYPE *bb, TYPE *cc, TYPE *tt );
+        TYPE *aa, TYPE *bb, TYPE *cc, TYPE *tt, TYPE *xx );
 
 int set1d(TYPE* RESTRICT arr, TYPE value, int stride)
 {
@@ -5697,10 +5697,10 @@ int main(int argc, char *argv[]){
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
 
     allocate_arrays(
-        X, Y, Z, U, V,
-        a, b, c, d, e,
-        array, x, indx,
-        aa, bb, cc, tt );
+        &X, &Y, &Z, &U, &V,
+        &a, &b, &c, &d, &e,
+        &array, &x, &indx,
+        &aa, &bb, &cc, &tt, &xx );
 
 
     if (argc > 1) ntimes = atoi(argv[1]);
@@ -5938,7 +5938,7 @@ int main(int argc, char *argv[]){
         X, Y, Z, U, V,
         a, b, c, d, e,
         array, x, indx,
-        aa, bb, cc, tt );
+        aa, bb, cc, tt, xx );
 	return 0;
 }
 
