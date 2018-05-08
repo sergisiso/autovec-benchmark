@@ -66,32 +66,6 @@ void allocate_arrays(
 
 }
 
-void free_arrays(
-        TYPE *X, TYPE *Y, TYPE *Z, TYPE *U, TYPE *V,
-        TYPE *a, TYPE *b, TYPE *c, TYPE *d, TYPE *e,
-        TYPE *array, TYPE * x, int * indx,
-        TYPE *aa, TYPE *bb, TYPE *cc, TYPE *tt, TYPE *xx ){
-    free(X);
-    free(Y);
-    free(Z);
-    free(U);
-    free(V);
-    free(x);
-    free(a);
-    free(b);
-    free(c);
-    free(d);
-    free(e);
-    free(indx);
-    free(array);
-    free(aa);
-    free(bb);
-    free(cc);
-    free(tt);
-    free(xx);
-}
-
-
 
 int dummy(TYPE a[LEN], TYPE b[LEN], TYPE c[LEN], TYPE d[LEN], TYPE e[LEN], TYPE aa[LEN2][LEN2], TYPE bb[LEN2][LEN2], TYPE cc[LEN2][LEN2], TYPE s){
 	// --  called in each loop to make all computations appear required

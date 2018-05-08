@@ -1,0 +1,36 @@
+#BSUB -J eTSVC
+#BSUB -o /lustre/scafellpike/local/HCP055/pxs02/sss33-pxs02/workspace/phd/tsvc-runtimeparameters/KNL.%J.out
+#BSUB -e /lustre/scafellpike/local/HCP055/pxs02/sss33-pxs02/workspace/phd/tsvc-runtimeparameters/KNL.%J.err
+#BSUB -n 1
+#BSUB -R 'span[ptile=64]'
+#BSUB -W 10:00
+#BSUB -q scafellpikeKNL
+#BSUB -x
+
+module load use.scafellpike
+
+cd /lustre/scafellpike/local/HCP055/pxs02/sss33-pxs02/workspace/phd/tsvc-runtimeparameters
+
+
+module load gcc7/7.2.0
+module load intel/18.2.199
+module load mypgi18.4
+module load myclang6
+
+
+#compilers=(gcc icc pgi clang)
+compilers=(gcc)
+#compilers=(icc)
+#compilers=(pgi)
+#compilers=(clang)
+isas=(knl)
+
+for c in "${compilers[@]}"; do
+    for isa in "${isas[@]}"; do
+        echo " # Using compiler: $c , isa:$isa "
+        ./bench.py --results results-${c}-${isa} --compiler ${c} --isa ${isa}
+        chmod +x runall_results-${c}-${isa}.sh
+        ./runall_results-${c}-${isa}.sh
+    done
+done
+
