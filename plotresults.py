@@ -45,9 +45,15 @@ palette = {
         "Altivec-Xlc": rgb([30,0,33]),
         "Altivec-Gcc": rgb([255,166,69]),
         "Altivec-Pgi": rgb([1,92,135]),
+        "Altivec-Clang": rgb([1,92,135]),
         "Avx512-Gcc": rgb([150,89,0]),
         "Avx512-Icc": rgb([99,183,80]),
         "Avx512-Clang": rgb([121,0,7]),
+        "Avx512-Pgi": rgb([121,0,7]),
+        "Knl-Gcc": rgb([150,89,0]),
+        "Knl-Icc": rgb([99,183,80]),
+        "Knl-Clang": rgb([121,0,7]),
+        "Knl-Pgi": rgb([121,0,7]),
 
         "Linear Dependence" : rgb([218,145,51]),
         "Induction Variable": rgb([89,112,216]),
@@ -345,33 +351,36 @@ def load_data(data, compiler, category, parameters, parameters_path):
         novecfname = 'runrtnovec.txt'
 
     # Open results files and entries to 'data'
-    with open(os.path.join(parameters_path,vecfname)) as vecf:
-        with open(os.path.join(parameters_path,novecfname)) as novecf:
-            for linevec, linenovec in zip(vecf.readlines(),novecf.readlines()):
-                if linevec[0] == 'S':
-                    if linenovec.split()[0] == linevec.split()[0]:
-                        test, novec_perf, cs1 = linenovec.split()
-                        test, vec_perf, cs2 = linevec.split()
-                        if test in remove_tests:
-                            continue
-                        if abs(float(cs1) - float(cs2)) > abs(float(cs1)*0.01):
-                            print("Warning checksums differ! ", compiler,
-                                    category, parameters, test, cs1," ",cs2)
-                        elif float(novec_perf) == 0.0 or float(vec_perf) == 0.0:
-                            print("Warning contains 0 " , compiler,
-                                    category, parameters, test)
-                        elif float(novec_perf)/float(vec_perf) > 16.0:
-                            print("Warning outlier " , compiler, category,
-                                parameters, test, float(novec_perf),
-                                float(vec_perf), float(novec_perf)/float(vec_perf))
-                        #else: # --> use else to eliminate warrining cases
-                        data[compiler][category][parameters][test] = [
-                            float(vec_perf),
-                            float(novec_perf),
-                            float(novec_perf)/float(vec_perf)
-                            ]
-                    else:
-                        print("Warning, some lines are different!")
+    try:
+        with open(os.path.join(parameters_path,vecfname)) as vecf:
+            with open(os.path.join(parameters_path,novecfname)) as novecf:
+                for linevec, linenovec in zip(vecf.readlines(),novecf.readlines()):
+                    if linevec[0] == 'S':
+                        if linenovec.split()[0] == linevec.split()[0]:
+                            test, novec_perf, cs1 = linenovec.split()
+                            test, vec_perf, cs2 = linevec.split()
+                            if test in remove_tests:
+                                continue
+                            if abs(float(cs1) - float(cs2)) > abs(float(cs1)*0.01):
+                                print("Warning checksums differ! ", compiler,
+                                        category, parameters, test, cs1," ",cs2)
+                            elif float(novec_perf) == 0.0 or float(vec_perf) == 0.0:
+                                print("Warning contains 0 " , compiler,
+                                        category, parameters, test)
+                            elif float(novec_perf)/float(vec_perf) > 16.0:
+                                print("Warning outlier " , compiler, category,
+                                    parameters, test, float(novec_perf),
+                                    float(vec_perf), float(novec_perf)/float(vec_perf))
+                            #else: # --> use else to eliminate warrining cases
+                            data[compiler][category][parameters][test] = [
+                                float(vec_perf),
+                                float(novec_perf),
+                                float(novec_perf)/float(vec_perf)
+                                ]
+                        else:
+                            print("Warning, some lines are different!")
+    except FileNotFoundError:
+        print("Warning, files", os.path.join(parameters_path,vecfname), " or ", os.path.join(parameters_path,novecfname), " not found!" )
 
 def plot_compilers(data, output, architecture, title="", speedup_vs=None):
     # all compilers, all categories, original tsc
