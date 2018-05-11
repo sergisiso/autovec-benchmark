@@ -18,76 +18,52 @@
 //TYPE* yy;
 
 void allocate_arrays(
-        TYPE *X, TYPE *Y, TYPE *Z, TYPE *U, TYPE *V,
-        TYPE *a, TYPE *b, TYPE *c, TYPE *d, TYPE *e,
-        TYPE *array, TYPE * x, int * indx,
-        TYPE *aa, TYPE *bb, TYPE *cc, TYPE *tt, TYPE *xx ){
+        TYPE **X, TYPE **Y, TYPE **Z, TYPE **U, TYPE **V,
+        TYPE **a, TYPE **b, TYPE **c, TYPE **d, TYPE **e,
+        TYPE **array, TYPE **x, int **indx,
+        TYPE **aa, TYPE **bb, TYPE **cc, TYPE **tt, TYPE **xx ){
     int err;
 
-    err = posix_memalign((void **) &X, ALIGNMENT, LEN*sizeof(TYPE));
+    err = posix_memalign((void **) X, ALIGNMENT, LEN*sizeof(TYPE));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &Y, ALIGNMENT, LEN*sizeof(TYPE));
+    err = posix_memalign((void **) Y, ALIGNMENT, LEN*sizeof(TYPE));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &Z, ALIGNMENT, LEN*sizeof(TYPE));
+    err = posix_memalign((void **) Z, ALIGNMENT, LEN*sizeof(TYPE));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &U, ALIGNMENT, LEN*sizeof(TYPE));
+    err = posix_memalign((void **) U, ALIGNMENT, LEN*sizeof(TYPE));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &V, ALIGNMENT, LEN*sizeof(TYPE));
-    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-
-    err = posix_memalign((void **) &x, ALIGNMENT, LEN*sizeof(TYPE));
-    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &a, ALIGNMENT, LEN*sizeof(TYPE));
-    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &b, ALIGNMENT, LEN*sizeof(TYPE));
-    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &c, ALIGNMENT, LEN*sizeof(TYPE));
-    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &d, ALIGNMENT, LEN*sizeof(TYPE));
-    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &e, ALIGNMENT, LEN*sizeof(TYPE));
-    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &indx, ALIGNMENT, LEN*sizeof(int));
+    err = posix_memalign((void **) V, ALIGNMENT, LEN*sizeof(TYPE));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
 
-    err = posix_memalign((void **) &array, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
+    err = posix_memalign((void **) x, ALIGNMENT, LEN*sizeof(TYPE));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &aa, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
+    err = posix_memalign((void **) a, ALIGNMENT, LEN*sizeof(TYPE));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &bb, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
+    err = posix_memalign((void **) b, ALIGNMENT, LEN*sizeof(TYPE));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &cc, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
+    err = posix_memalign((void **) c, ALIGNMENT, LEN*sizeof(TYPE));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
-    err = posix_memalign((void **) &tt, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
+    err = posix_memalign((void **) d, ALIGNMENT, LEN*sizeof(TYPE));
+    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
+    err = posix_memalign((void **) e, ALIGNMENT, LEN*sizeof(TYPE));
+    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
+    err = posix_memalign((void **) indx, ALIGNMENT, LEN*sizeof(int));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
 
-    err  = posix_memalign((void **) &xx, ALIGNMENT, LEN*sizeof(TYPE));
+    err = posix_memalign((void **) array, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
+    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
+    err = posix_memalign((void **) aa, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
+    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
+    err = posix_memalign((void **) bb, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
+    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
+    err = posix_memalign((void **) cc, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
+    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
+    err = posix_memalign((void **) tt, ALIGNMENT, LEN2*LEN2*sizeof(TYPE));
     if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
 
-}
+    err  = posix_memalign((void **) xx, ALIGNMENT, LEN*sizeof(TYPE));
+    if (err != 0){printf("Posix_memalign error:%d\n",err);exit(-1);}
 
-void free_arrays(
-        TYPE *X, TYPE *Y, TYPE *Z, TYPE *U, TYPE *V,
-        TYPE *a, TYPE *b, TYPE *c, TYPE *d, TYPE *e,
-        TYPE *array, TYPE * x, int * indx,
-        TYPE *aa, TYPE *bb, TYPE *cc, TYPE *tt ){
-    free(X);
-    free(Y);
-    free(Z);
-    free(U);
-    free(V);
-    free(x);
-    free(a);
-    free(b);
-    free(c);
-    free(d);
-    free(e);
-    free(indx);
-    free(array);
-    free(aa);
-    free(bb);
-    free(cc);
-    free(tt);
 }
 
 

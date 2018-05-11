@@ -31,7 +31,11 @@ benchmarks = [
 c_flags = {
     "gcc" : {
         "call": "gcc",
-        "vec" : " -march=native -flax-vector-conversions ",
+        "arch": {"avx2":" -march=skylake ",
+                 "avx512":" -march=skylake-avx512 ",
+                 "knl":" -march=knl ",
+                 "altivec":" -mcpu=power8 "},
+        "vec" : " -flax-vector-conversions ",
         "novec" : " -fno-tree-vectorize ",
         "opt" : " -O3 -fivopts -funsafe-math-optimizations -ffast-math -fassociative-math",
         "unopt" : " -O0 ",
@@ -39,7 +43,10 @@ c_flags = {
         "assem" : " -S"
     },
     "icc" : {
-        "call": "icc",
+        "call": "icc -std=c99 -g",
+        "arch": {"avx2":" -xAVX2",
+                "avx512":" -xCORE-AVX512",
+                "knl":" -xMIC-AVX512"},
         "vec" : " -xHost ",
         "novec" : " -no-simd -no-vec ",
         "opt" : " -Ofast -fp-model fast=2 -prec-sqrt -ftz -fma ",
@@ -49,6 +56,10 @@ c_flags = {
     },
     "clang" : {
         "call": "clang",
+        "arch": {"avx2":" -march=skylake ",
+                 "avx512":" -march=skylake-avx512 ",
+                 "knl":" -march=knl ",
+                 "altivec":" -mcpu=power8 "},
         "vec" : " -march=native ",
         "novec" : " -fno-vectorize ",
         "opt" : " -O3 ",
@@ -58,7 +69,11 @@ c_flags = {
     },
     "pgi" : {
         "call": " pgcc",
-        "vec" : " -Mvect ",
+        "arch": {"avx2":" -tp=haswell ",
+                 "avx512":" -tp=skylake ",
+                 "knl":" -tp=knl ",
+                 "altivec":" "},
+        "vec" : " -Mvect=simd ",
         "novec" : " -Mnovect ",
         "opt" : " -O3 -fast -fastsse",
         "unopt" : " -O0 ",
@@ -67,6 +82,7 @@ c_flags = {
     },
     "ibm" : {
         "call": "xlc",
+        "arch": {"altivec":" "},
         "vec" : " -qaltivec -qhot=vector:fastmath -qsimd=auto ",
         "novec" : " -qnoaltivec -qhot=novector:fastmath -qsimd=noauto",
         "opt" : " -O5",
@@ -79,13 +95,15 @@ c_flags = {
 
 parameterflags = {
     "None":" ",
-    "RUNTIME_ALL" : " -DRUNTIME_LOOP_BOUNDS_PARAMETERS -DRUNTIME_ARITHMETIC_PARAMETERS -DRUNTIME_INDEX_PARAMETERS -DCONDITION_EVAL_PARAMETERS",
+    "RUNTIME_ALL" : " -DRUNTIME_LOOP_BOUNDS_PARAMETERS -DRUNTIME_ARITHMETIC_PARAMETERS -DRUNTIME_INDEX_PARAMETERS -DCONDITION_EVAL_PARAMETERS -DVARIABLE_ATTRIBUTES",
     "RUNTIME_LOOP_BOUNDS" : " -DRUNTIME_LOOP_BOUNDS_PARAMETERS",
     "RUNTIME_ARITHMETIC" : " -DRUNTIME_ARITHMETIC_PARAMETERS",
     "RUNTIME_INDEX" : " -DRUNTIME_INDEX_PARAMETERS",
     "RUNTIME_CONDITIONS" : " -DCONDITION_EVAL_PARAMETERS",
+    "RUNTIME_ATTRIBUTES" : " -DVARIABLE_ATTRIBUTES",
 }
 
+isas={"avx2","avx512","knl","altivec"}
 
 def main():
     # Use argparse to select the appropiate benchmark set
@@ -95,6 +113,7 @@ def main():
             ", ".join(benchmarks), metavar='')
     parser.add_argument('--compiler', nargs='+', choices=c_flags.keys(), help="Select compiler", default="ALL") 
     parser.add_argument('--parameters', nargs='+', choices=parameterflags.keys(), help="Select compiler", default="ALL") 
+    parser.add_argument('--isa', required=True, help="Specify vector isa to test", choices=isas)
     parser.add_argument('--results', required=True, help="Specify output folder")
     args = parser.parse_args()
 
@@ -143,26 +162,40 @@ def main():
                 shutil.copyfile("src/parameters.dat",os.path.join(test_dir,"parameters.dat"))
 
                 print "Compiling TSVC ", b, p
-                exec_comp( c_flags[c]['call'] + c_flags[c]['unopt'] +
-                        ' -c -o dummy.o dummy.c', test_dir)
+                exec_comp( c_flags[c]['call']
+                        + c_flags[c]['unopt']
+                        + ' -c -o dummy.o dummy.c', test_dir)
 
-                exec_comp( c_flags[c]['call'] + c_flags[c]['opt'] +c_flags[c]['vec']
-                        + c_flags[c]['report'] + '=vecreport.txt'  +
-                        ' -c -o tscrtvec.o tsc_runtime.c' +
-                        ' -D' + b + p_flags, test_dir, 'compiler_vec.out')
+                exec_comp( c_flags[c]['call']
+                        + c_flags[c]['opt']
+                        + c_flags[c]['vec'] 
+                        + c_flags[c]['arch'][args.isa]
+                        + c_flags[c]['report']
+                        + ' -c -o tscrtvec.o tsc_runtime.c'
+                        + ' -D' + b + p_flags, test_dir, 'compiler_vec.out')
 
-                exec_comp( c_flags[c]['call'] +c_flags[c]['opt'] + c_flags[c]['novec']
-                        + c_flags[c]['report'] + '=novecreport.txt' +
-                        ' -c -o tscrtnovec.o tsc_runtime.c' +
-                        ' -D' + b + p_flags, test_dir, 'compiler_novec.out')
+                exec_comp( c_flags[c]['call'] 
+                        + c_flags[c]['opt'] 
+                        + c_flags[c]['novec']
+                        + c_flags[c]['arch'][args.isa]
+                        + c_flags[c]['report']
+                        + ' -c -o tscrtnovec.o tsc_runtime.c'
+                        + ' -D' + b + p_flags, test_dir, 'compiler_novec.out')
 
                 # Generate assembly files
-                exec_comp( c_flags[c]['call'] + c_flags[c]['opt'] + c_flags[c]['vec']  +
-                        ' -S -o tscrtvec.s tsc_runtime.c' + ' -D' + b + p_flags, test_dir)
+                exec_comp( c_flags[c]['call'] 
+                        + c_flags[c]['opt'] 
+                        + c_flags[c]['vec']  
+                        + c_flags[c]['arch'][args.isa]
+                        + ' -S -o tscrtvec.s tsc_runtime.c' 
+                        + ' -D' + b + p_flags, test_dir)
 
-                exec_comp( c_flags[c]['call'] + c_flags[c]['opt'] + c_flags[c]['novec'] +
-                        ' -S -o tscrtnovec.s tsc_runtime.c' + ' -D' + b +
-                        p_flags, test_dir)
+                exec_comp( c_flags[c]['call'] 
+                        + c_flags[c]['opt'] 
+                        + c_flags[c]['novec'] 
+                        + c_flags[c]['arch'][args.isa]
+                        + ' -S -o tscrtnovec.s tsc_runtime.c' 
+                        + ' -D' + b + p_flags, test_dir)
 
                 # Link  tsvc vector and scalar versions
                 exec_comp( c_flags[c]['call'] + c_flags[c]['unopt'] + ' dummy.o tscrtvec.o -o runrtvec -lm', test_dir)
