@@ -56,7 +56,15 @@ static int digits = digits_default;
 #define ALIGNMENT 64
 #if defined(VARIABLE_ATTRIBUTES)
     #define ALIGN __attribute__ ((aligned(ALIGNMENT))) 
-    #define ASSUMEALIGN(x) x = __builtin_assume_aligned(x,ALIGNMENT); 
+    #if defined(__INTEL_COMPILER) 
+        #define ASSUMEALIGN(x) __assume_aligned(x,ALIGNMENT); 
+    #elif defined(__PGI) 
+        #define ASSUMEALIGN(x)
+    #elif defined(__xlc__) 
+        #define ASSUMEALIGN(x)
+    #elif defined(__GNUC__) || defined(__clang__)
+        #define ASSUMEALIGN(x) x = __builtin_assume_aligned(x,ALIGNMENT); 
+    #endif
     #define RESTRICT restrict
 #else
     #define ALIGN
