@@ -226,7 +226,15 @@ def plot_radar_chart(categories, values, labels, outputfile, title="", size=(8,8
         #ax.fill(theta, d, facecolor=color, alpha=0.25)
     ax.set_varlabels(spoke_labels)
 
-    #ax.set_rmin(0); ax.set_rmax(8)
+    ax.set_rmin(0)
+    if title.startswith('Altivec'):
+        ax.set_rmax(4)
+    elif title.startswith('AVX2'):
+        ax.set_rmax(8)
+    elif title.startswith('AVX512'):
+        ax.set_rmax(16)
+    elif title.startswith('KNL'):
+        ax.set_rmax(16)
     # add legend relative to top-left plot
     #ax = axes[0, 0]
     #labels = ('Factor 1', 'Factor 2')
@@ -238,7 +246,7 @@ def plot_radar_chart(categories, values, labels, outputfile, title="", size=(8,8
     #         size='large')
 
     fig.set_size_inches(size[0],size[1])
-    plt.savefig(outputfile, dpi=100, bbox_inches='tight')
+    plt.savefig(outputfile, dpi=100, bbox_inches='tight', format='eps')
 
 
 def add_box(ax, name, values, labels, ymax, draw_mean=False):
@@ -271,10 +279,10 @@ def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization",
         print("Error: Inconsistent number of charts/values")
         exit(-1)
 
-    print(outputfile)
-    print(charts)
-    print(labels)
-    print(values)
+    #print(outputfile)
+    #print(charts)
+    #print(labels)
+    #print(values)
 
     #Find existing elements
     fig, axis = plt.subplots(1,len(charts) + 1)
@@ -341,7 +349,7 @@ def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization",
 
     fig.suptitle(title)
     fig.set_size_inches(size[0],size[1])
-    plt.savefig(outputfile, dpi=100, bbox_inches='tight')
+    plt.savefig(outputfile, dpi=100, bbox_inches='tight', format='eps')
 
 
 def getfolders(path):
@@ -441,7 +449,7 @@ def plot_categories(data, comp, output, title="", speedup=False):
         labs.append(cat)
         vals2 = []
         for par in char:
-            print(par, "->" , data[comp][cat].keys())
+            #print(par, "->" , data[comp][cat].keys())
             if speedup:
                 baseline = np.mean([x[0] for x in data[comp][cat]['None'].values()])
                 value = baseline / np.mean([x[0] for x in data[comp][cat][par].values()])
@@ -471,7 +479,7 @@ def plot_new(data, detailed_summary, parameter, output, title="", speedup=False)
     for compiler in data.keys():
         #if compiler.startswith('knl') : continue
         if compiler.endswith('pgi') : continue
-        if compiler == 'altivec-ibm' : continue
+        #if compiler == 'altivec-ibm' : continue
         labs.append(compiler)
 
         # Set total counters to 0
@@ -630,25 +638,26 @@ def data_sanity_check(data):
                     exit(0)
 
         for category in data[compiler].keys():
-            if len(data[compiler][category].keys()) != 6:
-                print ("Error: "+ compiler + category + " missing parameters")
+            if len(data[compiler][category].keys()) != 7:
+                print ("Error: "+ compiler + " " + category + " missing parameters")
                 print(data[compiler][category].keys())
-                exit(0)
+                continue
+                #exit(0)
             else:
                 for parameter in data[compiler][category].keys():
                     if parameter not in all_parameters:
-                        print ("Error: "+ compiler + category + " missing parameters")
+                        print ("Error: "+ compiler + " " + category + " missing parameters")
                         exit(0)
 
             for parameter in data[compiler][category].keys():
                 if data[compiler][category][parameter].keys() != \
                    data[compiler][category]['None'].keys():
-                        print("Error: missmatching parameters "+compiler+category+parameter)
+                        print("Error: missmatching parameters "+compiler+" "+category+" "+parameter)
                         print(data[compiler][category][parameter].keys())
                         print(data[compiler][category]['None'].keys())
-                        exit(0)
+                        #exit(0)
                 if len(data[compiler][category][parameter].keys()) < 1 :
-                        print("Error: Empty "+compiler+category+parameter)
+                        print("Error: Empty "+compiler+" "+category+" "+parameter)
                         exit(0)
 
             total = total + len(data[compiler][category]['None'].keys())
@@ -696,54 +705,55 @@ def main():
                 parameters_path = os.path.join(category_path,parameters)
                 load_data(data, compiler,category,parameters,parameters_path)
     
-    #data_sanity_check(data)
+    data_sanity_check(data)
+    #exit(0)
     print("")
 
     print("Ploting Summary VSpectrums..")
-    #path = os.path.join('plots','extendedtsvc_summary')
-    #plot_new(data, detailed_summary, 'RUNTIME_INDEX',
-    #        os.path.join(path,'index_parameters.png'), 'Index Parameters')
-    #plot_new(data, detailed_summary, 'RUNTIME_LOOP_BOUNDS',
-    #        os.path.join(path,'loop_bound.png'), 'Loop Bounds Parameters')
-    #plot_new(data, detailed_summary, 'RUNTIME_CONDITIONS',
-    #    os.path.join(path,'conditional_parameters.png'), 'Conditional Parameters')
-    #plot_new(data, detailed_summary, 'RUNTIME_ARITHMETIC',
-    #    os.path.join(path,'arithmetic_parameters.png'), 'Arithmetic Parameters')
-    #plot_new(data, detailed_summary, 'None',
-    #    os.path.join(path,'variable_attributes.png'), 'Variable attributes')
-    #plot_new(data, detailed_summary, 'RUNTIME_ALL',
-    #    os.path.join(path,'all.png'), 'All Parameters')
-    #print_summary(detailed_summary, all_categories)
+    path = os.path.join('plots','extendedtsvc_summary')
+    plot_new(data, detailed_summary, 'RUNTIME_INDEX',
+            os.path.join(path,'index_parameters.eps'), 'Index Parameters')
+    plot_new(data, detailed_summary, 'RUNTIME_LOOP_BOUNDS',
+            os.path.join(path,'loop_bound.eps'), 'Loop Bounds Parameters')
+    plot_new(data, detailed_summary, 'RUNTIME_CONDITIONS',
+        os.path.join(path,'conditional_parameters.eps'), 'Conditional Parameters')
+    plot_new(data, detailed_summary, 'RUNTIME_ARITHMETIC',
+        os.path.join(path,'arithmetic_parameters.eps'), 'Arithmetic Parameters')
+    plot_new(data, detailed_summary, 'None',
+        os.path.join(path,'variable_attributes.eps'), 'Variable attributes')
+    plot_new(data, detailed_summary, 'RUNTIME_ALL',
+        os.path.join(path,'all.eps'), 'All Parameters')
+    print_summary(detailed_summary, all_categories)
 
     print("- Compiler comparison")
-    plot_compilers(data, 'compilers-avx2.png', 'avx2', 'AVX2 Compiler comparison')
-    plot_compilers(data, 'compilers-avx512.png', 'avx512', 'AVX512 Compiler comparison')
-    plot_compilers(data, 'compilers-knl.png', 'knl', 'KNL Compiler comparison')
-    plot_compilers(data, 'compilers-altivec.png', 'altivec', 'Altivec Compiler comparison')
+    plot_compilers(data, 'compilers-avx2.eps', 'avx2', 'AVX2 Compiler comparison')
+    plot_compilers(data, 'compilers-avx512.eps', 'avx512', 'AVX512 Compiler comparison')
+    plot_compilers(data, 'compilers-knl.eps', 'knl', 'KNL Compiler comparison')
+    plot_compilers(data, 'compilers-altivec.eps', 'altivec', 'Altivec Compiler comparison')
 
-    exit(0)
+    #exit(0)
 
     print("- Detailed VSpectrums")
     path = os.path.join('plots','extendedtsvc_detailed')
-    plot_categories(data, 'avx2-icc', os.path.join(path,'avx2-icc.png'), title="AVX2 ICC Auto-vectorization", speedup=False)
-    plot_categories(data, 'avx2-gcc', os.path.join(path,'avx2-gcc.png'), title="AVX2 GCC Auto-vectorization", speedup=False)
-    #plot_categories(data, 'avx2-pgi', os.path.join(path,'avx2-pgi.png'), title="AVX2 PGI Auto-vectorization", speedup=False)
-    plot_categories(data, 'avx2-clang', os.path.join(path,'avx2-clang.png'), title="AVX Clang Auto-vectorization", speedup=False)
+    plot_categories(data, 'avx2-icc', os.path.join(path,'avx2-icc.eps'), title="AVX2 ICC Auto-vectorization", speedup=False)
+    plot_categories(data, 'avx2-gcc', os.path.join(path,'avx2-gcc.eps'), title="AVX2 GCC Auto-vectorization", speedup=False)
+    #plot_categories(data, 'avx2-pgi', os.path.join(path,'avx2-pgi.eps'), title="AVX2 PGI Auto-vectorization", speedup=False)
+    plot_categories(data, 'avx2-clang', os.path.join(path,'avx2-clang.eps'), title="AVX Clang Auto-vectorization", speedup=False)
 
-    plot_categories(data, 'avx512-icc', os.path.join(path,'avx512-icc.png'), title="AVX512 ICC Auto-vectorization", speedup=False)
-    plot_categories(data, 'avx512-gcc', os.path.join(path,'avx512-gcc.png'), title="AVX512 GCC Auto-vectorization", speedup=False)
-    #plot_categories(data, 'avx512-pgi', os.path.join(path,'avx512-pgi.png'), title="AVX512 PGI Auto-vectorization", speedup=False)
-    plot_categories(data, 'avx512-clang', os.path.join(path,'avx512-clang.png'), title="AVX512 Clang Auto-vectorization", speedup=False)
+    plot_categories(data, 'avx512-icc', os.path.join(path,'avx512-icc.eps'), title="AVX512 ICC Auto-vectorization", speedup=False)
+    plot_categories(data, 'avx512-gcc', os.path.join(path,'avx512-gcc.eps'), title="AVX512 GCC Auto-vectorization", speedup=False)
+    #plot_categories(data, 'avx512-pgi', os.path.join(path,'avx512-pgi.eps'), title="AVX512 PGI Auto-vectorization", speedup=False)
+    plot_categories(data, 'avx512-clang', os.path.join(path,'avx512-clang.eps'), title="AVX512 Clang Auto-vectorization", speedup=False)
 
-    plot_categories(data, 'knl-icc', os.path.join(path,'knl-icc.png'), title="KNL ICC Auto-vectorization", speedup=False)
-    plot_categories(data, 'knl-gcc', os.path.join(path,'knl-gcc.png'), title="KNL GCC Auto-vectorization", speedup=False)
-    #plot_categories(data, 'knl-pgi', os.path.join(path,'knl-pgi.png'), title="KNL PGI Auto-vectorization", speedup=False)
-    plot_categories(data, 'knl-clang', os.path.join(path,'knl-clang.png'), title="KNL Clang Auto-vectorization", speedup=False)
+    plot_categories(data, 'knl-icc', os.path.join(path,'knl-icc.eps'), title="KNL ICC Auto-vectorization", speedup=False)
+    plot_categories(data, 'knl-gcc', os.path.join(path,'knl-gcc.eps'), title="KNL GCC Auto-vectorization", speedup=False)
+    #plot_categories(data, 'knl-pgi', os.path.join(path,'knl-pgi.eps'), title="KNL PGI Auto-vectorization", speedup=False)
+    plot_categories(data, 'knl-clang', os.path.join(path,'knl-clang.eps'), title="KNL Clang Auto-vectorization", speedup=False)
 
-    #plot_categories(data, 'altivec-gcc', os.path.join(path,'altivec-gcc.png'), title="Altivec GCC Auto-vectorization", speedup=False)
-    #plot_categories(data, 'altivec-xlc', os.path.join(path,'altivec-xlc.png'), title="Altivec XLC Auto-vectorization", speedup=False)
-    #plot_categories(data, 'altivec-pgi', os.path.join(path,'altivec-pgi.png'), title="Altivec PGI Auto-vectorization", speedup=False)
-    #plot_categories(data, 'altivec-clang', os.path.join(path,'altivec-clang.png'), title="Altivec Clang Auto-vectorization", speedup=False)
+    plot_categories(data, 'altivec-gcc', os.path.join(path,'altivec-gcc.eps'), title="Altivec GCC Auto-vectorization", speedup=False)
+    plot_categories(data, 'altivec-xlc', os.path.join(path,'altivec-xlc.eps'), title="Altivec XLC Auto-vectorization", speedup=False)
+    plot_categories(data, 'altivec-pgi', os.path.join(path,'altivec-pgi.eps'), title="Altivec PGI Auto-vectorization", speedup=False)
+    plot_categories(data, 'altivec-clang', os.path.join(path,'altivec-clang.eps'), title="Altivec Clang Auto-vectorization", speedup=False)
 
 
     # TODO: also add ISA comparsion and architecture comparison
