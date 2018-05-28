@@ -12,26 +12,167 @@ module load use.scafellpike
 cd /lustre/scafellpike/local/HCP055/pxs02/sss33-pxs02/workspace/phd/tsvc-runtimeparameters
 
 
-module load gcc7/7.2.0
-module load intel/18.2.199
+#module load myclang6
+#./runall_clang_avx2_CONTROL_FLOW.sh
+#./runall_clang_avx2_CONTROL_LOOPS.sh
+#./runall_clang_avx2_CROSSING_THRESHOLDS.sh
+#./runall_clang_avx2_EQUIVALENCING.sh
+#./runall_clang_avx2_EXPANSION.sh
+#./runall_clang_avx2_GLOBAL_DATA_FLOW.sh
+#./runall_clang_avx2_INDIRECT_ADDRESSING.sh
+#./runall_clang_avx2_INDUCTION_VARIABLE.sh
+#./runall_clang_avx2_LINEAR_DEPENDENCE.sh
+#./runall_clang_avx2_LOOP_REROLLING.sh
+#./runall_clang_avx2_LOOP_RESTRUCTURING.sh
+#./runall_clang_avx2_NODE_SPLITTING.sh
+#./runall_clang_avx2_PACKING.sh
+#./runall_clang_avx2_RECURRENCES.sh
+#./runall_clang_avx2_REDUCTIONS.sh
+#./runall_clang_avx2_SEARCHING.sh
+#./runall_clang_avx2_STATEMENT_REORDERING.sh
+#./runall_clang_avx2_SYMBOLICS.sh
+#./runall_clang_avx512_CONTROL_FLOW.sh
+
+#./runall_clang_avx512_CONTROL_LOOPS.sh
+#./runall_clang_avx512_CROSSING_THRESHOLDS.sh
+#./runall_clang_avx512_EQUIVALENCING.sh
+#./runall_clang_avx512_EXPANSION.sh
+#./runall_clang_avx512_GLOBAL_DATA_FLOW.sh
+#./runall_clang_avx512_INDIRECT_ADDRESSING.sh
+#./runall_clang_avx512_INDUCTION_VARIABLE.sh
+#./runall_clang_avx512_LINEAR_DEPENDENCE.sh
+#./runall_clang_avx512_LOOP_REROLLING.sh
+#./runall_clang_avx512_LOOP_RESTRUCTURING.sh
+#./runall_clang_avx512_NODE_SPLITTING.sh
+#./runall_clang_avx512_PACKING.sh
+#./runall_clang_avx512_RECURRENCES.sh
+#./runall_clang_avx512_REDUCTIONS.sh
+#./runall_clang_avx512_SEARCHING.sh
+#./runall_clang_avx512_STATEMENT_REORDERING.sh
+#./runall_clang_avx512_SYMBOLICS.sh
+#module unload myclang6
+
+#module load mygcc8
+#./runall_gcc_avx2_CONTROL_FLOW.sh
+#./runall_gcc_avx2_CONTROL_LOOPS.sh
+#./runall_gcc_avx2_CROSSING_THRESHOLDS.sh
+#./runall_gcc_avx2_EQUIVALENCING.sh
+#./runall_gcc_avx2_EXPANSION.sh
+#./runall_gcc_avx2_GLOBAL_DATA_FLOW.sh
+#./runall_gcc_avx2_INDIRECT_ADDRESSING.sh
+#./runall_gcc_avx2_INDUCTION_VARIABLE.sh
+#./runall_gcc_avx2_LINEAR_DEPENDENCE.sh
+#./runall_gcc_avx2_LOOP_REROLLING.sh
+#./runall_gcc_avx2_LOOP_RESTRUCTURING.sh
+#./runall_gcc_avx2_NODE_SPLITTING.sh
+#./runall_gcc_avx2_PACKING.sh
+#./runall_gcc_avx2_RECURRENCES.sh
+#./runall_gcc_avx2_REDUCTIONS.sh
+#./runall_gcc_avx2_SEARCHING.sh
+#./runall_gcc_avx2_STATEMENT_REORDERING.sh
+#./runall_gcc_avx2_SYMBOLICS.sh
+
+#./runall_gcc_avx512_CONTROL_FLOW.sh
+#./runall_gcc_avx512_CONTROL_LOOPS.sh
+#./runall_gcc_avx512_CROSSING_THRESHOLDS.sh
+#./runall_gcc_avx512_EQUIVALENCING.sh
+#./runall_gcc_avx512_EXPANSION.sh
+#./runall_gcc_avx512_GLOBAL_DATA_FLOW.sh
+#./runall_gcc_avx512_INDIRECT_ADDRESSING.sh
+#./runall_gcc_avx512_INDUCTION_VARIABLE.sh
+#./runall_gcc_avx512_LINEAR_DEPENDENCE.sh
+#./runall_gcc_avx512_LOOP_REROLLING.sh
+#./runall_gcc_avx512_LOOP_RESTRUCTURING.sh
+#./runall_gcc_avx512_NODE_SPLITTING.sh
+#./runall_gcc_avx512_PACKING.sh
+#./runall_gcc_avx512_RECURRENCES.sh
+#./runall_gcc_avx512_REDUCTIONS.sh
+#./runall_gcc_avx512_SEARCHING.sh
+#./runall_gcc_avx512_STATEMENT_REORDERING.sh
+#./runall_gcc_avx512_SYMBOLICS.sh
+#module unload mygcc8
+
+#module load intel/18.2.199
+#./runall_icc_avx2_CONTROL_FLOW.sh
+#./runall_icc_avx2_CONTROL_LOOPS.sh
+#./runall_icc_avx2_CROSSING_THRESHOLDS.sh
+#./runall_icc_avx2_EQUIVALENCING.sh
+#./runall_icc_avx2_EXPANSION.sh
+#./runall_icc_avx2_GLOBAL_DATA_FLOW.sh
+#./runall_icc_avx2_INDIRECT_ADDRESSING.sh
+#./runall_icc_avx2_INDUCTION_VARIABLE.sh
+#./runall_icc_avx2_LINEAR_DEPENDENCE.sh
+#./runall_icc_avx2_LOOP_REROLLING.sh
+#./runall_icc_avx2_LOOP_RESTRUCTURING.sh
+#./runall_icc_avx2_NODE_SPLITTING.sh
+#./runall_icc_avx2_PACKING.sh
+#./runall_icc_avx2_RECURRENCES.sh
+#./runall_icc_avx2_REDUCTIONS.sh
+#./runall_icc_avx2_SEARCHING.sh
+#./runall_icc_avx2_STATEMENT_REORDERING.sh
+#./runall_icc_avx2_SYMBOLICS.sh
+
+#./runall_icc_avx512_CONTROL_FLOW.sh
+#./runall_icc_avx512_CONTROL_LOOPS.sh
+#./runall_icc_avx512_CROSSING_THRESHOLDS.sh
+#./runall_icc_avx512_EQUIVALENCING.sh
+#./runall_icc_avx512_EXPANSION.sh
+#./runall_icc_avx512_GLOBAL_DATA_FLOW.sh
+#./runall_icc_avx512_INDIRECT_ADDRESSING.sh
+#./runall_icc_avx512_INDUCTION_VARIABLE.sh
+#./runall_icc_avx512_LINEAR_DEPENDENCE.sh
+#./runall_icc_avx512_LOOP_REROLLING.sh
+#./runall_icc_avx512_LOOP_RESTRUCTURING.sh
+#./runall_icc_avx512_NODE_SPLITTING.sh
+#./runall_icc_avx512_PACKING.sh
+#./runall_icc_avx512_RECURRENCES.sh
+#./runall_icc_avx512_REDUCTIONS.sh
+#./runall_icc_avx512_SEARCHING.sh
+#./runall_icc_avx512_STATEMENT_REORDERING.sh
+#./runall_icc_avx512_SYMBOLICS.sh
+#module unload intel/18.2.199
+
 module load mypgi18.4
-module load myclang6
+#./runall_pgi_avx2_CONTROL_FLOW.sh
+#./runall_pgi_avx2_CONTROL_LOOPS.sh
+#./runall_pgi_avx2_CROSSING_THRESHOLDS.sh
+#./runall_pgi_avx2_EQUIVALENCING.sh
+#./runall_pgi_avx2_EXPANSION.sh
+#./runall_pgi_avx2_GLOBAL_DATA_FLOW.sh
+#./runall_pgi_avx2_INDIRECT_ADDRESSING.sh
+#./runall_pgi_avx2_INDUCTION_VARIABLE.sh
+#./runall_pgi_avx2_LINEAR_DEPENDENCE.sh
+#./runall_pgi_avx2_LOOP_REROLLING.sh
+#./runall_pgi_avx2_LOOP_RESTRUCTURING.sh
+#./runall_pgi_avx2_NODE_SPLITTING.sh
+#./runall_pgi_avx2_PACKING.sh
+#./runall_pgi_avx2_RECURRENCES.sh
+#./runall_pgi_avx2_REDUCTIONS.sh
+#./runall_pgi_avx2_SEARCHING.sh
+#./runall_pgi_avx2_STATEMENT_REORDERING.sh
+#./runall_pgi_avx2_SYMBOLICS.sh
+
+./runall_pgi_avx512_CONTROL_FLOW.sh
+./runall_pgi_avx512_CONTROL_LOOPS.sh
+./runall_pgi_avx512_CROSSING_THRESHOLDS.sh
+./runall_pgi_avx512_EQUIVALENCING.sh
+./runall_pgi_avx512_EXPANSION.sh
+./runall_pgi_avx512_GLOBAL_DATA_FLOW.sh
+./runall_pgi_avx512_INDIRECT_ADDRESSING.sh
+./runall_pgi_avx512_INDUCTION_VARIABLE.sh
+./runall_pgi_avx512_LINEAR_DEPENDENCE.sh
+./runall_pgi_avx512_LOOP_REROLLING.sh
+./runall_pgi_avx512_LOOP_RESTRUCTURING.sh
+./runall_pgi_avx512_NODE_SPLITTING.sh
+./runall_pgi_avx512_PACKING.sh
+./runall_pgi_avx512_RECURRENCES.sh
+./runall_pgi_avx512_REDUCTIONS.sh
+./runall_pgi_avx512_SEARCHING.sh
+./runall_pgi_avx512_STATEMENT_REORDERING.sh
+./runall_pgi_avx512_SYMBOLICS.sh
+exit 1
+module unload mypgi18.4
 
 
-#compilers=(gcc icc pgi clang)
-compilers=(gcc)
-#compilers=(icc)
-#compilers=(pgi)
-#compilers=(clang)
-#isas=(avx2 avx512)
-isas=(avx512)
 
-for c in "${compilers[@]}"; do
-    for isa in "${isas[@]}"; do
-        echo " # Using compiler: $c , isa:$isa "
-        ./bench.py --results results-${c}-${isa} --compiler ${c} --isa ${isa}
-        chmod +x runall_results-${c}-${isa}.sh
-        ./runall_results-${c}-${isa}.sh
-    done
-done
 

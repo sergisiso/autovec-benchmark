@@ -32,7 +32,7 @@ c_flags = {
     "gcc" : {
         "call": "gcc",
         "arch": {"avx2":" -march=skylake ",
-                 "avx512":" -march=skylake-avx512 ",
+                 "avx512":" -march=skylake-avx512 -mprefer-vector-width=512",
                  "knl":" -march=knl ",
                  "altivec":" -mcpu=power8 "},
         "vec" : " ",
@@ -45,7 +45,7 @@ c_flags = {
     "icc" : {
         "call": "icc -std=c99 -g",
         "arch": {"avx2":" -xAVX2",
-                "avx512":" -xCORE-AVX512",
+                "avx512":" -xCORE-AVX512 -qopt-zmm-usage=high",
                 "knl":" -xMIC-AVX512"},
         "vec" : " ",
         "novec" : " -no-simd -no-vec ",
@@ -204,9 +204,9 @@ def main():
                 # Run commands
                 for i in range(5):
                     run_cmd('./runrtvec > runrtvec'+str(i)+'.txt',
-                            test_dir,c+'_'+b)
+                            test_dir,c+'_'+args.isa+'_'+b)
                     run_cmd('./runrtnovec > runrtnovec'+str(i)+'.txt',
-                            test_dir, c+'_'+b)
+                            test_dir, c+'_'+args.isa+'_'+b)
 
 
 def exec_comp(cmd, test_dir, save=None):
