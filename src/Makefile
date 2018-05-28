@@ -1,8 +1,8 @@
 
-CC=gcc -g
-CFLAGS = -std=c99 -O3 -fivopts -flax-vector-conversions -funsafe-math-optimizations -lm
-vecflags = -msse4.2 #-ftree-vectorizer-verbose=1
-novecflags = -fno-tree-vectorize
+CC=clang -g
+CFLAGS = -O3 -ffast-math #-std=c99 -O3 -fivopts -flax-vector-conversions -funsafe-math-optimizations -lm
+vecflags = #-msse4.2 #-ftree-vectorizer-verbose=1
+novecflags = #-fno-tree-vectorize
 
 alltests += -DCONTROL_FLOW
 #alltests = -DLINEAR_DEPENDENCE -DINDUCTION_VARIABLE

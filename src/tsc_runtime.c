@@ -41,7 +41,7 @@
 #include <string.h>
 #include <assert.h>
 
-#define ntimes_default 200000
+#define ntimes_default 50000
 #define digits_default 6
 
 static int ntimes = ntimes_default;
@@ -200,7 +200,7 @@ int set1d(TYPE* RESTRICT arr, TYPE value, int stride)
 
 int set1ds(int _n, TYPE* RESTRICT arr, TYPE value, int stride)
 {
-    ASSUMEALIGN(arr)
+    //ASSUMEALIGN(arr)
 	if (stride == -1) {
 		for (int i = 0; i < LEN; i++) {
 			arr[i] = 1. / (TYPE) (i+1);

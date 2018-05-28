@@ -35,11 +35,11 @@ c_flags = {
                  "avx512":" -march=skylake-avx512 ",
                  "knl":" -march=knl ",
                  "altivec":" -mcpu=power8 "},
-        "vec" : " -flax-vector-conversions ",
+        "vec" : " ",
         "novec" : " -fno-tree-vectorize ",
-        "opt" : " -O3 -fivopts -funsafe-math-optimizations -ffast-math -fassociative-math",
+        "opt" : " -O3 -ffast-math",
         "unopt" : " -O0 ",
-        "report" : " -fopt-info-optall",
+        "report" : " -fopt-info-optimized=",
         "assem" : " -S"
     },
     "icc" : {
@@ -47,11 +47,11 @@ c_flags = {
         "arch": {"avx2":" -xAVX2",
                 "avx512":" -xCORE-AVX512",
                 "knl":" -xMIC-AVX512"},
-        "vec" : " -xHost ",
+        "vec" : " ",
         "novec" : " -no-simd -no-vec ",
-        "opt" : " -Ofast -fp-model fast=2 -prec-sqrt -ftz -fma ",
+        "opt" : " -O3 -fp-model fast=2 ",
         "unopt" : " -O0 ",
-        "report" : " -qopt-report=5 ",
+        "report" : " -qopt-report=5 -qopt-report-file=",
         "assem" : " -Fa"
     },
     "clang" : {
@@ -60,11 +60,11 @@ c_flags = {
                  "avx512":" -march=skylake-avx512 ",
                  "knl":" -march=knl ",
                  "altivec":" -mcpu=power8 "},
-        "vec" : " -march=native ",
+        "vec" : " ",
         "novec" : " -fno-vectorize ",
-        "opt" : " -O3 ",
+        "opt" : " -O3 -ffast-math ",
         "unopt" : " -O0 ",
-        "report" : " ",
+        "report" : " -fsave-optimization-record -foptimization-record-file=",
         "assem" : " -S"
     },
     "pgi" : {
@@ -77,7 +77,7 @@ c_flags = {
         "novec" : " -Mnovect ",
         "opt" : " -O3 -fast -fastsse",
         "unopt" : " -O0 ",
-        "report" : " ",
+        "report" : " -D",
         "assem" : " -S"
     },
     "ibm" : {
@@ -85,9 +85,9 @@ c_flags = {
         "arch": {"altivec":" "},
         "vec" : " -qaltivec -qhot=vector:fastmath -qsimd=auto ",
         "novec" : " -qnoaltivec -qhot=novector:fastmath -qsimd=noauto",
-        "opt" : " -O5",
+        "opt" : " -O3",
         "unopt" : " -O0 ",
-        "report" : " ",
+        "report" : " -D",
         "assem" : " -S"
     }
 }
@@ -170,7 +170,7 @@ def main():
                         + c_flags[c]['opt']
                         + c_flags[c]['vec'] 
                         + c_flags[c]['arch'][args.isa]
-                        + c_flags[c]['report']
+                        + c_flags[c]['report']+c+'_'+args.isa+'_vec.txt'
                         + ' -c -o tscrtvec.o tsc_runtime.c'
                         + ' -D' + b + p_flags, test_dir, 'compiler_vec.out')
 
@@ -178,7 +178,7 @@ def main():
                         + c_flags[c]['opt'] 
                         + c_flags[c]['novec']
                         + c_flags[c]['arch'][args.isa]
-                        + c_flags[c]['report']
+                        + c_flags[c]['report']+c+'_'+args.isa+'_novec.txt'
                         + ' -c -o tscrtnovec.o tsc_runtime.c'
                         + ' -D' + b + p_flags, test_dir, 'compiler_novec.out')
 
@@ -202,8 +202,11 @@ def main():
                 exec_comp( c_flags[c]['call'] + c_flags[c]['unopt'] + ' dummy.o tscrtnovec.o -o runrtnovec -lm', test_dir)
 
                 # Run commands
-                run_cmd('./runrtvec > runrtvec.txt', test_dir, args.results)
-                run_cmd('./runrtnovec > runrtnovec.txt', test_dir, args.results)
+                for i in range(5):
+                    run_cmd('./runrtvec > runrtvec'+str(i)+'.txt',
+                            test_dir,c+'_'+b)
+                    run_cmd('./runrtnovec > runrtnovec'+str(i)+'.txt',
+                            test_dir, c+'_'+b)
 
 
 def exec_comp(cmd, test_dir, save=None):
