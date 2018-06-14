@@ -27,7 +27,7 @@
 #define RUNTIME_ARITHMETIC_PARAMETERS 1
 #define RUNTIME_INDEX_PARAMETERS 1
 #define CONDITION_EVAL_PARAMETERS 1
-#define VARIABLE_ATTRIBUTES 1
+#define RT_VARIABLE_ATTRIBUTES 1
 #define INLINE_FUNCTIONS 1
 */
 
@@ -54,7 +54,11 @@ static int digits = digits_default;
 #endif
 
 #define ALIGNMENT 64
-#if defined(VARIABLE_ATTRIBUTES)
+#if defined(RT_VARIABLE_ATTRIBUTES)
+    #define ALIGN
+    #define ASSUMEALIGN(x)
+    #define RESTRICT 
+#else
     #define ALIGN __attribute__ ((aligned(ALIGNMENT))) 
     #if defined(__INTEL_COMPILER) 
         #define ASSUMEALIGN(x) __assume_aligned(x,ALIGNMENT); 
@@ -66,10 +70,6 @@ static int digits = digits_default;
         #define ASSUMEALIGN(x) x = __builtin_assume_aligned(x,ALIGNMENT); 
     #endif
     #define RESTRICT restrict
-#else
-    #define ALIGN
-    #define ASSUMEALIGN(x)
-    #define RESTRICT 
 #endif
 
 
@@ -1151,7 +1151,7 @@ int s116()
 	init( "s116 ");
 	start_t = clock();
 
-	for (int nl = 0; nl < ntimes*10; nl++) {
+	for (int nl = 0; nl < ntimes*4; nl++) {
 		for (int i = 0; i < LEN - bp_n5; i += bp_n5) {
 			a[i] = a[i + ip_n1] * a[i];
 			a[i + ip_n1] = a[i + ip_n2] * a[i + ip_n1];
@@ -1719,7 +1719,7 @@ int s431()
 	init( "s431 ");
 	start_t = clock();
 
-	for (int nl = 0; nl < ntimes*10; nl++) {
+	for (int nl = 0; nl < ntimes*4; nl++) {
 		for (int i = 0; i < LEN; i++) {
 			a[i] = a[i+k] + b[i];
 		}
@@ -1745,7 +1745,7 @@ int s451()
 	init( "s451 ");
 	start_t = clock();
 
-	for (int nl = 0; nl < ntimes/5; nl++) {
+	for (int nl = 0; nl < ntimes/10; nl++) {
 		for (int i = 0; i < LEN; i++) {
 #ifdef USE_FLOAT_TRIG
 			a[i] = sinf(b[i]) + cosf(c[i]);
@@ -1776,7 +1776,7 @@ int s452()
 	init( "s452 ");
 	start_t = clock();
 
-	for (int nl = 0; nl < 4*ntimes; nl++) {
+	for (int nl = 0; nl < 2*ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
 			a[i] = b[i] + c[i] * (TYPE) (i+ap_n1);
 		}
@@ -2122,7 +2122,7 @@ int s2275()
 	init( "s275 ");
 	start_t = clock();
 
-	for (int nl = 0; nl < 100*(ntimes/LEN2); nl++) {
+	for (int nl = 0; nl < 10*(ntimes/LEN2); nl++) {
 		for (int i = 0; i < LEN2; i++) {
 			for (int j = 0; j < LEN2; j++) {
 				aa[j*LEN2+i] = aa[j*LEN2+i] + bb[j*LEN2+i] * cc[j*LEN2+i];
@@ -2153,7 +2153,7 @@ int s276()
 	start_t = clock();
 
 	int mid = (LEN/2);
-	for (int nl = 0; nl < 4*ntimes; nl++) {
+	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
 			if (i + cp_n1 < mid) {
 				a[i] += b[i] * c[i];
@@ -2363,7 +2363,7 @@ int s2711()
 	init( "s2711");
 	start_t = clock();
 
-	for (int nl = 0; nl < 4*ntimes; nl++) {
+	for (int nl = 0; nl < 2*ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
 			if (b[i] != (TYPE)cp_n0) {
 				a[i] += b[i] * c[i];
@@ -2598,7 +2598,7 @@ int s171(int inc)
 	init( "s171 ");
 	start_t = clock();
 
-	for (int nl = 0; nl < ntimes; nl++) {
+	for (int nl = 0; nl < ntimes*4; nl++) {
 		for (int i = 0; i < LEN; i++) {
 			a[i * inc] += b[i];
 		}
@@ -2733,7 +2733,7 @@ int s176()
 	start_t = clock();
 
 	int m = LEN/2;
-	for (int nl = 0; nl < 4*(ntimes/LEN); nl++) {
+	for (int nl = 0; nl < 10*(ntimes/LEN); nl++) {
 		for (int j = 0; j < (LEN/2); j++) {
 			for (int i = 0; i < m; i++) {
 				a[i] += b[i+m-j-ip_n1] * c[j];
@@ -2930,7 +2930,7 @@ int s231()
 	init( "s231 ");
 	start_t = clock();
 
-	for (int nl = 0; nl < 100*(ntimes/LEN2); nl++) {
+	for (int nl = 0; nl < 50*(ntimes/LEN2); nl++) {
 		for (int i = 0; i < LEN2; ++i) {
 			for (int j = 1; j < LEN2; j++) {
 				aa[j*LEN2+i] = aa[(j - ip_n1)*LEN2+i] + bb[j*LEN2+i];
@@ -3015,7 +3015,7 @@ int s233()
 	init( "s233 ");
 	start_t = clock();
 
-	for (int nl = 0; nl < 100*(ntimes/LEN2); nl++) {
+	for (int nl = 0; nl < 50*(ntimes/LEN2); nl++) {
 		for (int i = 1; i < LEN2; i++) {
 			for (int j = 1; j < LEN2; j++) {
 				aa[j*LEN2+i] = aa[(j-ip_n1)*LEN2+i] + cc[j*LEN2+i];
@@ -3045,7 +3045,7 @@ int s2233()
 	init( "s233 ");
 	start_t = clock();
 
-	for (int nl = 0; nl < 100*(ntimes/LEN2); nl++) {
+	for (int nl = 0; nl < 50*(ntimes/LEN2); nl++) {
 		for (int i = 1; i < LEN2; i++) {
 			for (int j = 1; j < LEN2; j++) {
 				aa[j*LEN2+i] = aa[(j-ip_n1)*LEN2+i] + cc[j*LEN2+i];
@@ -3076,7 +3076,7 @@ int s235()
 	init( "s235 ");
 	start_t = clock();
 
-	for (int nl = 0; nl < 200*(ntimes/LEN2); nl++) {
+	for (int nl = 0; nl < 50*(ntimes/LEN2); nl++) {
 		for (int i = 0; i < LEN2; i++) {
 			a[i] += b[i] * c[i];
 			for (int j = 1; j < LEN2; j++) {
@@ -3456,7 +3456,7 @@ int s254()
 	start_t = clock();
 
 	TYPE x;
-	for (int nl = 0; nl < 4*ntimes; nl++) {
+	for (int nl = 0; nl < 2*ntimes; nl++) {
 		x = b[LEN-1];
 		for (int i = 0; i < LEN; i++) {
 			a[i] = (b[i] + x) * (TYPE) ap_n5;
@@ -3576,7 +3576,7 @@ int s258()
 	start_t = clock();
 
 	TYPE s;
-	for (int nl = 0; nl < ntimes/10; nl++) {
+	for (int nl = 0; nl < 44**ntimes; nl++) {
 		s = 0.;
 		for (int i = 0; i < LEN; ++i) {
 			if (a[i] > cp_n0) {
@@ -3673,7 +3673,7 @@ int s1281()
 	start_t = clock();
 
 	TYPE x;
-	for (int nl = 0; nl < 4*ntimes; nl++) {
+	for (int nl = 0; nl < ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
 			x = b[i]*c[i]+a[i]*d[i]+e[i];
 			a[i] = x-(TYPE)ap_n1;
@@ -3847,7 +3847,7 @@ int s2111()
 
 	init( "s2111");
 	start_t = clock();
-	for (int nl = 0; nl < 100*(ntimes/(LEN2)); nl++) {
+	for (int nl = 0; nl < 50*(ntimes/(LEN2)); nl++) {
 		for (int j = 1; j < LEN2; j++) {
 			for (int i = 1; i < LEN2; i++) {
 				aa[j*LEN2+i] = aa[j*LEN2+(i-ip_n1)] + aa[(j-ip_n1)*LEN2+i];
@@ -3886,7 +3886,7 @@ int s311()
 	start_t = clock();
 
 	TYPE sum;
-	for (int nl = 0; nl < ntimes*10; nl++) {
+	for (int nl = 0; nl < ntimes*5; nl++) {
 		sum = (TYPE)0.;
 		for (int i = 0; i < LEN; i++) {
 			sum += a[i];
@@ -3921,7 +3921,7 @@ int s31111()
 	start_t = clock();
 
 	TYPE sum;
-	for (int nl = 0; nl < 2000*ntimes; nl++) {
+	for (int nl = 0; nl < 5000*ntimes; nl++) {
 		sum = (TYPE)ap_n0;
 		sum += test(a);
 		sum += test(&a[4]);
@@ -3955,7 +3955,7 @@ int s312()
 	start_t = clock();
 
 	TYPE prod;
-	for (int nl = 0; nl < 10*ntimes; nl++) {
+	for (int nl = 0; nl < 5*ntimes; nl++) {
 		prod = (TYPE)1.;
 		for (int i = 0; i < LEN; i++) {
 			prod *= a[i];
@@ -3984,7 +3984,7 @@ int s313()
 	start_t = clock();
 
 	TYPE dot;
-	for (int nl = 0; nl < ntimes*5; nl++) {
+	for (int nl = 0; nl < ntimes*2; nl++) {
 		dot = (TYPE)ap_n0;
 		for (int i = 0; i < LEN; i++) {
 			dot += a[i] * b[i];
@@ -4014,7 +4014,7 @@ int s314()
 	start_t = clock();
 
 	TYPE x;
-	for (int nl = 0; nl < ntimes*5; nl++) {
+	for (int nl = 0; nl < ntimes*2; nl++) {
 		x = a[0];
 		for (int i = 0; i < LEN; i++) {
 			if (a[i] > x) {
@@ -4084,7 +4084,7 @@ int s316()
 	start_t = clock();
 
 	TYPE x;
-	for (int nl = 0; nl < ntimes*5; nl++) {
+	for (int nl = 0; nl < ntimes*2; nl++) {
 		x = a[0];
 		for (int i = 1; i < LEN; ++i) {
 			if (a[i] < x) {
@@ -4117,7 +4117,7 @@ int s317()
 	start_t = clock();
 
 	TYPE q;
-	for (int nl = 0; nl < 5*ntimes; nl++) {
+	for (int nl = 0; nl < 50*ntimes; nl++) {
 		q = (TYPE)ap_n1;
 		for (int i = 0; i < LEN/2; i++) {
 			q *= (TYPE)ap_n099;
@@ -4262,7 +4262,7 @@ int s13110()
 
 	int xindex, yindex;
 	TYPE max, chksum;
-	for (int nl = 0; nl < 100*(ntimes/(LEN2)); nl++) {
+	for (int nl = 0; nl < 200*(ntimes/(LEN2)); nl++) {
 		max = aa[(0)*LEN2+0];
 		xindex = 0;
 		yindex = 0;
@@ -4362,7 +4362,7 @@ int s3113()
 	start_t = clock();
 
 	TYPE max;
-	for (int nl = 0; nl < ntimes*4; nl++) {
+	for (int nl = 0; nl < ntimes; nl++) {
 		max = abs(a[0]);
 		for (int i = 0; i < LEN; i++) {
 			if ((abs(a[i])) > max) {
@@ -4397,7 +4397,7 @@ int s321()
 	init( "s321 ");
 	start_t = clock();
 
-	for (int nl = 0; nl < ntimes; nl++) {
+	for (int nl = 0; nl < ntimes/2; nl++) {
 		for (int i = 1; i < LEN; i++) {
 			a[i] += a[i-ip_n1] * b[i];
 		}
@@ -4627,7 +4627,7 @@ int s343()
 	start_t = clock();
 
 	int k;
-	for (int nl = 0; nl < 10*(ntimes/LEN2); nl++) {
+	for (int nl = 0; nl < 40*(ntimes/LEN2); nl++) {
 		k = -1;
 		for (int i = 0; i < LEN2; i++) {
 			for (int j = 0; j < LEN2; j++) {
@@ -4693,7 +4693,7 @@ int s1351()
 	init( "s351 ");
 	start_t = clock();
 
-	for (int nl = 0; nl < 8*ntimes; nl++) {
+	for (int nl = 0; nl < 4*ntimes; nl++) {
 		ALIGN TYPE*  A = a;
 		ALIGN TYPE*  B = b;
 		ALIGN TYPE*  C = c;
@@ -4727,7 +4727,7 @@ int s352()
 	start_t = clock();
 
 	TYPE dot;
-	for (int nl = 0; nl < 8*ntimes; nl++) {
+	for (int nl = 0; nl < 2*ntimes; nl++) {
 		dot = (TYPE)0.;
 		for (int i = 0; i < LEN; i += ip_n5) {
 			dot = dot + a[i] * b[i] + a[i + ip_n1] * b[i + ip_n1] + a[i + ip_n2] * b[i + ip_n2] + a[i + ip_n3] * b[i + ip_n3] + a[i + ip_n4] * b[i + ip_n4];
@@ -4859,7 +4859,7 @@ int s422()
 
 
 
-	for (int nl = 0; nl < 8*ntimes; nl++) {
+	for (int nl = 0; nl < 4*ntimes; nl++) {
 		for (int i = 0; i < LEN; i++) {
 			xx[i] = array[i + ip_n8] + a[i];
 		}
@@ -5683,8 +5683,8 @@ int main(int argc, char *argv[]){
     printf("Test with Runtime Conditional Parameters\n");
 #endif
 
-#if defined(VARIABLE_ATTRIBUTES)
-    printf("Test with 'restrict' and 'alignment' attributes\n");
+#if defined(RT_VARIABLE_ATTRIBUTES)
+    printf("Test with 'restrict' and 'alignment' attributes not known at compile time\n");
 #endif
 
 
