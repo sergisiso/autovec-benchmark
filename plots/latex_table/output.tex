@@ -1,0 +1,252 @@
+\documentclass{article}
+\usepackage{array,longtable}
+\usepackage{multicol}
+\usepackage{multirow}
+\begin{document}
+\begin{longtable}{|p{2cm}||c|c|c|c|c|c|c|c|c|}
+\cline{3-10} \multicolumn{2}{c|}{} & \multicolumn{4}{|c|}{ Altivec (on Power8)} & \multicolumn{4}{|c|}{ AVX2 (on Skylake)} \\
+\cline{3-10} \multicolumn{2}{c|}{}& GNU & Clang & PGI & IBM & GNU & Clang & PGI & Intel \\ \hline
+\multirow{6}{*}{ \parbox{2cm}{Linear Dependence}} & Known at ct. & 1.9 & 1.7 & 1.5 & 1.2 & 2.6 & 1.8 & 2.1 & 2.7\\ \cline{2-10}
+ & rt. Attributes & 1.9 & 1.7 & 1.0 & 1.2 & 2.9 & 1.8 & 1.0 & 2.7\\ \cline{2-10}
+ & rt. Indices & 1.8 & 1.7 & 1.0 & 1.2 & 2.5 & 1.8 & 1.0 & 2.6\\ \cline{2-10}
+ & rt. L. Bounds & 1.9 & 1.6 & 1.0 & 1.2 & 2.8 & 1.8 & 1.0 & 2.2\\ \cline{2-10}
+ & rt. Conditions & 1.9 & 1.7 & 1.0 & 1.2 & 2.6 & 1.8 & 1.0 & 2.7\\ \cline{2-10}
+ & rt. All & 1.9 & 1.6 & 1.1 & 1.0 & 2.7 & 1.9 & 1.4 & 2.1\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Induction Variable}} & Known at ct. & 1.7 & 1.7 & 1.6 & 1.1 & 2.9 & 2.4 & 2.3 & 1.8\\ \cline{2-10}
+ & rt. Attributes & 1.8 & 1.7 & 1.3 & 1.1 & 2.7 & 2.4 & 1.2 & 1.8\\ \cline{2-10}
+ & rt. Indices & 1.6 & 1.6 & 1.2 & 1.1 & 2.2 & 2.0 & 1.2 & 1.8\\ \cline{2-10}
+ & rt. L. Bounds & 1.8 & 1.8 & 1.3 & 1.1 & 2.7 & 2.4 & 1.2 & 1.7\\ \cline{2-10}
+ & rt. Conditions & 1.8 & 1.7 & 1.3 & 1.1 & 2.8 & 2.4 & 1.2 & 1.8\\ \cline{2-10}
+ & rt. All & 1.6 & 1.2 & 1.5 & 1.1 & 2.5 & 1.6 & 1.6 & 2.8\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Global Data Flow}} & Known at ct. & 2.7 & 3.0 & 2.4 & 1.6 & 5.0 & 3.2 & 2.4 & 3.0\\ \cline{2-10}
+ & rt. Attributes & 2.9 & 3.0 & 1.4 & 1.6 & 5.1 & 3.2 & 1.3 & 3.0\\ \cline{2-10}
+ & rt. Indices & 2.4 & 2.3 & 1.4 & 1.3 & 4.0 & 2.1 & 1.0 & 2.7\\ \cline{2-10}
+ & rt. L. Bounds & 2.8 & 3.0 & 1.4 & 1.6 & 5.3 & 3.3 & 1.3 & 3.1\\ \cline{2-10}
+ & rt. Conditions & 2.9 & 3.0 & 1.4 & 1.6 & 5.2 & 3.2 & 1.3 & 3.0\\ \cline{2-10}
+ & rt. All & 2.3 & 2.6 & 2.1 & 1.3 & 5.0 & 2.5 & 1.9 & 2.5\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Control Flow}} & Known at ct. & 1.1 & 1.0 & 1.0 & 1.0 & 2.6 & 1.9 & 3.5 & 2.8\\ \cline{2-10}
+ & rt. Attributes & 1.0 & 1.0 & 1.0 & 1.0 & 2.4 & 1.9 & 1.0 & 1.6\\ \cline{2-10}
+ & rt. Indices & 1.1 & 1.0 & 1.0 & 1.0 & 2.4 & 1.9 & 1.0 & 1.7\\ \cline{2-10}
+ & rt. L. Bounds & 1.0 & 1.0 & 1.0 & 1.0 & 2.5 & 1.9 & 1.0 & 1.7\\ \cline{2-10}
+ & rt. Conditions & 1.0 & 1.0 & 1.0 & 1.0 & 2.3 & 1.9 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. All & 1.1 & 1.0 & 1.0 & 1.0 & 2.9 & 1.9 & 3.7 & 2.6\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Symbolics}} & Known at ct. & 2.2 & 3.9 & 3.2 & 1.0 & 3.9 & 4.2 & 3.0 & 3.3\\ \cline{2-10}
+ & rt. Attributes & 2.4 & 3.9 & 1.6 & 1.0 & 2.8 & 4.2 & 1.0 & 3.2\\ \cline{2-10}
+ & rt. Indices & 2.5 & 4.0 & 1.0 & 1.0 & 2.6 & 4.2 & 1.0 & 2.6\\ \cline{2-10}
+ & rt. L. Bounds & 3.0 & 3.4 & 1.5 & 1.0 & 2.6 & 4.0 & 1.0 & 2.8\\ \cline{2-10}
+ & rt. Conditions & 2.4 & 3.9 & 1.6 & 1.0 & 2.6 & 3.9 & 1.0 & 3.2\\ \cline{2-10}
+ & rt. All & 2.6 & 3.5 & 1.5 & 1.0 & 2.4 & 4.0 & 1.4 & 2.2\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Statement Reordering}} & Known at ct. & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.8 & 1.0\\ \cline{2-10}
+ & rt. Attributes & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Indices & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. L. Bounds & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Conditions & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. All & 1.0 & 1.0 & 0.9 & 1.0 & 1.0 & 1.0 & 1.9 & 1.0\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Loop Restructuring}} & Known at ct. & 1.0 & 1.5 & 1.0 & 1.0 & 1.1 & 1.2 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Attributes & 1.1 & 1.5 & 1.0 & 1.0 & 1.2 & 1.2 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Indices & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. L. Bounds & 1.1 & 1.2 & 1.0 & 1.0 & 1.2 & 1.1 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Conditions & 1.1 & 1.5 & 1.0 & 1.0 & 1.2 & 1.2 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. All & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.1\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Node Splitting}} & Known at ct. & 1.3 & 1.6 & 1.0 & 1.7 & 1.1 & 1.3 & 1.1 & 1.0\\ \cline{2-10}
+ & rt. Attributes & 1.5 & 1.6 & 1.0 & 1.7 & 1.3 & 1.2 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Indices & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. L. Bounds & 1.5 & 1.8 & 1.0 & 1.7 & 1.3 & 1.2 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Conditions & 1.6 & 1.6 & 1.0 & 1.7 & 1.3 & 1.3 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. All & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Expansion}} & Known at ct. & 1.2 & 1.5 & 1.3 & 1.3 & 1.5 & 1.8 & 1.9 & 1.3\\ \cline{2-10}
+ & rt. Attributes & 1.3 & 1.5 & 1.0 & 1.3 & 1.5 & 1.8 & 1.2 & 1.3\\ \cline{2-10}
+ & rt. Indices & 1.3 & 1.5 & 1.0 & 1.3 & 1.5 & 1.8 & 1.2 & 1.2\\ \cline{2-10}
+ & rt. L. Bounds & 1.3 & 1.5 & 1.0 & 1.3 & 1.6 & 1.7 & 1.2 & 1.3\\ \cline{2-10}
+ & rt. Conditions & 1.3 & 1.5 & 1.0 & 1.3 & 1.5 & 1.8 & 1.2 & 1.3\\ \cline{2-10}
+ & rt. All & 1.3 & 1.5 & 1.3 & 1.3 & 1.6 & 1.7 & 1.8 & 1.8\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Crossing Thresholds}} & Known at ct. & 1.4 & 1.3 & 1.4 & 1.0 & 1.4 & 1.4 & 1.3 & 1.9\\ \cline{2-10}
+ & rt. Attributes & 1.4 & 1.3 & 1.0 & 1.0 & 1.5 & 1.4 & 1.0 & 1.8\\ \cline{2-10}
+ & rt. Indices & 1.4 & 1.3 & 1.0 & 1.0 & 1.4 & 1.4 & 1.0 & 1.8\\ \cline{2-10}
+ & rt. L. Bounds & 1.4 & 1.3 & 1.0 & 1.0 & 1.4 & 1.4 & 1.0 & 1.8\\ \cline{2-10}
+ & rt. Conditions & 1.4 & 1.3 & 1.0 & 1.0 & 1.4 & 1.4 & 1.0 & 1.8\\ \cline{2-10}
+ & rt. All & 1.4 & 1.0 & 1.3 & 1.0 & 1.5 & 1.0 & 1.4 & 1.0\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Reductions}} & Known at ct. & 3.0 & 6.7 & 3.5 & 2.8 & 5.0 & 10.9 & 4.4 & 5.4\\ \cline{2-10}
+ & rt. Attributes & 3.0 & 6.7 & 3.6 & 2.9 & 5.0 & 10.8 & 4.3 & 5.3\\ \cline{2-10}
+ & rt. Indices & 3.0 & 6.7 & 3.6 & 2.9 & 5.0 & 10.8 & 4.4 & 5.0\\ \cline{2-10}
+ & rt. L. Bounds & 3.0 & 6.2 & 3.9 & 3.0 & 5.0 & 10.7 & 4.4 & 4.6\\ \cline{2-10}
+ & rt. Conditions & 3.0 & 6.7 & 3.6 & 2.9 & 5.0 & 10.7 & 4.3 & 5.2\\ \cline{2-10}
+ & rt. All & 3.1 & 6.2 & 3.8 & 3.0 & 5.0 & 10.7 & 4.5 & 4.6\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Recurrences}} & Known at ct. & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Attributes & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Indices & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. L. Bounds & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Conditions & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. All & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Searching}} & Known at ct. & 1.0 & 1.0 & 1.0 & 1.0 & 0.9 & 1.0 & 0.8 & 1.9\\ \cline{2-10}
+ & rt. Attributes & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.4 & 1.9\\ \cline{2-10}
+ & rt. Indices & 0.9 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.8 & 2.3\\ \cline{2-10}
+ & rt. L. Bounds & 1.1 & 1.0 & 1.0 & 1.0 & 1.2 & 1.1 & 1.1 & 2.1\\ \cline{2-10}
+ & rt. Conditions & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.3 & 2.2\\ \cline{2-10}
+ & rt. All & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 0.9 & 1.0 & 2.2\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Packing}} & Known at ct. & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Attributes & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Indices & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. L. Bounds & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Conditions & 1.0 & 1.0 & 1.0 & 1.0 & 0.9 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. All & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Loop Rerolling}} & Known at ct. & 2.5 & 2.6 & 1.5 & 1.7 & 2.6 & 1.5 & 1.8 & 2.6\\ \cline{2-10}
+ & rt. Attributes & 2.6 & 2.6 & 1.5 & 1.7 & 2.6 & 1.5 & 1.9 & 2.6\\ \cline{2-10}
+ & rt. Indices & 1.8 & 1.9 & 1.1 & 1.7 & 1.7 & 1.6 & 1.6 & 1.7\\ \cline{2-10}
+ & rt. L. Bounds & 2.6 & 2.5 & 1.4 & 1.7 & 2.9 & 1.5 & 1.9 & 1.7\\ \cline{2-10}
+ & rt. Conditions & 2.6 & 2.6 & 1.5 & 1.7 & 2.6 & 1.5 & 1.9 & 2.6\\ \cline{2-10}
+ & rt. All & 1.8 & 1.9 & 1.1 & 1.7 & 2.0 & 1.7 & 1.6 & 1.7\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Equivalencing}} & Known at ct. & 3.7 & 1.9 & 3.2 & 1.6 & 3.7 & 2.3 & 3.2 & 3.2\\ \cline{2-10}
+ & rt. Attributes & 3.7 & 1.9 & 1.0 & 1.6 & 3.6 & 2.3 & 3.2 & 1.6\\ \cline{2-10}
+ & rt. Indices & 3.4 & 1.6 & 1.0 & 1.6 & 2.7 & 1.6 & 1.5 & 1.6\\ \cline{2-10}
+ & rt. L. Bounds & 3.7 & 2.6 & 1.0 & 1.6 & 4.0 & 2.3 & 3.2 & 1.0\\ \cline{2-10}
+ & rt. Conditions & 3.7 & 1.9 & 1.0 & 1.6 & 3.7 & 2.3 & 3.2 & 1.6\\ \cline{2-10}
+ & rt. All & 3.4 & 2.1 & 3.4 & 1.6 & 3.2 & 1.6 & 3.2 & 3.4\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Indirect Addressing}} & Known at ct. & 1.0 & 1.3 & 1.0 & 1.0 & 2.3 & 1.8 & 1.7 & 1.3\\ \cline{2-10}
+ & rt. Attributes & 1.0 & 1.3 & 1.0 & 1.0 & 1.8 & 1.8 & 1.5 & 1.3\\ \cline{2-10}
+ & rt. Indices & 1.0 & 1.3 & 1.0 & 1.0 & 1.8 & 1.8 & 1.5 & 1.3\\ \cline{2-10}
+ & rt. L. Bounds & 0.9 & 1.3 & 1.0 & 1.0 & 1.8 & 1.7 & 1.5 & 1.2\\ \cline{2-10}
+ & rt. Conditions & 1.0 & 1.3 & 1.0 & 1.0 & 1.8 & 1.8 & 1.5 & 1.3\\ \cline{2-10}
+ & rt. All & 0.9 & 1.3 & 1.0 & 1.0 & 2.1 & 1.7 & 1.6 & 1.2\\ \cline{2-10}
+\hline
+\end{longtable}
+\begin{longtable}{|p{2cm}||c|c|c|c|c|c|c|c|c|}
+\cline{3-10} \multicolumn{2}{c|}{} & \multicolumn{4}{|c|}{ AVX512 (on Skylake)} & \multicolumn{4}{|c|}{ AVX512 (on KNL)} \\
+\cline{3-10} \multicolumn{2}{c|}{}& GNU & Clang & PGI & IBM & GNU & Clang & PGI & Intel \\ \hline
+\multirow{6}{*}{ \parbox{2cm}{Linear Dependence}} & Known at ct. & 2.3 & 1.6 & 2.1 & 2.4 & 3.7 & 2.4 & 2.0 & 5.2\\ \cline{2-10}
+ & rt. Attributes & 2.6 & 1.6 & 1.0 & 2.3 & 3.6 & 2.3 & 1.0 & 4.8\\ \cline{2-10}
+ & rt. Indices & 2.1 & 1.5 & 1.0 & 2.0 & 3.3 & 2.2 & 1.0 & 4.0\\ \cline{2-10}
+ & rt. L. Bounds & 2.2 & 1.5 & 1.0 & 1.9 & 3.2 & 2.2 & 1.0 & 3.7\\ \cline{2-10}
+ & rt. Conditions & 2.5 & 1.6 & 1.0 & 2.3 & 3.6 & 2.3 & 1.0 & 4.8\\ \cline{2-10}
+ & rt. All & 2.2 & 1.7 & 1.3 & 1.6 & 3.3 & 2.2 & 1.3 & 2.9\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Induction Variable}} & Known at ct. & 3.0 & 2.2 & 2.5 & 1.5 & 6.8 & 5.2 & 3.4 & 2.4\\ \cline{2-10}
+ & rt. Attributes & 2.5 & 2.2 & 1.2 & 1.5 & 6.5 & 5.1 & 1.4 & 2.4\\ \cline{2-10}
+ & rt. Indices & 2.2 & 2.0 & 1.2 & 1.5 & 5.9 & 4.3 & 1.4 & 2.4\\ \cline{2-10}
+ & rt. L. Bounds & 3.0 & 2.2 & 1.2 & 1.5 & 6.4 & 5.8 & 1.5 & 2.5\\ \cline{2-10}
+ & rt. Conditions & 2.9 & 2.2 & 1.2 & 1.5 & 6.7 & 5.3 & 1.4 & 2.4\\ \cline{2-10}
+ & rt. All & 2.7 & 1.7 & 1.6 & 2.6 & 6.0 & 4.6 & 2.2 & 4.3\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Global Data Flow}} & Known at ct. & 5.7 & 2.8 & 3.3 & 3.2 & 6.6 & 5.0 & 4.5 & 5.3\\ \cline{2-10}
+ & rt. Attributes & 5.5 & 2.9 & 1.4 & 3.2 & 6.0 & 4.9 & 1.7 & 5.3\\ \cline{2-10}
+ & rt. Indices & 4.5 & 2.1 & 1.0 & 2.9 & 4.2 & 3.2 & 1.0 & 4.6\\ \cline{2-10}
+ & rt. L. Bounds & 5.5 & 2.8 & 1.4 & 3.1 & 6.5 & 4.8 & 1.7 & 4.8\\ \cline{2-10}
+ & rt. Conditions & 5.4 & 2.8 & 1.4 & 3.3 & 5.9 & 5.0 & 1.7 & 5.3\\ \cline{2-10}
+ & rt. All & 4.0 & 2.2 & 2.3 & 2.7 & 7.5 & 4.1 & 3.9 & 4.3\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Control Flow}} & Known at ct. & 3.8 & 2.5 & 3.6 & 3.4 & 12.7 & 8.0 & 3.8 & 5.8\\ \cline{2-10}
+ & rt. Attributes & 3.2 & 2.5 & 1.0 & 1.8 & 11.6 & 8.0 & 1.0 & 2.6\\ \cline{2-10}
+ & rt. Indices & 3.1 & 2.5 & 1.0 & 1.9 & 11.3 & 7.9 & 1.0 & 2.6\\ \cline{2-10}
+ & rt. L. Bounds & 3.6 & 2.5 & 1.0 & 1.8 & 11.8 & 7.7 & 1.0 & 2.6\\ \cline{2-10}
+ & rt. Conditions & 3.1 & 2.4 & 1.0 & 1.0 & 10.6 & 7.4 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. All & 4.0 & 2.4 & 3.8 & 3.1 & 12.6 & 7.0 & 3.8 & 5.8\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Symbolics}} & Known at ct. & 3.2 & 3.1 & 3.4 & 2.7 & 6.2 & 5.7 & 4.7 & 5.4\\ \cline{2-10}
+ & rt. Attributes & 2.2 & 3.1 & 1.0 & 2.7 & 5.0 & 5.7 & 1.0 & 5.2\\ \cline{2-10}
+ & rt. Indices & 2.4 & 3.1 & 1.0 & 2.2 & 5.0 & 6.2 & 1.0 & 4.2\\ \cline{2-10}
+ & rt. L. Bounds & 2.3 & 3.1 & 1.0 & 2.3 & 4.9 & 5.8 & 1.0 & 3.6\\ \cline{2-10}
+ & rt. Conditions & 2.5 & 3.1 & 1.0 & 2.7 & 4.9 & 5.7 & 1.0 & 5.4\\ \cline{2-10}
+ & rt. All & 2.1 & 3.1 & 1.4 & 1.9 & 4.6 & 5.9 & 1.8 & 2.6\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Statement Reordering}} & Known at ct. & 1.0 & 1.0 & 2.5 & 1.0 & 1.0 & 1.0 & 3.7 & 1.0\\ \cline{2-10}
+ & rt. Attributes & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Indices & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. L. Bounds & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Conditions & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. All & 1.0 & 1.0 & 2.2 & 1.0 & 1.0 & 1.0 & 3.2 & 1.0\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Loop Restructuring}} & Known at ct. & 1.2 & 1.1 & 1.0 & 1.0 & 1.2 & 1.2 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Attributes & 1.2 & 1.1 & 1.0 & 1.0 & 1.3 & 1.2 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Indices & 1.0 & 0.9 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. L. Bounds & 1.2 & 1.1 & 1.0 & 1.0 & 1.3 & 1.2 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Conditions & 1.2 & 1.1 & 1.0 & 1.0 & 1.3 & 1.2 & 1.0 & 1.1\\ \cline{2-10}
+ & rt. All & 1.0 & 0.9 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Node Splitting}} & Known at ct. & 1.1 & 1.3 & 1.1 & 1.0 & 1.7 & 1.8 & 1.3 & 1.0\\ \cline{2-10}
+ & rt. Attributes & 1.2 & 1.3 & 1.0 & 1.0 & 1.8 & 1.8 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Indices & 0.9 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. L. Bounds & 1.2 & 1.3 & 1.0 & 1.0 & 1.8 & 2.1 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Conditions & 1.2 & 1.3 & 1.0 & 1.0 & 1.8 & 1.8 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. All & 0.9 & 0.9 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Expansion}} & Known at ct. & 1.6 & 1.7 & 1.9 & 1.2 & 3.4 & 3.3 & 2.1 & 1.6\\ \cline{2-10}
+ & rt. Attributes & 1.6 & 1.7 & 1.2 & 1.2 & 3.5 & 3.3 & 1.5 & 1.6\\ \cline{2-10}
+ & rt. Indices & 1.5 & 1.7 & 1.2 & 1.2 & 3.1 & 3.3 & 1.5 & 1.6\\ \cline{2-10}
+ & rt. L. Bounds & 1.8 & 1.6 & 1.2 & 1.2 & 4.0 & 2.9 & 1.5 & 1.7\\ \cline{2-10}
+ & rt. Conditions & 1.6 & 1.7 & 1.2 & 1.2 & 3.5 & 3.3 & 1.5 & 1.6\\ \cline{2-10}
+ & rt. All & 1.6 & 1.6 & 1.7 & 1.8 & 3.7 & 2.9 & 2.0 & 3.0\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Crossing Thresholds}} & Known at ct. & 1.3 & 1.3 & 1.4 & 1.7 & 1.9 & 1.7 & 1.9 & 2.9\\ \cline{2-10}
+ & rt. Attributes & 1.3 & 1.3 & 1.0 & 1.7 & 1.9 & 1.7 & 1.0 & 2.9\\ \cline{2-10}
+ & rt. Indices & 1.3 & 1.3 & 1.0 & 1.7 & 1.9 & 1.7 & 1.0 & 2.9\\ \cline{2-10}
+ & rt. L. Bounds & 1.4 & 1.3 & 1.0 & 1.7 & 2.0 & 1.7 & 1.0 & 2.5\\ \cline{2-10}
+ & rt. Conditions & 1.3 & 1.3 & 1.0 & 1.7 & 1.9 & 1.7 & 1.0 & 2.9\\ \cline{2-10}
+ & rt. All & 1.3 & 1.0 & 1.4 & 1.0 & 2.0 & 1.0 & 2.0 & 1.0\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Reductions}} & Known at ct. & 8.5 & 10.4 & 7.0 & 9.7 & 13.8 & 19.1 & 7.4 & 32.4\\ \cline{2-10}
+ & rt. Attributes & 8.6 & 10.4 & 7.1 & 8.8 & 13.8 & 19.1 & 7.4 & 32.0\\ \cline{2-10}
+ & rt. Indices & 8.6 & 10.4 & 7.0 & 8.7 & 13.8 & 19.2 & 7.4 & 29.4\\ \cline{2-10}
+ & rt. L. Bounds & 8.0 & 8.0 & 7.1 & 8.0 & 13.7 & 14.9 & 7.5 & 22.2\\ \cline{2-10}
+ & rt. Conditions & 9.1 & 10.5 & 7.0 & 8.9 & 13.9 & 19.1 & 7.4 & 32.1\\ \cline{2-10}
+ & rt. All & 8.4 & 8.0 & 7.0 & 8.2 & 13.7 & 14.8 & 7.5 & 19.2\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Recurrences}} & Known at ct. & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Attributes & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Indices & 0.9 & 0.9 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. L. Bounds & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Conditions & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. All & 0.9 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Searching}} & Known at ct. & 1.0 & 1.0 & 1.0 & 4.4 & 1.0 & 1.0 & 1.0 & 4.9\\ \cline{2-10}
+ & rt. Attributes & 1.2 & 1.0 & 0.8 & 2.6 & 1.0 & 1.0 & 1.0 & 4.9\\ \cline{2-10}
+ & rt. Indices & 0.9 & 1.0 & 1.3 & 3.3 & 1.0 & 1.0 & 1.0 & 4.9\\ \cline{2-10}
+ & rt. L. Bounds & 0.9 & 1.1 & 1.4 & 3.3 & 1.0 & 1.0 & 1.0 & 4.8\\ \cline{2-10}
+ & rt. Conditions & 1.0 & 1.0 & 1.0 & 3.4 & 1.0 & 1.0 & 1.0 & 4.9\\ \cline{2-10}
+ & rt. All & 1.0 & 1.0 & 1.1 & 3.4 & 1.0 & 1.0 & 1.0 & 5.5\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Packing}} & Known at ct. & 1.0 & 1.0 & 1.0 & 0.9 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Attributes & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Indices & 1.0 & 1.0 & 1.1 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. L. Bounds & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. Conditions & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+ & rt. All & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Loop Rerolling}} & Known at ct. & 2.3 & 1.8 & 2.2 & 2.5 & 4.5 & 3.0 & 3.1 & 4.4\\ \cline{2-10}
+ & rt. Attributes & 2.3 & 1.8 & 2.2 & 2.5 & 4.4 & 3.0 & 3.1 & 4.4\\ \cline{2-10}
+ & rt. Indices & 1.6 & 1.3 & 1.5 & 1.4 & 2.6 & 2.1 & 2.4 & 2.2\\ \cline{2-10}
+ & rt. L. Bounds & 2.3 & 1.7 & 2.3 & 1.8 & 5.0 & 3.0 & 3.0 & 2.7\\ \cline{2-10}
+ & rt. Conditions & 2.3 & 1.8 & 2.2 & 2.5 & 4.5 & 3.0 & 3.1 & 4.4\\ \cline{2-10}
+ & rt. All & 1.6 & 1.4 & 1.7 & 1.4 & 3.2 & 1.9 & 2.3 & 2.3\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Equivalencing}} & Known at ct. & 2.8 & 1.8 & 4.3 & 2.6 & 6.2 & 2.8 & 5.1 & 5.3\\ \cline{2-10}
+ & rt. Attributes & 3.4 & 1.8 & 4.3 & 1.4 & 6.2 & 2.8 & 5.1 & 2.0\\ \cline{2-10}
+ & rt. Indices & 2.4 & 1.3 & 1.5 & 1.4 & 5.2 & 1.8 & 1.8 & 2.1\\ \cline{2-10}
+ & rt. L. Bounds & 3.5 & 1.8 & 4.3 & 1.0 & 7.7 & 3.4 & 5.1 & 1.0\\ \cline{2-10}
+ & rt. Conditions & 3.0 & 1.8 & 4.3 & 1.4 & 6.2 & 2.8 & 5.2 & 2.0\\ \cline{2-10}
+ & rt. All & 2.7 & 1.3 & 4.2 & 2.6 & 6.3 & 2.2 & 4.5 & 5.3\\ \cline{2-10}
+\hline
+\multirow{6}{*}{ \parbox{2cm}{Indirect Addressing}} & Known at ct. & 2.2 & 1.5 & 1.6 & 1.2 & 3.7 & 1.8 & 1.4 & 1.5\\ \cline{2-10}
+ & rt. Attributes & 1.7 & 1.5 & 1.5 & 1.2 & 1.6 & 1.8 & 1.2 & 1.5\\ \cline{2-10}
+ & rt. Indices & 1.7 & 1.5 & 1.5 & 1.3 & 1.6 & 1.8 & 1.3 & 1.5\\ \cline{2-10}
+ & rt. L. Bounds & 1.7 & 1.5 & 1.4 & 1.2 & 1.5 & 1.7 & 1.2 & 1.7\\ \cline{2-10}
+ & rt. Conditions & 1.7 & 1.5 & 1.5 & 1.2 & 1.6 & 1.8 & 1.2 & 1.5\\ \cline{2-10}
+ & rt. All & 2.0 & 1.5 & 1.5 & 1.2 & 3.1 & 1.7 & 1.2 & 1.8\\ \cline{2-10}
+\hline
+\end{longtable}
+\end{document}
