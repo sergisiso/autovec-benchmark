@@ -2122,7 +2122,7 @@ int s2275()
 	init( "s275 ");
 	start_t = clock();
 
-	for (int nl = 0; nl < 10*(ntimes/LEN2); nl++) {
+	for (int nl = 0; nl < 100*(ntimes/LEN2); nl++) {
 		for (int i = 0; i < LEN2; i++) {
 			for (int j = 0; j < LEN2; j++) {
 				aa[j*LEN2+i] = aa[j*LEN2+i] + bb[j*LEN2+i] * cc[j*LEN2+i];
@@ -5860,7 +5860,7 @@ int main(int argc, char *argv[]){
 	s314();fflush(stdout);
 	s315();fflush(stdout);
 	s316();fflush(stdout);
-	s317();fflush(stdout);
+	//s317();fflush(stdout);
 	s318(ip_n1);fflush(stdout);
 	s319();fflush(stdout);
 	s3110();fflush(stdout);
