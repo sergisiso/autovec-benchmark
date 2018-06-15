@@ -4,6 +4,7 @@ import sys
 import os
 import shutil
 import math
+import statistics
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
@@ -362,40 +363,80 @@ def load_data(data, compiler, category, parameters, parameters_path):
         vecfname = 'runvec.txt'
         novecfname = 'runnovec.txt'
     else:
-        vecfname = 'runrtvec.txt'
-        novecfname = 'runrtnovec.txt'
+        vecfname = 'runrtvec0.txt'
+        novecfname = 'runrtnovec0.txt'
 
     # Open results files and entries to 'data'
+    vecresults = []
+    novecresults = []
+    file_number = 0
     try:
-        with open(os.path.join(parameters_path,vecfname)) as vecf:
-            with open(os.path.join(parameters_path,novecfname)) as novecf:
-                for linevec, linenovec in zip(vecf.readlines(),novecf.readlines()):
-                    if linevec[0] == 'S':
-                        if linenovec.split()[0] == linevec.split()[0]:
-                            test, novec_perf, cs1 = linenovec.split()
-                            test, vec_perf, cs2 = linevec.split()
-                            if test in remove_tests:
-                                continue
-                            if abs(float(cs1) - float(cs2)) > abs(float(cs1)*0.01):
-                                print("Warning checksums differ! ", compiler,
-                                        category, parameters, test, cs1," ",cs2)
-                            elif float(novec_perf) == 0.0 or float(vec_perf) == 0.0:
-                                print("Warning contains 0 " , compiler,
-                                        category, parameters, test)
-                            elif float(novec_perf)/float(vec_perf) > (16.0 + 1.0):
-                                print("Warning outlier " , compiler, category,
-                                    parameters, test, float(novec_perf),
-                                    float(vec_perf), float(novec_perf)/float(vec_perf))
-                            #else: # --> use else to eliminate warrining cases
-                            data[compiler][category][parameters][test] = [
-                                float(vec_perf),
-                                float(novec_perf),
-                                float(novec_perf)/float(vec_perf)
-                                ]
-                        else:
-                            print("Warning, some lines are different!")
+        for i in range(5):
+            file_number = i
+            vecf = open(os.path.join(parameters_path,vecfname.replace('0',str(i))),'r')
+            novecf = open(os.path.join(parameters_path,novecfname.replace('0',str(i))),'r')
+            vecresults.append(vecf.readlines())
+            novecresults.append(novecf.readlines())
     except FileNotFoundError:
-        print("Warning, files ", os.path.join(parameters_path,vecfname), " or ", os.path.join(parameters_path,novecfname), " not found!" )
+        if file_number == 0:
+            print("Warning, files ", os.path.join(parameters_path,vecfname), " or ", os.path.join(parameters_path,novecfname), " not found!" )
+        else:
+            print("Warning: Not all files found in ", parameters_path)
+
+    for indx, (linevec, linenovec) in enumerate(zip(vecresults[0],novecresults[0])):
+        if linevec[0] == 'S':
+            if linenovec.split()[0] == linevec.split()[0]:
+                test, novec_perf, cs1 = linenovec.split()
+                test, vec_perf, cs2 = linevec.split()
+
+                vecvalues = [float(item[indx].split()[1]) for item in vecresults]
+                novecvalues = [float(item[indx].split()[1]) for item in novecresults]
+
+                if len(vecvalues) > 1:
+                    vecstd = statistics.stdev(vecvalues)
+                    novecstd = statistics.stdev(novecvalues)
+
+                vecmin = min(vecvalues); vecmax = vecmin + vecmin * 0.5
+                novecmin = min(novecvalues); novecmax = novecmin + novecmin * 0.5
+
+                newvecvalues = [x for x in vecvalues if x < vecmax]
+                newnovecvalues = [x for x in novecvalues if x < novecmax]
+
+                vec_perf = vecmin
+                novec_perf = novecmin
+
+                if novec_perf > 10 or vec_perf < 0.2:
+                    pass
+                    #print("--->", compiler, test, vec_perf, novec_perf)
+
+                if test in remove_tests:
+                    continue
+                if abs(float(cs1) - float(cs2)) > abs(float(cs1)*0.01):
+                    print("Warning checksums differ! ", compiler,
+                            category, parameters, test, cs1," ",cs2)
+                elif float(novec_perf) == 0.0 or float(vec_perf) == 0.0:
+                    print("Warning contains 0 " , compiler,
+                            category, parameters, test)
+                elif len(newvecvalues) < 4 or len(newnovecvalues) < 4:
+                    pass
+                    #print("Warning 2 or more results eliminated as noise outliers ", len(newvecvalues) ,
+                    #      " and ", len(newnovecvalues), " ", compiler, category, parameters, test)
+                elif vecstd > 0.2 or novecstd > 0.2:
+                    pass
+                    #print("Warning standard deviation = ", vecstd ," and ", novecstd , compiler,
+                    #        category, parameters, test)
+                #elif float(novec_perf)/float(vec_perf) > (16.0 + 1.0):
+                #    print("Warning outlier " , compiler, category,
+                #        parameters, test, float(novec_perf),
+                #        float(vec_perf), float(novec_perf)/float(vec_perf))
+                #else: # --> use else to eliminate warrining cases
+                data[compiler][category][parameters][test] = [
+                    float(vec_perf),
+                    float(novec_perf),
+                    float(novec_perf)/float(vec_perf)
+                    ]
+            else:
+                print("Warning, some lines are different!")
 
 def plot_compilers(data, output, architecture, title="", speedup_vs=None):
     # all compilers, all categories, original tsc
@@ -558,71 +599,99 @@ def to_string(f):
     else:
         return "{:2.1f}".format(f)
 
-def print_summary(detailed_summary,categories):
-    # Print latex table
-    #
-    # \begin{tabular}{ l | c | r }
-    #   \hline          
-    #     1 & 2 & 3 \\
-    #     4 & 5 & 6 \\
-    #     7 & 8 & 9 \\
-    #   \hline  
-    # \end{tabular}
+def print_summary(data):
+    categories = all_categories
+
+    # Potentially change names and order
+    parameters =  ['RUNTIME_ATTRIBUTES', 'None', 'RUNTIME_INDEX',
+            'RUNTIME_LOOP_BOUNDS', 'RUNTIME_CONDITIONS','RUNTIME_ALL']
+
+    mappars = {
+            'RUNTIME_ATTRIBUTES'    :'Known at ct.',
+            'None'                  :'rt. Attributes',
+            'RUNTIME_INDEX'         :'rt. Indices',
+            'RUNTIME_LOOP_BOUNDS'   :'rt. L. Bounds',
+            'RUNTIME_CONDITIONS'    :'rt. Conditions' ,
+            'RUNTIME_ALL'           :'rt. All'
+            }
+            
 
     rotation = 90
     cat_num = len(categories)
-    par_num = len(detailed_summary[next(iter(detailed_summary.keys()))])
+    par_num = len(parameters)
 
-    with open('output.tex','w') as f:
-        #f.write("\\begin{table}[hpt] \n")
-        #f.write("\\centering \n")
-        f.write("\\begin{adjustbox}{center} \n")
-        f.write("\\begin{tabular}{|c|c" + ("|c"*(cat_num)) +"|}\n")
-        f.write("\\hline\n")
-        f.write("\\begin{turn}{"+str(rotation)+"}Architecture-Compiler\\end{turn} & ")
-        #f.write("\\begin{turn}{"+str(rotation)+"}Compiler\\end{turn} & ")
-        f.write("\\begin{turn}{"+str(rotation)+"}Parameters\\end{turn} ")
+    fname = os.path.join(os.path.join('plots','latex_table'),'output.tex')
+    with open(fname,'w') as f:
+        f.write("\\documentclass{article}\n")
+        f.write("\\usepackage{array,longtable}\n")
+        f.write("\\usepackage{multicol}\n")
+        f.write("\\usepackage{multirow}\n")
+        f.write("\\begin{document}\n")
+
+        # Begin table 1 with altivec and avx2
+        f.write("\\begin{longtable}{")
+        f.write(("|p{2cm}|"+"|c"*(9))+"|}\n")
+        f.write("\\cline{3-10} \multicolumn{2}{c|}{}")
+        f.write(" & \multicolumn{4}{|c|}{ Altivec (on Power8)}")
+        f.write(" & \multicolumn{4}{|c|}{ AVX2 (on Skylake)} \\\\\n")
+
+        f.write("\\cline{3-10} \multicolumn{2}{c|}{}")
+        f.write("& GNU & Clang & PGI & IBM ")
+        f.write("& GNU & Clang & PGI & Intel \\\\ \\hline\n")
+        #f.write("\\endhead\n")
+
         for cat in categories:
-            f.write(" & \\begin{turn}{"+str(rotation)+"}"+cat.title().replace("_"," ") +"\\end{turn} ")
+            f.write("\\multirow{" + str(par_num) + "}{*}{ \parbox{2cm}{" +
+                    cat.replace('_',' ').title() + "}}")
+            for par in parameters:
+                f.write(" & " + mappars[par])
+                for c in ['altivec-gcc','altivec-clang','altivec-pgi',
+                        'altivec-ibm','avx2-gcc','avx2-clang','avx2-pgi',
+                        'avx2-icc']:
+                    f.write(" & " + "{:3.1f}".format(np.mean(
+                        [v[2] for v in data[c][cat][par].values()]
+                        )))
+                f.write("\\\\ \\cline{2-10}\n")
+            f.write("\\hline\n")
+        f.write("\\end{longtable}\n")
 
-        f.write("\\\\ \n")
+        # Begin table 1 with altivec and avx2
+        f.write("\\begin{longtable}{")
+        f.write(("|p{2cm}|"+"|c"*(9))+"|}\n")
+        f.write("\\cline{3-10} \multicolumn{2}{c|}{}")
+        f.write(" & \multicolumn{4}{|c|}{ AVX512 (on Skylake)}")
+        f.write(" & \multicolumn{4}{|c|}{ AVX512 (on KNL)} \\\\\n")
 
-        for archcomp in sorted(detailed_summary.keys()):
-            arch, comp = archcomp.split("-")
-            #print(arch)
-            #print(comp)
-            f.write("\\hline \n")
-            f.write("  \multirow{"+str(par_num)+"}{*}{\\begin{turn}{90}"+archcomp+"\\end{turn}} & CT ALL &") 
-            f.write(" & ".join([to_string(detailed_summary[archcomp]['None'][x]) for x in categories])+" \\\\ \n")
-            f.write(" & RT LOOP BOUNDS & ")
-            f.write(" & ".join([to_string(detailed_summary[archcomp]['RUNTIME_LOOP_BOUNDS'][x]) for x in categories])+" \\\\ \n")
-            f.write(" & RT INDICES & ")
-            f.write(" & ".join([to_string(detailed_summary[archcomp]['RUNTIME_INDEX'][x]) for x in categories])+" \\\\ \n")
-            f.write(" & RT CONDITIONALS & ")
-            f.write(" & ".join([to_string(detailed_summary[archcomp]['RUNTIME_CONDITIONS'][x]) for x in categories])+" \\\\ \n")
-            f.write(" & RT ARITHMETIC & ")
-            f.write(" & ".join([to_string(detailed_summary[archcomp]['RUNTIME_ARITHMETIC'][x]) for x in categories])+" \\\\ \n")
-            f.write(" & RT ALL & ")
-            f.write(" & ".join([to_string(detailed_summary[archcomp]['RUNTIME_ALL'][x]) for x in categories])+" \\\\ \n")
-        f.write("\\hline \n")
-        f.write("\\end{tabular}\n")
-        f.write("\\end{adjustbox}\n")
+        f.write("\\cline{3-10} \multicolumn{2}{c|}{}")
+        f.write("& GNU & Clang & PGI & IBM ")
+        f.write("& GNU & Clang & PGI & Intel \\\\ \\hline\n")
+        #f.write("\\endhead\n")
+
+        for cat in categories:
+            f.write("\\multirow{" + str(par_num) + "}{*}{ \parbox{2cm}{" +
+                    cat.replace('_',' ').title() + "}}")
+            for par in parameters:
+                f.write(" & " + mappars[par])
+                for c in ['avx512-gcc','avx512-clang','avx512-pgi',
+                        'avx512-icc','knl-gcc','knl-clang','knl-pgi',
+                        'knl-icc']:
+                    f.write(" & " + "{:3.1f}".format(np.mean(
+                        [v[2] for v in data[c][cat][par].values()]
+                        )))
+                f.write("\\\\ \\cline{2-10}\n")
+            f.write("\\hline\n")
+        f.write("\\end{longtable}\n")
 
 
-        #f.write("{}")
-        #f.write("Header: "+ str(categories))
-        #for compiler in detailed_summary.keys():
-        #    f.write(compiler)
-        #    for parameter in detailed_summary[compiler].keys():
-        #        values = [str(x) + " " +str(detailed_summary[compiler][parameter][x]) for x in categories ]
-        #        f.write(parameter + " : " + str(values))
- 
+
+        f.write("\\end{document}\n")
+
+
 
 def data_sanity_check(data):
 
     #Nested dictionary of: compiler, category, parameters, test 
     
-    print("\nData Summary:")
     for compiler in sorted(data.keys()):
         tests_per_category = []
         total = 0
@@ -688,6 +757,7 @@ def main():
     os.makedirs(os.path.join('plots','originaltsvc_vspectrum'))
     os.makedirs(os.path.join('plots','extendedtsvc_summary'))
     os.makedirs(os.path.join('plots','extendedtsvc_detailed'))
+    os.makedirs(os.path.join('plots','latex_table'))
 
 
     #Nested dictionary of: compiler, category, parameters, test : [performance vec, performance novec, vector eff]
@@ -699,17 +769,20 @@ def main():
     for compiler in getfolders(datadir):
         print(compiler)
         compiler_path = os.path.join(datadir,compiler)
-        for category in getfolders(compiler_path):
+        for category in all_categories: #getfolders(compiler_path):
             category_path = os.path.join(compiler_path,category)
-            for parameters in getfolders(category_path):
+            for parameters in all_parameters: #getfolders(category_path):
                 parameters_path = os.path.join(category_path,parameters)
                 load_data(data, compiler,category,parameters,parameters_path)
     
-    data_sanity_check(data)
-    #exit(0)
-    print("")
 
-    print("Ploting Summary VSpectrums..")
+    print("\nData sanity check...")
+    data_sanity_check(data)
+    print("\nWriting summary to file...")
+    print_summary(data)
+    #exit(0)
+    
+    print("\nPloting Summary VSpectrums..")
     path = os.path.join('plots','extendedtsvc_summary')
     plot_new(data, detailed_summary, 'RUNTIME_INDEX',
             os.path.join(path,'index_parameters.eps'), 'Index Parameters')
@@ -723,14 +796,15 @@ def main():
         os.path.join(path,'variable_attributes.eps'), 'Variable attributes')
     plot_new(data, detailed_summary, 'RUNTIME_ALL',
         os.path.join(path,'all.eps'), 'All Parameters')
-    print_summary(detailed_summary, all_categories)
 
+    plt.close("all")
     print("- Compiler comparison")
     plot_compilers(data, 'compilers-avx2.eps', 'avx2', 'AVX2 Compiler comparison')
     plot_compilers(data, 'compilers-avx512.eps', 'avx512', 'AVX512 Compiler comparison')
     plot_compilers(data, 'compilers-knl.eps', 'knl', 'KNL Compiler comparison')
     plot_compilers(data, 'compilers-altivec.eps', 'altivec', 'Altivec Compiler comparison')
 
+    plt.close("all")
     #exit(0)
 
     print("- Detailed VSpectrums")
@@ -745,6 +819,7 @@ def main():
     #plot_categories(data, 'avx512-pgi', os.path.join(path,'avx512-pgi.eps'), title="AVX512 PGI Auto-vectorization", speedup=False)
     plot_categories(data, 'avx512-clang', os.path.join(path,'avx512-clang.eps'), title="AVX512 Clang Auto-vectorization", speedup=False)
 
+    plt.close("all")
     plot_categories(data, 'knl-icc', os.path.join(path,'knl-icc.eps'), title="KNL ICC Auto-vectorization", speedup=False)
     plot_categories(data, 'knl-gcc', os.path.join(path,'knl-gcc.eps'), title="KNL GCC Auto-vectorization", speedup=False)
     #plot_categories(data, 'knl-pgi', os.path.join(path,'knl-pgi.eps'), title="KNL PGI Auto-vectorization", speedup=False)
