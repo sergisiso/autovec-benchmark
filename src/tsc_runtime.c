@@ -1591,12 +1591,12 @@ int s132()
 	init( "s132 ");
 	start_t = clock();
 
-	int m = 0;
+	int m = ap_n0;
 	int j = m;
-	int k = m+1;
+	int k = m+ap_n1;
 	for (int nl = 0; nl < 400*ntimes; nl++) {
 		for (int i= 1; i < LEN2; i++) {
-			aa[j*LEN2+i] = aa[k*LEN2+(i-1)] + b[i] * c[1];
+			aa[j*LEN2+i] = aa[k*LEN2+(i-ip_n1)] + b[i] * c[ip_n1];
 		}
 		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
