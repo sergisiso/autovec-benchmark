@@ -3576,7 +3576,7 @@ int s258()
 	start_t = clock();
 
 	TYPE s;
-	for (int nl = 0; nl < 44**ntimes; nl++) {
+	for (int nl = 0; nl < 4*ntimes; nl++) {
 		s = 0.;
 		for (int i = 0; i < LEN; ++i) {
 			if (a[i] > cp_n0) {
