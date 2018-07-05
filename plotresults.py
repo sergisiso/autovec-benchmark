@@ -167,7 +167,8 @@ def radar_factory(num_vars, frame='circle'):
                 line.set_data(x, y)
 
         def set_varlabels(self, labels):
-            self.set_thetagrids(np.degrees(theta), labels,fontsize='small')
+        #    self.set_thetagrids(np.degrees(theta), labels,fontsize='small')
+             self.set_thetagrids(np.degrees(theta), labels, frac=1.2)
 
         def _gen_axes_patch(self):
             return self.draw_patch()
@@ -216,14 +217,32 @@ def plot_radar_chart(categories, values, labels, outputfile, title="", size=(8,8
     fig, ax = plt.subplots(subplot_kw=dict(projection='radar'))
     #fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.05)
 
-    colors = ['b', 'r', 'g', 'm', 'y']
+    colors = {'gcc':'b',
+              'clang':'r',
+              'pgi':'g',
+              'icc':'m',
+              'ibm':'orange'
+              }
+    linestyles = {'gcc':':',
+                'clang':'--',
+                'pgi':'-.',
+                'icc':'-',
+                'ibm':'-'
+                }
+    llabels = {'gcc':'GCC 8.1',
+               'clang':'Clang 6',
+               'pgi':'PGI 18.4',
+               'icc':'Intel ICC 2018u4',
+               'ibm':'IBM XLC 13.5'
+               }
+
     # Plot the four cases from the example data on separate axes
     #for ax, (title, case_data) in zip(axes.flatten(), data):
     #ax.set_rgrids([00,,1,2,3,4,5,6,7,8])
-    ax.set_title(title, weight='bold', size='medium', position=(0.5, 1.1),
-                  horizontalalignment='center', verticalalignment='center')
-    for d, color in zip(case_data, colors):
-        ax.plot(theta, d, color=color)
+    #ax.set_title(title, weight='bold', size='medium', position=(0.5, 1.1),
+    #              horizontalalignment='center', verticalalignment='center')
+    for d, l in zip(case_data, labels):
+        ax.plot(theta, d, color=colors[l], linestyle=linestyles[l])
         #ax.fill(theta, d, facecolor=color, alpha=0.25)
     ax.set_varlabels(spoke_labels)
 
@@ -239,8 +258,8 @@ def plot_radar_chart(categories, values, labels, outputfile, title="", size=(8,8
     # add legend relative to top-left plot
     #ax = axes[0, 0]
     #labels = ('Factor 1', 'Factor 2')
-    legend = ax.legend(labels, loc=(0.9,0.95),
-                       labelspacing=0.1)
+    #legend = ax.legend(llabels, loc=(0.9,0.95),
+    #                   labelspacing=0.1)
 
     #fig.text(0.5, 0.965, '5-Factor Solution Profiles Across Four Scenarios',
     #         horizontalalignment='center', color='black', weight='bold',
@@ -278,6 +297,8 @@ def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization",
 
     if len(list(values)) != len(list(charts)):
         print("Error: Inconsistent number of charts/values")
+        print("Values:",values)
+        print("charts:",charts)
         exit(-1)
 
     #print(outputfile)
@@ -304,7 +325,7 @@ def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization",
         if connect:
             xy = (1,val)
             xy2 = (0.45,v_loc)
-            con = ConnectionPatch(xyA=xy, xyB=xy2, coordsA="data",coordsB="data", axesA=axis[-2], axesB=axis[-1], color=palette[lab], connectionstyle="arc,angleA=-180,angleB=-180,armA=-20,armB=20,rad=0")
+            con = ConnectionPatch(xyA=xy, xyB=xy2, coordsA="data",coordsB="data", axesA=axis[-2], axesB=axis[-1], color=palette[lab], connectionstyle="arc,angleA=-180,angleB=-180,armA=-15,armB=15,rad=0")
             axis[-2].add_artist(con)
         else:
             con = ConnectionPatch( xyA=(0.25,v_loc), xyB=(0.45,v_loc),
@@ -470,6 +491,7 @@ def plot_compilers(data, output, architecture, title="", speedup_vs=None):
     plot_radar_chart(labs,vals,char,path, title=title, size=(10,6))
 
 def plot_categories(data, comp, output, title="", speedup=False):
+    print(title)
     labs = []
     vals = []
     char = ('RUNTIME_ATTRIBUTES',
@@ -500,7 +522,6 @@ def plot_categories(data, comp, output, title="", speedup=False):
 
     vals = [list(i) for i in zip(*vals)]
     labs = [x.title().replace("_"," ") for x in labs]
-
 
 
     plot_chart(char, labs , vals, output, title=title, ylabel = "Vector Efficiency", connect=False, draw_mean=True, size=(7,4),ymax=8)
@@ -534,7 +555,7 @@ def plot_new(data, detailed_summary, parameter, output, title="", speedup=False)
             cat_par_sum = 0
             cat_count = 0
 
-            for test, value in data[compiler][category]['RUNTIME_ATTRIBUTES'].items():
+            for test, value in data[compiler][category]['None'].items():
                 #if (parameter not in test_sets) or (test in test_sets[parameter]): 
                 if True: 
                     value_ct = value[2]
@@ -566,7 +587,7 @@ def plot_new(data, detailed_summary, parameter, output, title="", speedup=False)
                 detailed_summary[compiler]['None'][category] = 0
                 detailed_summary[compiler][parameter][category] = 0
             else:
-                detailed_summary[compiler]['RUNTIME_ATTRIBUTES'][category] = float(cat_none_sum/cat_count)
+                detailed_summary[compiler]['None'][category] = float(cat_none_sum/cat_count)
                 detailed_summary[compiler][parameter][category] = float(cat_par_sum/cat_count)
 
             none_sum = none_sum + cat_none_sum
@@ -603,12 +624,12 @@ def print_summary(data):
     categories = all_categories
 
     # Potentially change names and order
-    parameters =  ['RUNTIME_ATTRIBUTES', 'None', 'RUNTIME_INDEX',
+    parameters =  ['None','RUNTIME_ATTRIBUTES', 'RUNTIME_INDEX',
             'RUNTIME_LOOP_BOUNDS', 'RUNTIME_CONDITIONS','RUNTIME_ALL']
 
     mappars = {
-            'RUNTIME_ATTRIBUTES'    :'Known at ct.',
-            'None'                  :'rt. Attributes',
+            'None'                  :'Known at ct.',
+            'RUNTIME_ATTRIBUTES'    :'rt. Attributes',
             'RUNTIME_INDEX'         :'rt. Indices',
             'RUNTIME_LOOP_BOUNDS'   :'rt. L. Bounds',
             'RUNTIME_CONDITIONS'    :'rt. Conditions' ,
@@ -630,7 +651,7 @@ def print_summary(data):
 
         # Begin table 1 with altivec and avx2
         f.write("\\begin{longtable}{")
-        f.write(("|p{2cm}|"+"|c"*(9))+"|}\n")
+        f.write(("|p{2cm}"+"|c"*(9))+"|}\n")
         f.write("\\cline{3-10} \multicolumn{2}{c|}{}")
         f.write(" & \multicolumn{4}{|c|}{ Altivec (on Power8)}")
         f.write(" & \multicolumn{4}{|c|}{ AVX2 (on Skylake)} \\\\\n")
@@ -642,7 +663,7 @@ def print_summary(data):
 
         for cat in categories:
             f.write("\\multirow{" + str(par_num) + "}{*}{ \parbox{2cm}{" +
-                    cat.replace('_',' ').title() + "}}")
+                    cat.replace('_','\\\\').title() + "}}")
             for par in parameters:
                 f.write(" & " + mappars[par])
                 for c in ['altivec-gcc','altivec-clang','altivec-pgi',
@@ -657,7 +678,7 @@ def print_summary(data):
 
         # Begin table 1 with altivec and avx2
         f.write("\\begin{longtable}{")
-        f.write(("|p{2cm}|"+"|c"*(9))+"|}\n")
+        f.write(("|p{2cm}"+"|c"*(9))+"|}\n")
         f.write("\\cline{3-10} \multicolumn{2}{c|}{}")
         f.write(" & \multicolumn{4}{|c|}{ AVX512 (on Skylake)}")
         f.write(" & \multicolumn{4}{|c|}{ AVX512 (on KNL)} \\\\\n")
@@ -669,7 +690,7 @@ def print_summary(data):
 
         for cat in categories:
             f.write("\\multirow{" + str(par_num) + "}{*}{ \parbox{2cm}{" +
-                    cat.replace('_',' ').title() + "}}")
+                    cat.replace('_','\\\\').title() + "}}")
             for par in parameters:
                 f.write(" & " + mappars[par])
                 for c in ['avx512-gcc','avx512-clang','avx512-pgi',
@@ -699,6 +720,7 @@ def data_sanity_check(data):
         # Check all compilers have all categories
         if len(data[compiler].keys()) != 17 :
             print ("Error: " + compiler +" missing categories")
+            print (data[compiler].keys())
             exit(0)
         else:
             for category in data[compiler].keys():
@@ -792,7 +814,7 @@ def main():
         os.path.join(path,'conditional_parameters.eps'), 'Conditional Parameters')
     plot_new(data, detailed_summary, 'RUNTIME_ARITHMETIC',
         os.path.join(path,'arithmetic_parameters.eps'), 'Arithmetic Parameters')
-    plot_new(data, detailed_summary, 'None',
+    plot_new(data, detailed_summary, 'RUNTIME_ATTRIBUTES',
         os.path.join(path,'variable_attributes.eps'), 'Variable attributes')
     plot_new(data, detailed_summary, 'RUNTIME_ALL',
         os.path.join(path,'all.eps'), 'All Parameters')
@@ -805,28 +827,27 @@ def main():
     plot_compilers(data, 'compilers-altivec.eps', 'altivec', 'Altivec Compiler comparison')
 
     plt.close("all")
-    #exit(0)
 
     print("- Detailed VSpectrums")
     path = os.path.join('plots','extendedtsvc_detailed')
     plot_categories(data, 'avx2-icc', os.path.join(path,'avx2-icc.eps'), title="AVX2 ICC Auto-vectorization", speedup=False)
     plot_categories(data, 'avx2-gcc', os.path.join(path,'avx2-gcc.eps'), title="AVX2 GCC Auto-vectorization", speedup=False)
-    #plot_categories(data, 'avx2-pgi', os.path.join(path,'avx2-pgi.eps'), title="AVX2 PGI Auto-vectorization", speedup=False)
+    plot_categories(data, 'avx2-pgi', os.path.join(path,'avx2-pgi.eps'), title="AVX2 PGI Auto-vectorization", speedup=False)
     plot_categories(data, 'avx2-clang', os.path.join(path,'avx2-clang.eps'), title="AVX Clang Auto-vectorization", speedup=False)
 
     plot_categories(data, 'avx512-icc', os.path.join(path,'avx512-icc.eps'), title="AVX512 ICC Auto-vectorization", speedup=False)
     plot_categories(data, 'avx512-gcc', os.path.join(path,'avx512-gcc.eps'), title="AVX512 GCC Auto-vectorization", speedup=False)
-    #plot_categories(data, 'avx512-pgi', os.path.join(path,'avx512-pgi.eps'), title="AVX512 PGI Auto-vectorization", speedup=False)
+    plot_categories(data, 'avx512-pgi', os.path.join(path,'avx512-pgi.eps'), title="AVX512 PGI Auto-vectorization", speedup=False)
     plot_categories(data, 'avx512-clang', os.path.join(path,'avx512-clang.eps'), title="AVX512 Clang Auto-vectorization", speedup=False)
 
     plt.close("all")
     plot_categories(data, 'knl-icc', os.path.join(path,'knl-icc.eps'), title="KNL ICC Auto-vectorization", speedup=False)
     plot_categories(data, 'knl-gcc', os.path.join(path,'knl-gcc.eps'), title="KNL GCC Auto-vectorization", speedup=False)
-    #plot_categories(data, 'knl-pgi', os.path.join(path,'knl-pgi.eps'), title="KNL PGI Auto-vectorization", speedup=False)
+    plot_categories(data, 'knl-pgi', os.path.join(path,'knl-pgi.eps'), title="KNL PGI Auto-vectorization", speedup=False)
     plot_categories(data, 'knl-clang', os.path.join(path,'knl-clang.eps'), title="KNL Clang Auto-vectorization", speedup=False)
 
     plot_categories(data, 'altivec-gcc', os.path.join(path,'altivec-gcc.eps'), title="Altivec GCC Auto-vectorization", speedup=False)
-    plot_categories(data, 'altivec-xlc', os.path.join(path,'altivec-xlc.eps'), title="Altivec XLC Auto-vectorization", speedup=False)
+    plot_categories(data, 'altivec-ibm', os.path.join(path,'altivec-ibm.eps'), title="Altivec IBM Auto-vectorization", speedup=False)
     plot_categories(data, 'altivec-pgi', os.path.join(path,'altivec-pgi.eps'), title="Altivec PGI Auto-vectorization", speedup=False)
     plot_categories(data, 'altivec-clang', os.path.join(path,'altivec-clang.eps'), title="Altivec Clang Auto-vectorization", speedup=False)
 
