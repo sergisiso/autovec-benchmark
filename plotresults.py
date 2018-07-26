@@ -11,6 +11,9 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 from matplotlib.path import Path
 from matplotlib.spines import Spine
+from matplotlib.lines import Line2D
+import matplotlib.cm as cmx
+import matplotlib.colors as colors
 from matplotlib.projections.polar import PolarAxes
 from matplotlib.projections import register_projection
 
@@ -217,11 +220,13 @@ def plot_radar_chart(categories, values, labels, outputfile, title="", size=(8,8
     fig, ax = plt.subplots(subplot_kw=dict(projection='radar'))
     #fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.05)
 
-    colors = {'gcc':'b',
-              'clang':'r',
-              'pgi':'g',
-              'icc':'m',
-              'ibm':'orange'
+    
+    colorm = cmx.Set1.colors
+    colors = {'gcc':colorm[0],
+              'clang':colorm[1],
+              'pgi':colorm[2],
+              'icc':colorm[3],
+              'ibm':colorm[4]
               }
     linestyles = {'gcc':':',
                 'clang':'--',
@@ -230,7 +235,7 @@ def plot_radar_chart(categories, values, labels, outputfile, title="", size=(8,8
                 'ibm':'-'
                 }
     llabels = {'gcc':'GCC 8.1',
-               'clang':'Clang 6',
+               'clang':'Clang 6.0',
                'pgi':'PGI 18.4',
                'icc':'Intel ICC 2018u4',
                'ibm':'IBM XLC 13.5'
@@ -258,8 +263,12 @@ def plot_radar_chart(categories, values, labels, outputfile, title="", size=(8,8
     # add legend relative to top-left plot
     #ax = axes[0, 0]
     #labels = ('Factor 1', 'Factor 2')
-    #legend = ax.legend(llabels, loc=(0.9,0.95),
-    #                   labelspacing=0.1)
+    l1 = Line2D([1,1],[2,2], linestyle=linestyles['gcc'], color=colors['gcc'], label=llabels['gcc'])
+    l2 = Line2D([1,1],[2,2], linestyle=linestyles['clang'], color=colors['clang'], label=llabels['clang'])
+    l3 = Line2D([1,1],[2,2], linestyle=linestyles['pgi'], color=colors['pgi'], label=llabels['pgi'])
+    l4 = Line2D([1,1],[2,2], linestyle=linestyles['icc'], color=colors['icc'], label=llabels['icc'])
+    l5 = Line2D([1,1],[2,2], linestyle=linestyles['ibm'], color=colors['ibm'], label=llabels['ibm'])
+    legend = ax.legend(handles=[l1,l2,l3,l4,l5], loc=(0.9,0.95), labelspacing=0.1, ncol=5)
 
     #fig.text(0.5, 0.965, '5-Factor Solution Profiles Across Four Scenarios',
     #         horizontalalignment='center', color='black', weight='bold',
@@ -301,10 +310,13 @@ def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization",
         print("charts:",charts)
         exit(-1)
 
-    #print(outputfile)
+    print(outputfile)
     #print(charts)
     #print(labels)
     #print(values)
+    
+    for idx, lab in enumerate(labels):
+        print(lab,  round((values[0][idx]/values[1][idx] - 1)*100,1) )
 
     #Find existing elements
     fig, axis = plt.subplots(1,len(charts) + 1)
@@ -540,7 +552,7 @@ def plot_new(data, detailed_summary, parameter, output, title="", speedup=False)
 
     for compiler in data.keys():
         #if compiler.startswith('knl') : continue
-        if compiler.endswith('pgi') : continue
+        #if compiler.endswith('pgi') : continue
         #if compiler == 'altivec-ibm' : continue
         labs.append(compiler)
 
