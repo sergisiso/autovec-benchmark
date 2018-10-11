@@ -382,7 +382,7 @@ def plot_chart(charts, labels, values, outputfile, title= "Auto-vectorization",
     #print(labels)
     axis[0].set_xticklabels(labels)
 
-    fig.suptitle(title)
+    #fig.suptitle(title)
     fig.set_size_inches(size[0],size[1])
     plt.savefig(outputfile, dpi=100, bbox_inches='tight', format='eps')
 
@@ -483,7 +483,7 @@ def plot_original_tsvc(data, output, architecture, title="", speedup_vs=None):
         labs.append(cat)
         vals2 = []
         for comp in compiler_list :
-            par = 'RUNTIME_ATTRIBUTES' #TODO: The TSVC original was RUNTIME_ATTRIBUTES
+            par = 'None' #TODO: The TSVC original was None -> all compile time
 
             if speedup_vs != None:
                 baseline = np.mean([x[0] for x in data[speedup_vs][cat][par].values()])
@@ -496,7 +496,7 @@ def plot_original_tsvc(data, output, architecture, title="", speedup_vs=None):
     labs = [x.title().replace("_"," ") for x in labs]
     char = [x.split("-")[1]  for x in compiler_list]
 
-    if False:
+    if True:
         print("Original TSVC for ", architecture)
         #print(vals)
         #print(labs)
@@ -506,7 +506,7 @@ def plot_original_tsvc(data, output, architecture, title="", speedup_vs=None):
             ordered_labeled_values = sorted(zip(labs,vals[idx]),key=lambda x:x[1])
             print(compiler)
             print(list(ordered_labeled_values))
-            print("Average=", statistics.mean(vals[idx]), "  Median=", statistics.median(vals[idx]))
+            print("Average=", round(statistics.mean(vals[idx]),1), "  Median=", round(statistics.median(vals[idx]),1))
             print("")
 
     path = os.path.join(os.path.join('plots','originaltsvc_vspectrum'),output)
@@ -519,9 +519,7 @@ def plot_original_tsvc(data, output, architecture, title="", speedup_vs=None):
     for idx, compiler in enumerate(char):
         ordered_values.append([ x[1] for x in sorted(zip(labs, vals[idx]), key= lambda x: ordered_labs.index(x[0]))])
     
-    print(ordered_values)
-
-
+    #print(ordered_values)
 
     path = os.path.join('plots','originaltsvc_radars')
     path = os.path.join(os.path.join('plots','originaltsvc_radars'),output)
@@ -531,11 +529,12 @@ def plot_categories(data, comp, output, title="", speedup=False):
     print(title)
     labs = []
     vals = []
-    char = ('RUNTIME_ATTRIBUTES',
-            'RUNTIME_INDEX',
-            'RUNTIME_ARITHMETIC',
-            'RUNTIME_LOOP_BOUNDS',
+    char = (
             'None',
+            'RUNTIME_ATTRIBUTES',
+            'RUNTIME_INDEX',
+            'RUNTIME_CONDITIONS',
+            'RUNTIME_LOOP_BOUNDS',
             'RUNTIME_ALL')
 
     chars_labs = ('Evrything\nexposed to\nthe compiler',
@@ -721,7 +720,7 @@ def print_summary(data):
         f.write(" & \multicolumn{4}{|c|}{ AVX512 (on KNL)} \\\\\n")
 
         f.write("\\cline{3-10} \multicolumn{2}{c|}{}")
-        f.write("& GNU & Clang & PGI & IBM ")
+        f.write("& GNU & Clang & PGI & Intel ")
         f.write("& GNU & Clang & PGI & Intel \\\\ \\hline\n")
         #f.write("\\endhead\n")
 
@@ -795,6 +794,21 @@ def data_sanity_check(data):
 
 
 
+    if False: # Print veff differences btw information classes
+        for compiler in sorted(data.keys()):
+            for category in data[compiler].keys():
+                par1 = 'None'
+                par2 = 'RUNTIME_CONDITIONS'
+                tests = data[compiler][category][par1].keys()
+
+                for t in tests:
+                    par1veff = data[compiler][category][par1][t][2]
+                    par2veff = data[compiler][category][par2][t][2]
+                    if (par1veff+4) < par2veff:
+                        print(compiler, category)
+                        print(t, data[compiler][category][par1][t], data[compiler][category][par2][t])
+
+
 
 def main():
 
@@ -842,29 +856,30 @@ def main():
     #exit(0)
     
     print("\nPloting Summary VSpectrums..")
-    #path = os.path.join('plots','extendedtsvc_summary')
-    #plot_new(data, detailed_summary, 'RUNTIME_INDEX',
-    #        os.path.join(path,'index_parameters.eps'), 'Index Parameters')
-    #plot_new(data, detailed_summary, 'RUNTIME_LOOP_BOUNDS',
-    #        os.path.join(path,'loop_bound.eps'), 'Loop Bounds Parameters')
-    #plot_new(data, detailed_summary, 'RUNTIME_CONDITIONS',
-    #    os.path.join(path,'conditional_parameters.eps'), 'Conditional Parameters')
-    #plot_new(data, detailed_summary, 'RUNTIME_ARITHMETIC',
-    #    os.path.join(path,'arithmetic_parameters.eps'), 'Arithmetic Parameters')
-    #plot_new(data, detailed_summary, 'RUNTIME_ATTRIBUTES',
-    #    os.path.join(path,'variable_attributes.eps'), 'Variable attributes')
-    #plot_new(data, detailed_summary, 'RUNTIME_ALL',
-    #    os.path.join(path,'all.eps'), 'All Parameters')
-
-    plt.close("all")
-    print("- Compiler comparison")
-    plot_original_tsvc(data, 'compilers-avx2.eps', 'avx2', 'AVX2 Compiler comparison')
-    plot_original_tsvc(data, 'compilers-avx512.eps', 'avx512', 'AVX512 Compiler comparison')
-    plot_original_tsvc(data, 'compilers-knl.eps', 'knl', 'KNL Compiler comparison')
-    plot_original_tsvc(data, 'compilers-altivec.eps', 'altivec', 'Altivec Compiler comparison')
+    path = os.path.join('plots','extendedtsvc_summary')
+    plot_new(data, detailed_summary, 'RUNTIME_INDEX',
+            os.path.join(path,'index_parameters.eps'), 'Index Parameters')
+    plot_new(data, detailed_summary, 'RUNTIME_LOOP_BOUNDS',
+            os.path.join(path,'loop_bound.eps'), 'Loop Bounds Parameters')
+    plot_new(data, detailed_summary, 'RUNTIME_CONDITIONS',
+        os.path.join(path,'conditional_parameters.eps'), 'Conditional Parameters')
+    plot_new(data, detailed_summary, 'RUNTIME_ARITHMETIC',
+        os.path.join(path,'arithmetic_parameters.eps'), 'Arithmetic Parameters')
+    plot_new(data, detailed_summary, 'RUNTIME_ATTRIBUTES',
+        os.path.join(path,'variable_attributes.eps'), 'Variable attributes')
+    plot_new(data, detailed_summary, 'RUNTIME_ALL',
+        os.path.join(path,'all.eps'), 'All Parameters')
     exit()
 
-    plt.close("all")
+    #plt.close("all")
+    #print("- Compiler comparison")
+    #plot_original_tsvc(data, 'compilers-avx2.eps', 'avx2', 'AVX2 Compiler comparison')
+    #plot_original_tsvc(data, 'compilers-avx512.eps', 'avx512', 'AVX512 Compiler comparison')
+    #plot_original_tsvc(data, 'compilers-knl.eps', 'knl', 'KNL Compiler comparison')
+    #plot_original_tsvc(data, 'compilers-altivec.eps', 'altivec', 'Altivec Compiler comparison')
+    exit()
+
+    #plt.close("all")
 
     print("- Detailed VSpectrums")
     path = os.path.join('plots','extendedtsvc_detailed')
