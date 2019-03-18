@@ -1,6 +1,13 @@
-Extended TSVC test
+# Auto-vectorization benchmark with compiler information withholding 
 
-References:
+To run the full suite:
+1. Generate Benchmarks with `bench.py` script
+2. Execute Benchmarks with the runall.sh scripts (or the submit<CLUSTER>.lsf)
+3. Run analysis scripts `plotresults*.py` to generate plots and tables.
+
+
+#References:
 - http://polaris.cs.uiuc.edu/~maleki1/TSVC.tar.gz
 - https://github.com/llvm-mirror/test-suite/blob/master/MultiSource/Benchmarks/TSVC/tsc.inc
 - https://github.com/UoB-HPC/TSVC_2/
+- https://ispc.github.io/ for microbenchmarks
