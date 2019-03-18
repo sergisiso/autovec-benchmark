@@ -1,0 +1,14 @@
+#BSUB -J MacroBenchP8
+#BSUB -o /gpfs/panther/local/HCH030/dxp115/sss33-dxp115/workspace/phd/autovec-bench/P8.%J.out
+#BSUB -e /gpfs/panther/local/HCH030/dxp115/sss33-dxp115/workspace/phd/autovec-bench/P8.%J.err
+#BSUB -n 1
+#BSUB -W 00:20
+#BSUB -q panther
+#BSUB -x
+
+module load use.panther
+
+cd /gpfs/panther/local/HCH030/dxp115/sss33-dxp115/workspace/phd/autovec-bench
+
+./runall.sh altivec
+

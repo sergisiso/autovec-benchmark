@@ -1,0 +1,16 @@
+#BSUB -J MacroBenchSKL
+#BSUB -o /lustre/scafellpike/local/HCP055/pxs02/sss33-pxs02/workspace/phd/autovec-bench/SKL.%J.out
+#BSUB -e /lustre/scafellpike/local/HCP055/pxs02/sss33-pxs02/workspace/phd/autovec-bench/SKL.%J.err
+#BSUB -n 1
+#BSUB -R 'span[ptile=32]'
+#BSUB -W 00:30
+#BSUB -q scafellpikeSKL
+#BSUB -x
+
+module load use.scafellpike
+
+cd /lustre/scafellpike/local/HCP055/pxs02/sss33-pxs02/workspace/phd/autovec-bench
+
+#./runall.sh avx2
+./runall.sh avx512
+
