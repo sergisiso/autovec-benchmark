@@ -1,0 +1,25 @@
+
+Benchmarks to evaluate auto-vectorization
+
+MandelBrot
+ - V1 From: https://gist.githubusercontent.com/andrejbauer/7919569/raw/258d9ec48ee2f676f0104f496c489eb9e64dca19/mandelbrot.c
+ - V2 From: https://github.com/bisqwit/cpp_parallelization_examples
+
+Volume Rendering
+ - From: https://github.com/brandonpelfrey/Volume-Rendering-Tutorial
+
+Blackscholes
+ - From: https://software.intel.com/en-us/node/531898
+ - From: http://software.intel.com/en-us/mkl_cookbook_samples
+
+Fast Walsh Transform
+ - From: https://github.com/vishwa91/pyhadamard
+
+Perlin Noise:
+ - From: https://github.com/sol-prog/Perlin_Noise
+
+SG++
+
+ISPC Tests (all contain a serial reference version which I can use)
+ - From: https://ispc.github.io/perf.html
+ - From: https://github.com/ispc/ispc/tree/master/examples
