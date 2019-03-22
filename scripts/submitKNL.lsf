@@ -11,26 +11,33 @@ module load use.scafellpike
 
 cd /lustre/scafellpike/local/HCP055/pxs02/sss33-pxs02/workspace/phd/tsvc-runtimeparameters
 
-#module load myclang6
-#./runall_clang_knl_CONTROL_FLOW.sh
-#./runall_clang_knl_CONTROL_LOOPS.sh
-#./runall_clang_knl_CROSSING_THRESHOLDS.sh
-#./runall_clang_knl_EQUIVALENCING.sh
-#./runall_clang_knl_EXPANSION.sh
-#./runall_clang_knl_GLOBAL_DATA_FLOW.sh
-#./runall_clang_knl_INDIRECT_ADDRESSING.sh
-#./runall_clang_knl_INDUCTION_VARIABLE.sh
-#./runall_clang_knl_LINEAR_DEPENDENCE.sh
-#./runall_clang_knl_LOOP_REROLLING.sh
-#./runall_clang_knl_LOOP_RESTRUCTURING.sh
-#./runall_clang_knl_NODE_SPLITTING.sh
-#./runall_clang_knl_PACKING.sh
-#./runall_clang_knl_RECURRENCES.sh
-#./runall_clang_knl_REDUCTIONS.sh
-#./runall_clang_knl_SEARCHING.sh
-#./runall_clang_knl_STATEMENT_REORDERING.sh
-#./runall_clang_knl_SYMBOLICS.sh
-#module unload myclang6
+list = "clang gcc"
+folder = "results-justesting"
+arch = "avx2"
+
+if [[ " $list " =~ ".*\ clang\ .*" ]]; then
+    echo "Benchmarking Clang compiler ..."
+    module load myclang6
+    ./${folder}/${arch}-clang/runall_clang_knl_CONTROL_FLOW.sh
+    ./runall_clang_knl_CONTROL_LOOPS.sh
+    ./runall_clang_knl_CROSSING_THRESHOLDS.sh
+    ./runall_clang_knl_EQUIVALENCING.sh
+    ./runall_clang_knl_EXPANSION.sh
+    ./runall_clang_knl_GLOBAL_DATA_FLOW.sh
+    ./runall_clang_knl_INDIRECT_ADDRESSING.sh
+    ./runall_clang_knl_INDUCTION_VARIABLE.sh
+    ./runall_clang_knl_LINEAR_DEPENDENCE.sh
+    ./runall_clang_knl_LOOP_REROLLING.sh
+    ./runall_clang_knl_LOOP_RESTRUCTURING.sh
+    ./runall_clang_knl_NODE_SPLITTING.sh
+    ./runall_clang_knl_PACKING.sh
+    ./runall_clang_knl_RECURRENCES.sh
+    ./runall_clang_knl_REDUCTIONS.sh
+    ./runall_clang_knl_SEARCHING.sh
+    ./runall_clang_knl_STATEMENT_REORDERING.sh
+    ./runall_clang_knl_SYMBOLICS.sh
+    module unload myclang6
+fi
 
 
 #module load mygcc8
