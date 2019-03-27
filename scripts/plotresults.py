@@ -17,6 +17,8 @@ import matplotlib.colors as colors
 from matplotlib.projections.polar import PolarAxes
 from matplotlib.projections import register_projection
 
+debug = False
+
 remove_tests = ['S317', 'S2712', 'S1251']
 remove_categories = []  # ['REDUCTIONS','CONTROL_FLOW','SEARCHING']
 
@@ -329,13 +331,13 @@ def plot_chart(charts, labels, values, outputfile, title="Auto-vectorization",
         print("charts:", charts)
         exit(-1)
 
-    if False:
+    if debug:
         print(outputfile)
         # print(charts)
         # print(labels)
         # print(values)
         for idx, lab in enumerate(labels):
-            print(lab,  round((values[0][idx]/values[1][idx]-1)*100, 1))
+            print(lab, round((values[0][idx]/values[1][idx]-1)*100, 1))
 
     # Find existing elements
     fig, axis = plt.subplots(1, len(charts) + 1)
@@ -529,7 +531,7 @@ def plot_original_tsvc(data, output, architecture, title="", speedup_vs=None):
     labs = [x.title().replace("_", " ") for x in labs]
     char = [x.split("-")[1] for x in compiler_list]
 
-    if True:
+    if debug:
         print("Original TSVC for ", architecture)
         # print(vals)
         # print(labs)
@@ -577,8 +579,7 @@ def plot_categories(data, comp, output, title="", speedup=False):
     print(title)
     labs = []
     vals = []
-    char = (
-            'None',
+    char = ('None',
             'RUNTIME_ATTRIBUTES',
             'RUNTIME_INDEX',
             'RUNTIME_CONDITIONS',
@@ -657,13 +658,13 @@ def plot_new(data, detailed_summary, parameter, output, title="",
                               parameter + " " + test + " does not exist.")
                     value_rt = rt[2]
 
-                    # if value_rt > value_ct + 0.1:
-                    #    print("Warrning: Test " + str(test) +
-                    #          " has better veff with RT")
-                    #    print("CT: vec " + str(value[0]) + " novec " \
-                    #            + str(value[1]) + " veff " + str(value_ct))
-                    #    print("RT: vec " + str(rt[0]) + " novec " \
-                    #            + str(rt[1]) + " veff " + str(value_rt))
+                    if debug and (value_rt > value_ct + 0.1):
+                        print("Warrning: Test " + str(test) +
+                              " has better veff with RT")
+                        print("CT: vec " + str(value[0]) + " novec " +
+                              str(value[1]) + " veff " + str(value_ct))
+                        print("RT: vec " + str(rt[0]) + " novec " +
+                              str(rt[1]) + " veff " + str(value_rt))
 
                     if value_rt == 0.0 or value_ct == 0.0:
                         print("Error: " + str(test) + " contains 0")
@@ -689,10 +690,6 @@ def plot_new(data, detailed_summary, parameter, output, title="",
             par_sum = par_sum + cat_par_sum
             count = count + cat_count
 
-        # All categories done
-        # print("\n" + compiler + " with " + parameter + " has " +
-        #       str(count) + " entries.")
-
         # Aggregate platform-compiler pair results
         if(count == 0):
             print("Warrning!: " + str(compiler) +
@@ -707,9 +704,9 @@ def plot_new(data, detailed_summary, parameter, output, title="",
     vals = [vals_ct, vals_rt]
     labs = [x.title() for x in labs]
 
-    # print(char,labs,vals)
+    # print(char, labs, vals)
     plot_chart(char, labs, vals, output, title=title,
-               ylabel="Vector Efficiency", connect=True, ymax=4)
+               ylabel="Vector Efficiency", connect=True, ymax=8)
 
 
 def to_string(f):
@@ -726,14 +723,12 @@ def print_summary(data):
     parameters = ['None', 'RUNTIME_ATTRIBUTES', 'RUNTIME_INDEX',
                   'RUNTIME_LOOP_BOUNDS', 'RUNTIME_CONDITIONS', 'RUNTIME_ALL']
 
-    mappars = {
-            'None': 'Known at ct.',
-            'RUNTIME_ATTRIBUTES': 'rt. Attributes',
-            'RUNTIME_INDEX': 'rt. Indices',
-            'RUNTIME_LOOP_BOUNDS': 'rt. L. Bounds',
-            'RUNTIME_CONDITIONS': 'rt. Conditions',
-            'RUNTIME_ALL': 'rt. All'
-            }
+    mappars = {'None': 'Known at ct.',
+               'RUNTIME_ATTRIBUTES': 'rt. Attributes',
+               'RUNTIME_INDEX': 'rt. Indices',
+               'RUNTIME_LOOP_BOUNDS': 'rt. L. Bounds',
+               'RUNTIME_CONDITIONS': 'rt. Conditions',
+               'RUNTIME_ALL': 'rt. All'}
 
     rotation = 90
     cat_num = len(categories)
@@ -885,10 +880,6 @@ def main():
         shutil.rmtree('plots')
     os.makedirs('plots')
 
-    os.makedirs(os.path.join('plots', 'originaltsvc_radars'))
-    os.makedirs(os.path.join('plots', 'originaltsvc_vspectrum'))
-    os.makedirs(os.path.join('plots', 'extendedtsvc_summary'))
-    os.makedirs(os.path.join('plots', 'extendedtsvc_detailed'))
     os.makedirs(os.path.join('plots', 'latex_table'))
 
     # Nested dictionary of: compiler, category, parameters, test:
@@ -915,12 +906,15 @@ def main():
     print_summary(data)
     # exit(0)
 
-    print("\nPloting Summary VSpectrums..")
+    print("\n- Ploting Summary VSpectrums..")
+    os.makedirs(os.path.join('plots', 'extendedtsvc_summary'))
     path = os.path.join('plots', 'extendedtsvc_summary')
     plot_new(data, detailed_summary, 'RUNTIME_INDEX',
-             os.path.join(path, 'index_parameters.eps'), 'Index Parameters')
+             os.path.join(path, 'index_parameters.eps'),
+             'Index Parameters')
     plot_new(data, detailed_summary, 'RUNTIME_LOOP_BOUNDS',
-             os.path.join(path, 'loop_bound.eps'), 'Loop Bounds Parameters')
+             os.path.join(path, 'loop_bound.eps'),
+             'Loop Bounds Parameters')
     plot_new(data, detailed_summary, 'RUNTIME_CONDITIONS',
              os.path.join(path, 'conditional_parameters.eps'),
              'Conditional Parameters')
@@ -933,23 +927,25 @@ def main():
     plot_new(data, detailed_summary, 'RUNTIME_ALL',
              os.path.join(path, 'all.eps'),
              'All Parameters')
-    exit()
+    plt.close("all")
+    # exit(0)
 
-    # plt.close("all")
-    # print("- Compiler comparison")
-    # plot_original_tsvc(data, 'compilers-avx2.eps', 'avx2',
-    #                    'AVX2 Compiler comparison')
-    # plot_original_tsvc(data, 'compilers-avx512.eps', 'avx512',
-    #                    'AVX512 Compiler comparison')
-    # plot_original_tsvc(data, 'compilers-knl.eps', 'knl',
-    #                    'KNL Compiler comparison')
-    # plot_original_tsvc(data, 'compilers-altivec.eps', 'altivec',
-    #                    'Altivec Compiler comparison')
-    exit()
+    print("\n- Compiler comparison")
+    os.makedirs(os.path.join('plots', 'originaltsvc_radars'))
+    os.makedirs(os.path.join('plots', 'originaltsvc_vspectrum'))
+    plot_original_tsvc(data, 'compilers-avx2.eps', 'avx2',
+                       'AVX2 Compiler comparison')
+    plot_original_tsvc(data, 'compilers-avx512.eps', 'avx512',
+                       'AVX512 Compiler comparison')
+    plot_original_tsvc(data, 'compilers-knl.eps', 'knl',
+                       'KNL Compiler comparison')
+    plot_original_tsvc(data, 'compilers-altivec.eps', 'altivec',
+                       'Altivec Compiler comparison')
+    plt.close("all")
+    # exit(0)
 
-    # plt.close("all")
-
-    print("- Detailed VSpectrums")
+    print("\n- Detailed VSpectrums")
+    os.makedirs(os.path.join('plots', 'extendedtsvc_detailed'))
     path = os.path.join('plots', 'extendedtsvc_detailed')
     plot_categories(data, 'avx2-icc', os.path.join(path, 'avx2-icc.eps'),
                     title="AVX2 ICC Auto-vectorization", speedup=False)
