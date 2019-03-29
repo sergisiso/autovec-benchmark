@@ -8,14 +8,7 @@ import statistics
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import ConnectionPatch
-from matplotlib.path import Path
-from matplotlib.spines import Spine
-from matplotlib.lines import Line2D
-import matplotlib.cm as cmx
-import matplotlib.colors as colors
-from matplotlib.projections.polar import PolarAxes
-from matplotlib.projections import register_projection
+from plotutils import *
 
 debug = False
 
@@ -119,298 +112,6 @@ all_categories = [
 ]
 
 
-def radar_factory(num_vars, frame='circle'):
-    """Create a radar chart with `num_vars` axes.
-
-    This function creates a RadarAxes projection and registers it.
-
-    Parameters
-    ----------
-    num_vars : int
-        Number of variables for radar chart.
-    frame : {'circle' | 'polygon'}
-        Shape of frame surrounding axes.
-
-    """
-    # calculate evenly-spaced axis angles
-    theta = np.linspace(0, 2*np.pi, num_vars, endpoint=False)
-    # rotate theta such that the first axis is at the top
-    theta += np.pi/2
-
-    def draw_poly_patch(self):
-        verts = unit_poly_verts(theta)
-        return plt.Polygon(verts, closed=True, edgecolor='k')
-
-    def draw_circle_patch(self):
-        # unit circle centered on (0.5, 0.5)
-        return plt.Circle((0.5, 0.5), 0.5)
-
-    patch_dict = {'polygon': draw_poly_patch, 'circle': draw_circle_patch}
-    if frame not in patch_dict:
-        raise ValueError('unknown value for `frame`: %s' % frame)
-
-    class RadarAxes(PolarAxes):
-
-        name = 'radar'
-        # use 1 line segment to connect specified points
-        RESOLUTION = 1
-        # define draw_frame method
-        draw_patch = patch_dict[frame]
-
-        def fill(self, *args, **kwargs):
-            """Override fill so that line is closed by default"""
-            closed = kwargs.pop('closed', True)
-            return super(RadarAxes, self).fill(closed=closed, *args, **kwargs)
-
-        def plot(self, *args, **kwargs):
-            """Override plot so that line is closed by default"""
-            lines = super(RadarAxes, self).plot(*args, **kwargs)
-            for line in lines:
-                self._close_line(line)
-
-        def _close_line(self, line):
-            x, y = line.get_data()
-            # FIXME: markers at x[0], y[0] get doubled-up
-            if x[0] != x[-1]:
-                x = np.concatenate((x, [x[0]]))
-                y = np.concatenate((y, [y[0]]))
-                line.set_data(x, y)
-
-        def set_varlabels(self, labels):
-            # self.set_thetagrids(np.degrees(theta), labels,fontsize='small')
-            self.set_thetagrids(np.degrees(theta), labels, frac=1.2)
-
-        def _gen_axes_patch(self):
-            return self.draw_patch()
-
-        def _gen_axes_spines(self):
-            if frame == 'circle':
-                return PolarAxes._gen_axes_spines(self)
-            # The following is a hack to get the spines (i.e. the axes frame)
-            # to draw correctly for a polygon frame.
-
-            # spine_type must be 'left', 'right', 'top', 'bottom', or `circle`.
-            spine_type = 'circle'
-            verts = unit_poly_verts(theta)
-            # close off polygon by repeating first vertex
-            verts.append(verts[0])
-            path = Path(verts)
-
-            spine = Spine(self, spine_type, path)
-            spine.set_transform(self.transAxes)
-            return {'polar': spine}
-
-    register_projection(RadarAxes)
-    return theta
-
-
-def unit_poly_verts(theta):
-    """Return vertices of polygon for subplot axes.
-
-    This polygon is circumscribed by a unit circle centered at (0.5, 0.5)
-    """
-    x0, y0, r = [0.5] * 3
-    verts = [(r*np.cos(t) + x0, r*np.sin(t) + y0) for t in theta]
-    return verts
-
-
-def plot_radar_chart(categories, values, labels, outputfile, title="",
-                     size=(8, 8)):
-    N = len(categories)
-    theta = radar_factory(N, frame='polygon')
-
-    for v in values:
-        if len(v) != N:
-            raise ValueError('expencting series of ' + str(N) + ' values')
-    case_data = values
-
-    spoke_labels = [x.replace(' ', '\n') for x in categories]
-
-    fig, ax = plt.subplots(subplot_kw=dict(projection='radar'))
-    # fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.05)
-
-    colorm = cmx.Set1.colors
-    colors = {'gcc': colorm[0],
-              'clang': colorm[1],
-              'pgi': colorm[2],
-              'icc': colorm[3],
-              'ibm': colorm[4]
-              }
-    linestyles = {'gcc': ':',
-                  'clang': '--',
-                  'pgi': '-.',
-                  'icc': '-',
-                  'ibm': '-'
-                  }
-
-    llabels = {'gcc': 'GCC 8.1',
-               'clang': 'Clang 6.0',
-               'pgi': 'PGI 18.4',
-               'icc': 'Intel ICC 2018u4',
-               'ibm': 'IBM XLC 13.5'
-               }
-
-    # Plot the four cases from the example data on separate axes
-    # for ax, (title, case_data) in zip(axes.flatten(), data):
-    # ax.set_rgrids([00,,1,2,3,4,5,6,7,8])
-    # ax.set_title(title, weight='bold', size='medium', position=(0.5, 1.1),
-    #              horizontalalignment='center', verticalalignment='center')
-    for d, l in zip(case_data, labels):
-        ax.plot(theta, d, color=colors[l], linestyle=linestyles[l])
-        # ax.fill(theta, d, facecolor=color, alpha=0.25)
-    ax.set_varlabels(spoke_labels)
-
-    ax.set_rmin(0)
-    if title.startswith('Altivec'):
-        ax.set_rmax(16)
-    elif title.startswith('AVX2'):
-        ax.set_rmax(16)
-    elif title.startswith('AVX512'):
-        ax.set_rmax(16)
-    elif title.startswith('KNL'):
-        ax.set_rmax(16)
-    # add legend relative to top-left plot
-    # ax = axes[0, 0]
-    # labels = ('Factor 1', 'Factor 2')
-    l1 = Line2D([1, 1], [2, 2], linestyle=linestyles['gcc'],
-                color=colors['gcc'], label=llabels['gcc'])
-    l2 = Line2D([1, 1], [2, 2], linestyle=linestyles['clang'],
-                color=colors['clang'], label=llabels['clang'])
-    l3 = Line2D([1, 1], [2, 2], linestyle=linestyles['pgi'],
-                color=colors['pgi'], label=llabels['pgi'])
-    l4 = Line2D([1, 1], [2, 2], linestyle=linestyles['icc'],
-                color=colors['icc'], label=llabels['icc'])
-    l5 = Line2D([1, 1], [2, 2], linestyle=linestyles['ibm'],
-                color=colors['ibm'], label=llabels['ibm'])
-
-    # legend = ax.legend(handles=[l1,l2,l3,l4,l5], loc=(0.9, 0.95),
-    #                    labelspacing=0.1, ncol=5)
-
-    # fig.text(0.5, 0.965, '5-Factor Solution Profiles Across Four Scenarios',
-    #         horizontalalignment='center', color='black', weight='bold',
-    #         size='large')
-
-    fig.set_size_inches(size[0], size[1])
-    plt.savefig(outputfile, dpi=100, bbox_inches='tight', format='eps')
-
-
-def add_box(ax, name, values, labels, ymax, draw_mean=False):
-
-    if len(list(values)) != len(list(labels)):
-        print("Error: Inconsisten number of values/labels")
-        exit(-1)
-
-    for value, label in zip(values, labels):
-        if not np.isnan(value):
-            ax.axhline(value, 0, 1, color=palette[label], label=label)
-
-    if draw_mean:
-        mean = np.mean([v for v in values if not np.isnan(v)])
-        ax.axhline(mean, 0, 1, color='black', linestyle="--")
-        ax.text(0.5, mean+0.05, "Avg. = " + "{:.2f}".format(mean),
-                ha='center', va='bottom', fontsize=8)
-
-    if max(values) > ymax:
-        print("Error: value out of chart axis")
-        exit(0)
-
-    ax.set_ylim(bottom=0, top=ymax)
-    ax.tick_params(axis='x', which='both', bottom='off', top='off',
-                   labelbottom='off')
-    ax.set_xlabel(name.title().replace("_", "\n"), rotation=0,
-                  fontsize='small')
-
-
-def plot_chart(charts, labels, values, outputfile, title="Auto-vectorization",
-               ylabel='Vector efficiency', connect=False, draw_mean=False,
-               size=(4, 4), ymax=8):
-
-    if len(list(values)) != len(list(charts)):
-        print("Error: Inconsistent number of charts/values")
-        print("Values:", values)
-        print("charts:", charts)
-        exit(-1)
-
-    if debug:
-        print(outputfile)
-        # print(charts)
-        # print(labels)
-        # print(values)
-        for idx, lab in enumerate(labels):
-            print(lab, round((values[0][idx]/values[1][idx]-1)*100, 1))
-
-    # Find existing elements
-    fig, axis = plt.subplots(1, len(charts) + 1)
-
-    # for ax in axis:
-    #    ax.set_facecolor('none')
-
-    if max(map(max, values)) > ymax:
-        ymax = max(map(max, values)) + 1
-        print("Warning: Reset the chart ymax to", ymax)
-
-    for ax, c, v in zip(axis[:-1], list(charts), list(values)):
-        add_box(ax, c, v, labels, ymax,  draw_mean)
-
-    for idx, (val, lab) in enumerate(sorted(zip(values[-1], labels))):
-        v_loc = idx*(float(1)/len(labels))
-        axis[-1].text(0.5, v_loc, lab, ha='left', va='center', fontsize=10)
-        if connect:
-            xy = (1, val)
-            xy2 = (0.45, v_loc)
-            con = ConnectionPatch(xyA=xy, xyB=xy2, coordsA="data",
-                                  coordsB="data", axesA=axis[-2],
-                                  axesB=axis[-1], color=palette[lab],
-                                  connectionstyle="arc,angleA=-180,"
-                                  "angleB=-180,armA=-15,armB=15,rad=0")
-            axis[-2].add_artist(con)
-        else:
-            con = ConnectionPatch(xyA=(0.25, v_loc), xyB=(0.45, v_loc),
-                                  coordsA="data", coordsB="data",
-                                  axesA=axis[-1], axesB=axis[-1],
-                                  color=palette[lab])
-            axis[-1].add_artist(con)
-
-    # for ax in axis:
-    #    ax.set_facecolor('none')
-
-    if len(values) > 1 and connect:
-        # Connect same labels among inner charts (just 0 to 1 implemented)
-        for val1, val2, lab in zip(values[0], values[1], labels):
-            con = ConnectionPatch(xyA=(1, val1), xyB=(0, val2),
-                                  coordsA="data", coordsB="data",
-                                  axesA=axis[0], axesB=axis[1],
-                                  color=palette[lab])
-            axis[0].add_artist(con)
-
-    # Remove all labels but leftmost
-    axis[0].set_ylabel(ylabel)
-    for ax in axis[1:-1]:
-        ax.set_yticklabels([])
-
-    # Remove rightmost box to place the legend
-    axis[-1].axis('off')
-
-    # We need to draw the canvas, otherwise the labels won't be positioned
-    # and won't have values yet.
-    fig.canvas.draw()
-
-    labels = axis[0].get_yticks().tolist()
-    # print(labels)
-    labels[-1] = '(AVX512 vector length) ' + str(labels[-1])
-    # print(labels)
-    axis[0].set_xticklabels(labels)
-
-    # fig.suptitle(title)
-    fig.set_size_inches(size[0], size[1])
-    plt.savefig(outputfile, dpi=100, bbox_inches='tight', format='eps')
-
-
-def getfolders(path):
-    return filter(lambda x: os.path.isdir(os.path.join(path, x)),
-                  os.listdir(path))
-
-
 def load_data(data, compiler, category, parameters, parameters_path):
 
     # Set filenames for tsc or tsc_runtime results
@@ -441,66 +142,152 @@ def load_data(data, compiler, category, parameters, parameters_path):
                   " not found!")
         else:
             print("Warning: Not all files found in ", parameters_path)
+        exit(0)
 
-    for indx, (linevec, linenovec) in enumerate(zip(vecresults[0],
-                                                    novecresults[0])):
-        if linevec[0] == 'S':
-            if linenovec.split()[0] == linevec.split()[0]:
-                test, novec_perf, cs1 = linenovec.split()
-                test, vec_perf, cs2 = linevec.split()
+    for indx, base in enumerate(vecresults[0]):
+        # If line starts with S it is a test
+        if base[0] == 'S':
+            test, exetime, cs = base.split()
 
-                vecvalues = [float(x[indx].split()[1]) for x in vecresults]
-                novecvalues = [float(x[indx].split()[1]) for x in novecresults]
+            # Skip ignored tests
+            if test in remove_tests:
+                continue
 
-                if len(vecvalues) > 1:
-                    vecstd = statistics.stdev(vecvalues)
-                    novecstd = statistics.stdev(novecvalues)
+            # Check individual test data
+            vectimes = []
+            novectimes = []
+            for i in range(5):
+                test_novec, novec_time, cs1 = novecresults[i][indx].split()
+                test_vec, vec_time, cs2 = vecresults[i][indx].split()
 
-                vecmin = min(vecvalues)
-                vecmax = vecmin + vecmin * 0.5
-                novecmin = min(novecvalues)
-                novecmax = novecmin + novecmin * 0.5
-
-                newvecvalues = [x for x in vecvalues if x < vecmax]
-                newnovecvalues = [x for x in novecvalues if x < novecmax]
-
-                vec_perf = vecmin
-                novec_perf = novecmin
-
-                # if novec_perf > 10 or vec_perf < 0.2:
-                #     print("--->", compiler, test, vec_perf, novec_perf)
-
-                if test in remove_tests:
-                    continue
-                if abs(float(cs1) - float(cs2)) > abs(float(cs1)*0.01):
-                    print("Warning checksums differ! ", compiler,
-                          category, parameters, test, cs1, " ", cs2)
-                elif float(novec_perf) == 0.0 or float(vec_perf) == 0.0:
-                    print("Warning contains 0 ", compiler,
+                if test_novec != test or test_vec != test:
+                    print("Error: Tests possitions do not much", compiler,
                           category, parameters, test)
-                elif len(newvecvalues) < 4 or len(newnovecvalues) < 4:
-                    pass
-                    # print("Warning 2 or more results eliminated as "
-                    #       "noise outliers ", len(newvecvalues) ,
-                    #       " and ", len(newnovecvalues), " ", compiler,
-                    #       category, parameters, test)
-                elif vecstd > 0.2 or novecstd > 0.2:
-                    pass
-                    # print("Warning standard deviation = ", vecstd ," and ",
-                    #       novecstd , compiler,
-                    #       category, parameters, test)
-                # elif float(novec_perf)/float(vec_perf) > (16.0 + 1.0):
-                #     print("Warning outlier " , compiler, category,
-                #           parameters, test, float(novec_perf),
-                #           float(vec_perf), float(novec_perf)/float(vec_perf))
-                # else: # --> use else to eliminate warning cases
-                data[compiler][category][parameters][test] = [
-                    float(vec_perf),
-                    float(novec_perf),
-                    float(novec_perf)/float(vec_perf)
-                    ]
+                    exit(0)
+
+                # Check that results are within tolerance.
+                if (abs(float(cs) - float(cs1)) > abs(float(cs) * 0.01)) \
+                   or (abs(float(cs) - float(cs2)) > abs(float(cs) * 0.01)):
+                    print("Warning checksums differ! ", compiler,
+                          category, parameters, test, cs, cs1, cs2)
+                    exit(0)
+
+                vectimes.append(float(vec_time))
+                novectimes.append(float(novec_time))
+
+            # Get the minimum in order to minimize system noise.
+            vec_time = min(vectimes)
+            novec_time = min(novectimes)
+            # vecstd = statistics.stdev(vectimes)
+            # novecstd = statistics.stdev(novectimes)
+
+            # Check that time is big enough to be significant
+            if float(novec_time) < 0.1 or float(vec_time) < 0.1:
+                print("Warning: Time too small ",
+                      str([novec_time, vec_time]), test, compiler,
+                      category, parameters)
+
+            data[compiler][category][parameters][test] = [
+                float(vec_time),
+                float(novec_time),
+                float(novec_time)/float(vec_time)
+                ]
+
+
+def load_microkernels(data, path, archcomp):
+    architecture = archcomp.split('-')[0]
+    compiler = archcomp.split('-')[1]
+    folder = os.path.join(path, 'MICROKERNELS')
+    with open(os.path.join(folder, 'summary.txt'), 'r') as f:
+        for line in f:
+            # If it is a comment line, skip it
+            if(line[0] == '#' or line[1] == '#'):
+                continue
+            # stencil RT NO-VEC cycles = [1964.311]
+            test = str(line.split()[0])
+            execution = str(line.split()[1]) + " " + str(line.split()[2])
+            if len(line.split()) >= 6:
+                value_str = line.split()[5]
+                if value_str[0] == '[':
+                    value_str = value_str[1:-2]
+                value = float(value_str)
+                data[test][architecture][compiler][execution] = value
             else:
-                print("Warning, some lines are different!")
+                data[test][architecture][compiler][execution] = 'Error'
+                print("Error, could not find value for ", compiler,
+                      architecture, test, execution)
+
+
+def data_sanity_check(data):
+    # Nested dictionary of: compiler, category, parameters, test
+    for compiler in sorted(data.keys()):
+        tests_per_category = []
+        total = 0
+
+        # Check all compilers have all categories
+        if len(data[compiler].keys()) != 17:
+            print("Error: " + compiler + " missing categories")
+            print(data[compiler].keys())
+            exit(0)
+        else:
+            for category in data[compiler].keys():
+                if category not in all_categories:
+                    print("Error: " + compiler + " unknown category " +
+                          category)
+                    exit(0)
+
+        for category in data[compiler].keys():
+            if len(data[compiler][category].keys()) != 7:
+                print("Error: " + compiler + " " + category +
+                      " missing parameters")
+                print(data[compiler][category].keys())
+                exit(0)
+            else:
+                for parameter in data[compiler][category].keys():
+                    if parameter not in all_parameters:
+                        print("Error: " + compiler + " " + category +
+                              " missing parameters")
+                        exit(0)
+
+            for parameter in data[compiler][category].keys():
+                if data[compiler][category][parameter].keys() != \
+                   data[compiler][category]['None'].keys():
+                    print("Error: missmatching parameters " + compiler +
+                          " " + category + " " + parameter)
+                    print(data[compiler][category][parameter].keys())
+                    print(data[compiler][category]['None'].keys())
+                    exit(0)
+                if len(data[compiler][category][parameter].keys()) < 1:
+                    print("Error: Empty " + compiler + " " + category +
+                          " " + parameter)
+                    exit(0)
+
+            total = total + len(data[compiler][category]['None'].keys())
+            tests_per_category.append(len(
+                data[compiler][category]['None'].keys()))
+
+        print(compiler, total, tests_per_category)
+
+    if False:  # Print veff differences btw information classes
+        # TODO: I can extend on this, multiple info classes,
+        # does the difference comes from baseline of vector?
+        print("")
+        print("Tests which improve vector eff with less information:")
+        for compiler in sorted(data.keys()):
+            for category in data[compiler].keys():
+                par1 = 'None'
+                par2 = 'RUNTIME_CONDITIONS'
+                tests = data[compiler][category][par1].keys()
+
+                for t in tests:
+                    par1veff = data[compiler][category][par1][t][2]
+                    par2veff = data[compiler][category][par2][t][2]
+                    if (par1veff + 4) < par2veff:
+                        print(t, compiler, category)
+                        print("    All exposed:" +
+                              str(data[compiler][category][par1][t]))
+                        print("    Cond. hidden:" +
+                              str(data[compiler][category][par2][t]))
 
 
 def plot_original_tsvc(data, output, architecture, title="", speedup_vs=None):
@@ -647,8 +434,6 @@ def plot_new(data, detailed_summary, parameter, output, title="",
             cat_count = 0
 
             for test, value in data[compiler][category]['None'].items():
-                # if (parameter not in test_sets) or
-                #    (test in test_sets[parameter]):
                 if True:
                     value_ct = value[2]
                     try:
@@ -709,13 +494,6 @@ def plot_new(data, detailed_summary, parameter, output, title="",
                ylabel="Vector Efficiency", connect=True, ymax=8)
 
 
-def to_string(f):
-    if f == 0.0:
-        return "-"
-    else:
-        return "{:2.1f}".format(f)
-
-
 def print_summary(data):
     categories = all_categories
 
@@ -772,17 +550,17 @@ def print_summary(data):
         # Begin table 1 with altivec and avx2
         f.write("\\begin{longtable}{")
         f.write(("|p{2cm}"+"|c"*(9))+"|}\n")
-        f.write("\\cline{3-10} \multicolumn{2}{c|}{}")
-        f.write(" & \multicolumn{4}{|c|}{ AVX512 (on Skylake)}")
-        f.write(" & \multicolumn{4}{|c|}{ AVX512 (on KNL)} \\\\\n")
+        f.write("\\cline{3-10} \\multicolumn{2}{c|}{}")
+        f.write(" & \\multicolumn{4}{|c|}{ AVX512 (on Skylake)}")
+        f.write(" & \\multicolumn{4}{|c|}{ AVX512 (on KNL)} \\\\\n")
 
-        f.write("\\cline{3-10} \multicolumn{2}{c|}{}")
+        f.write("\\cline{3-10} \\multicolumn{2}{c|}{}")
         f.write("& GNU & Clang & PGI & Intel ")
         f.write("& GNU & Clang & PGI & Intel \\\\ \\hline\n")
         # f.write("\\endhead\n")
 
         for cat in categories:
-            f.write("\\multirow{" + str(par_num) + "}{*}{ \parbox{2cm}{" +
+            f.write("\\multirow{" + str(par_num) + "}{*}{ \\parbox{2cm}{" +
                     cat.replace('_', '\\\\').title() + "}}")
             for par in parameters:
                 f.write(" & " + mappars[par])
@@ -798,76 +576,9 @@ def print_summary(data):
         f.write("\\end{document}\n")
 
 
-def data_sanity_check(data):
-    # Nested dictionary of: compiler, category, parameters, test
-    for compiler in sorted(data.keys()):
-        tests_per_category = []
-        total = 0
-
-        # Check all compilers have all categories
-        if len(data[compiler].keys()) != 17:
-            print("Error: " + compiler + " missing categories")
-            print(data[compiler].keys())
-            exit(0)
-        else:
-            for category in data[compiler].keys():
-                if category not in all_categories:
-                    print("Error: " + compiler + " unknown category " +
-                          category)
-                    exit(0)
-
-        for category in data[compiler].keys():
-            if len(data[compiler][category].keys()) != 7:
-                print("Error: " + compiler + " " + category +
-                      " missing parameters")
-                print(data[compiler][category].keys())
-                continue
-                exit(0)
-            else:
-                for parameter in data[compiler][category].keys():
-                    if parameter not in all_parameters:
-                        print("Error: " + compiler + " " + category +
-                              " missing parameters")
-                        exit(0)
-
-            for parameter in data[compiler][category].keys():
-                if data[compiler][category][parameter].keys() != \
-                   data[compiler][category]['None'].keys():
-                        print("Error: missmatching parameters " + compiler +
-                              " " + category + " " + parameter)
-                        print(data[compiler][category][parameter].keys())
-                        print(data[compiler][category]['None'].keys())
-                        # exit(0)
-                if len(data[compiler][category][parameter].keys()) < 1:
-                        print("Error: Empty " + compiler + " " + category +
-                              " " + parameter)
-                        exit(0)
-
-            total = total + len(data[compiler][category]['None'].keys())
-            tests_per_category.append(len(
-                data[compiler][category]['None'].keys()))
-
-        print(compiler, total, tests_per_category)
-
-    if False:  # Print veff differences btw information classes
-        for compiler in sorted(data.keys()):
-            for category in data[compiler].keys():
-                par1 = 'None'
-                par2 = 'RUNTIME_CONDITIONS'
-                tests = data[compiler][category][par1].keys()
-
-                for t in tests:
-                    par1veff = data[compiler][category][par1][t][2]
-                    par2veff = data[compiler][category][par2][t][2]
-                    if (par1veff+4) < par2veff:
-                        print(compiler, category)
-                        print(t, data[compiler][category][par1][t],
-                              data[compiler][category][par2][t])
-
-
 def main():
 
-    # Get results folder from first argument and check that it exists
+    # Get results folder from first argument and check whether it exists
     if len(sys.argv) != 2:
         print("Expecting an argument with a path to a results foler")
         exit(-1)
@@ -880,19 +591,33 @@ def main():
         shutil.rmtree('plots')
     os.makedirs('plots')
 
-    os.makedirs(os.path.join('plots', 'latex_table'))
+    def nested_dict(n, type):
+        from collections import defaultdict
+        if n == 1:
+            return defaultdict(type)
+        else:
+            return defaultdict(lambda: nested_dict(n-1, type))
 
-    # Nested dictionary of: compiler, category, parameters, test:
+    # Nested dictionary of {compiler, category, parameters, test} =
     #     [performance vec, performance novec, vector eff]
-    data = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
-    # Nested dictionary of: compiler, parameter, category : avg_vector_eff
-    detailed_summary = defaultdict(
-        lambda: defaultdict(lambda: defaultdict(float)))
+    data = nested_dict(4, list)
+
+    # Nested dictionary of {microkernel, Architecture, Compiler, execution}
+    # where execution is [rtvec, rtnovec, ctvec, ctnovec] = float
+    microkernel_data = nested_dict(4, float)
+
+    # Nested dictionary of {compiler, parameter, category} = avg_vector_eff
+    # detailed_summary = nested_dict(3, float)
+
+    def getfolders(path):
+        return filter(lambda x: os.path.isdir(os.path.join(path, x)),
+                      os.listdir(path))
 
     print("Loading data...")
     for compiler in getfolders(datadir):
         print(compiler)
         compiler_path = os.path.join(datadir, compiler)
+        load_microkernels(microkernel_data, compiler_path, compiler)
         for category in all_categories:  # getfolders(compiler_path):
             category_path = os.path.join(compiler_path, category)
             for parameters in all_parameters:  # getfolders(category_path):
@@ -903,8 +628,9 @@ def main():
     print("\nData sanity check...")
     data_sanity_check(data)
     print("\nWriting summary to file...")
+    os.makedirs(os.path.join('plots', 'latex_table'))
     print_summary(data)
-    # exit(0)
+    exit(0)
 
     print("\n- Ploting Summary VSpectrums..")
     os.makedirs(os.path.join('plots', 'extendedtsvc_summary'))
