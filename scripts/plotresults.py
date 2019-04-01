@@ -307,109 +307,6 @@ def data_sanity_check(data):
                               str(data[compiler][category][par2][t]))
 
 
-def plot_original_tsvc(data, output, architecture, title=""):
-    # all compilers, all categories, original tsc
-    vals = []
-    labels = []
-
-    compiler_list = [x for x in data.keys() if architecture in x]
-
-    for cat in [x for x in all_categories if x not in remove_categories]:
-        labels.append(cat)
-        vals2 = []
-        for comp in compiler_list:
-            # TODO: What should be the baseline? Is None ok?
-            par = 'None'
-
-            vals2.append(geometric_mean(
-                [x[2] for x in data[comp][cat][par].values()]))
-        vals.append(vals2)
-
-    vals = [list(i) for i in zip(*vals)]
-    labels = [x.title().replace("_", " ") for x in labels]
-    char = [x.split("-")[1] for x in compiler_list]
-
-    if debug:
-        print("Original TSVC for ", architecture)
-        # print(vals)
-        # print(labels)
-        # print(char)
-
-        for idx, compiler in enumerate(char):
-            ordered_labeled_values = sorted(zip(labels, vals[idx]),
-                                            key=lambda x: x[1])
-            print(compiler)
-            print(list(ordered_labeled_values))
-            print("Average=", round(statistics.mean(vals[idx]), 1),
-                  "  Median=", round(statistics.median(vals[idx]), 1))
-            print("")
-
-    path = os.path.join(os.path.join('plots',
-                                     'originaltsvc_vspectrum'), output)
-    plot_chart(char, labels, vals, path, title=title,
-               ylabel="Vector Efficiency", connect=False, draw_mean=True,
-               size=(5, 4))
-
-    # order with clang-avx2 increasing vector efficiencies.
-    ordered_labels = [
-        'Recurrences', 'Statement Reordering', 'Searching',
-        'Packing', 'Loop Restructuring', 'Node Splitting',
-        'Crossing Thresholds', 'Loop Rerolling',
-        'Indirect Addressing', 'Linear Dependence', 'Expansion',
-        'Control Flow', 'Equivalencing', 'Induction Variable',
-        'Global Data Flow', 'Symbolics', 'Reductions']
-    ordered_values = []
-    for idx, compiler in enumerate(char):
-        newl = [x[1] for x in
-                sorted(zip(labels, vals[idx]),
-                       key=lambda x: ordered_labels.index(x[0]))]
-        ordered_values.append(newl)
-
-    # print(ordered_values)
-
-    path = os.path.join('plots', 'originaltsvc_radars')
-    path = os.path.join(os.path.join('plots', 'originaltsvc_radars'),
-                        output)
-    plot_radar_chart(ordered_labels, ordered_values, char, path,
-                     title=title, size=(10, 6))
-
-
-def plot_categories(data, comp, output, title=""):
-    print(title)
-    labels = []
-    vals = []
-    char = ('None',
-            'RUNTIME_ATTRIBUTES',
-            'RUNTIME_INDEX',
-            'RUNTIME_CONDITIONS',
-            'RUNTIME_LOOP_BOUNDS',
-            'RUNTIME_ALL')
-
-    chars_labels = (
-        'Evrything\nexposed to\nthe compiler',
-        'Indices\nparameters\nhidden',
-        'Arithmetic\nparameters\nhidden',
-        'Loop\nbounds\nhidden',
-        'Variable\nattributes\nhidden',
-        'All\ninformation\nhidden')
-
-    for cat in [x for x in data[comp].keys() if x not in remove_categories]:
-        labels.append(cat)
-        vals2 = []
-        for par in char:
-            # print(par, "->" , data[comp][cat].keys())
-            vals2.append(geometric_mean(
-                [x[2] for x in data[comp][cat][par].values()]))
-        vals.append(vals2)
-
-    vals = [list(i) for i in zip(*vals)]
-    labels = [x.title().replace("_", " ") for x in labels]
-
-    plot_chart(char, labels, vals, output, title=title,
-               ylabel="Vector Efficiency", connect=False,
-               draw_mean=True, size=(7, 4), ymax=8)
-
-
 def plot_parameter(data, parameter, output, title=""):
     # Lists to store plot data
     labels = []
@@ -480,6 +377,101 @@ def plot_parameter(data, parameter, output, title=""):
     plot_vspectrum(
         char, labels, vals, output, title=title,
         ylabel="Vector Efficiency GeoMean", connect=True, ymin=1, ymax=2.5)
+
+
+def plot_max_info_architecture(data, output, architecture, title=""):
+
+    # All compilers, all categories, original tsc
+    values = []
+    labels = []
+
+    compiler_list = [x for x in data.keys() if architecture in x]
+    category_list = [x for x in all_categories if x not in remove_categories]
+
+    for comp in compiler_list:
+        values_category = []
+        for cat in category_list:
+            # TODO: What should be the baseline? Is None ok? add PGO?
+            par = 'None'
+            values_category.append(geometric_mean(
+                [x[2] for x in data[comp][cat][par].values()]))
+
+        values.append(values_category)
+
+    labels = [x.title().replace("_", " ") for x in category_list]
+    char = [x.split("-")[1] for x in compiler_list]
+
+    if True:
+        for idx, compiler in enumerate(char):
+            print("\nMax info", architecture, compiler, "analysis")
+            for lab, val in sorted(zip(labels, values[idx]),
+                                   key=lambda x: x[1]):
+                print("{} : {:3.1f}".format(lab, round(val, 2)))
+            print("GeoMean=", round(geometric_mean(values[idx]), 1),
+                  "  Mean=", round(statistics.mean(values[idx]), 1),
+                  "  Median=", round(statistics.median(values[idx]), 1))
+
+    # Plot using Vector Spectrum charts
+    path = os.path.join(
+        os.path.join('plots', 'categories_maxinfo_vspectrum'), output)
+    plot_vspectrum(
+        char, labels, values, path, title=title, ylabel="Vector Efficiency",
+        connect=False, draw_mean=True, size=(5, 4))
+
+    # order with clang-avx2 increasing vector efficiencies.
+    ordered_labels = [
+        'Recurrences', 'Statement Reordering', 'Searching',
+        'Packing', 'Loop Restructuring', 'Node Splitting',
+        'Crossing Thresholds', 'Loop Rerolling',
+        'Indirect Addressing', 'Linear Dependence', 'Expansion',
+        'Control Flow', 'Equivalencing', 'Induction Variable',
+        'Global Data Flow', 'Symbolics', 'Reductions']
+    ordered_values = []
+    for idx, compiler in enumerate(char):
+        newl = [x[1] for x in
+                sorted(zip(labels, values[idx]),
+                       key=lambda x: ordered_labels.index(x[0]))]
+        ordered_values.append(newl)
+
+    # Plot using bars (ordered)
+    # path = os.path.join(
+    #    os.path.join('plots', 'categories_maxinfo_bars'), output)
+
+
+def plot_categories(data, comp, output, title=""):
+    print(title)
+    labels = []
+    vals = []
+    char = ('None',
+            'RUNTIME_ATTRIBUTES',
+            'RUNTIME_INDEX',
+            'RUNTIME_CONDITIONS',
+            'RUNTIME_LOOP_BOUNDS',
+            'RUNTIME_ALL')
+
+    chars_labels = (
+        'Evrything\nexposed to\nthe compiler',
+        'Indices\nparameters\nhidden',
+        'Arithmetic\nparameters\nhidden',
+        'Loop\nbounds\nhidden',
+        'Variable\nattributes\nhidden',
+        'All\ninformation\nhidden')
+
+    for cat in [x for x in data[comp].keys() if x not in remove_categories]:
+        labels.append(cat)
+        vals2 = []
+        for par in char:
+            # print(par, "->" , data[comp][cat].keys())
+            vals2.append(geometric_mean(
+                [x[2] for x in data[comp][cat][par].values()]))
+        vals.append(vals2)
+
+    vals = [list(i) for i in zip(*vals)]
+    labels = [x.title().replace("_", " ") for x in labels]
+
+    plot_chart(char, labels, vals, output, title=title,
+               ylabel="Vector Efficiency", connect=False,
+               draw_mean=True, size=(7, 4), ymax=8)
 
 
 def print_summary(data):
@@ -632,90 +624,110 @@ def main():
     os.makedirs(os.path.join('plots', 'latex_table'))
     print_summary(data)
 
-    print("\n- Ploting Summary VSpectrums..")
-    os.makedirs(os.path.join('plots', 'extendedtsvc_summary'))
-    path = os.path.join('plots', 'extendedtsvc_summary')
-    plot_parameter(
-        data, 'RUNTIME_INDEX',
-        os.path.join(path, 'index_parameters.eps'), 'Index Parameters')
-    plot_parameter(
-        data, 'RUNTIME_LOOP_BOUNDS',
-        os.path.join(path, 'loop_bound.eps'), 'Loop Bounds Parameters')
-    plot_parameter(
-        data, 'RUNTIME_CONDITIONS',
-        os.path.join(path, 'conditional_parameters.eps'),
-        'Conditional Parameters')
-    # plot_parameter(
-    #     data, 'RUNTIME_ARITHMETIC',
-    #     os.path.join(path, 'arithmetic_parameters.eps'),
-    #     'Arithmetic Parameters')
-    plot_parameter(
-        data, 'RUNTIME_ATTRIBUTES',
-        os.path.join(path, 'variable_attributes.eps'),
-        'Variable attributes')
-    plot_parameter(
-        data, 'RUNTIME_ALL',
-        os.path.join(path, 'all.eps'),
-        'All Parameters')
+    if False:
+        print("\n- Ploting Summary VSpectrums..")
+        os.makedirs(os.path.join('plots', 'extendedtsvc_summary'))
+        path = os.path.join('plots', 'extendedtsvc_summary')
+        plot_parameter(
+            data, 'RUNTIME_INDEX',
+            os.path.join(path, 'index_parameters.eps'), 'Index Parameters')
+        plot_parameter(
+            data, 'RUNTIME_LOOP_BOUNDS',
+            os.path.join(path, 'loop_bound.eps'), 'Loop Bounds Parameters')
+        plot_parameter(
+            data, 'RUNTIME_CONDITIONS',
+            os.path.join(path, 'conditional_parameters.eps'),
+            'Conditional Parameters')
+        # plot_parameter(
+        #     data, 'RUNTIME_ARITHMETIC',
+        #     os.path.join(path, 'arithmetic_parameters.eps'),
+        #     'Arithmetic Parameters')
+        plot_parameter(
+            data, 'RUNTIME_ATTRIBUTES',
+            os.path.join(path, 'variable_attributes.eps'),
+            'Variable attributes')
+        plot_parameter(
+            data, 'RUNTIME_ALL',
+            os.path.join(path, 'all.eps'),
+            'All Parameters')
 
-    plt.close("all")
-    exit(0)
+        plt.close("all")
+        # exit(0)
 
-    print("\n- Compiler comparison")
-    os.makedirs(os.path.join('plots', 'originaltsvc_radars'))
-    os.makedirs(os.path.join('plots', 'originaltsvc_vspectrum'))
-    plot_original_tsvc(data, 'compilers-avx2.eps', 'avx2',
-                       'AVX2 Compiler comparison')
-    plot_original_tsvc(data, 'compilers-avx512.eps', 'avx512',
-                       'AVX512 Compiler comparison')
-    plot_original_tsvc(data, 'compilers-knl.eps', 'knl',
-                       'KNL Compiler comparison')
-    plot_original_tsvc(data, 'compilers-altivec.eps', 'altivec',
-                       'Altivec Compiler comparison')
-    plt.close("all")
-    # exit(0)
+    if True:
+        print("\n- Compiler comparison")
+        os.makedirs(os.path.join('plots', 'categories_maxinfo_radars'))
+        os.makedirs(os.path.join('plots', 'categories_maxinfo_vspectrum'))
+        os.makedirs(os.path.join('plots', 'categories_maxinfo_bars'))
+        plot_max_info_architecture(
+            data, 'compilers-avx2.eps', 'avx2',
+            'AVX2 Compiler comparison')
+        plot_max_info_architecture(
+            data, 'compilers-avx512.eps', 'avx512',
+            'AVX512 Compiler comparison')
+        plot_max_info_architecture(
+            data, 'compilers-knl.eps', 'knl',
+            'KNL Compiler comparison')
+        plot_max_info_architecture(
+            data, 'compilers-altivec.eps', 'altivec',
+            'Altivec Compiler comparison')
 
-    print("\n- Detailed VSpectrums")
-    os.makedirs(os.path.join('plots', 'extendedtsvc_detailed'))
-    path = os.path.join('plots', 'extendedtsvc_detailed')
-    plot_categories(data, 'avx2-icc', os.path.join(path, 'avx2-icc.eps'),
-                    title="AVX2 ICC Auto-vectorization")
-    plot_categories(data, 'avx2-gcc', os.path.join(path, 'avx2-gcc.eps'),
-                    title="AVX2 GCC Auto-vectorization")
-    plot_categories(data, 'avx2-pgi', os.path.join(path, 'avx2-pgi.eps'),
-                    title="AVX2 PGI Auto-vectorization")
-    plot_categories(data, 'avx2-clang', os.path.join(path, 'avx2-clang.eps'),
-                    title="AVX Clang Auto-vectorization")
+        plt.close("all")
+        exit(0)
 
-    plot_categories(data, 'avx512-icc', os.path.join(path, 'avx512-icc.eps'),
-                    title="AVX512 ICC Auto-vectorization")
-    plot_categories(data, 'avx512-gcc', os.path.join(path, 'avx512-gcc.eps'),
-                    title="AVX512 GCC Auto-vectorization")
-    plot_categories(data, 'avx512-pgi', os.path.join(path, 'avx512-pgi.eps'),
-                    title="AVX512 PGI Auto-vectorization")
-    plot_categories(data, 'avx512-clang', os.path.join(path,
-                                                       'avx512-clang.eps'),
-                    title="AVX512 Clang Auto-vectorization")
-
-    plt.close("all")
-    plot_categories(data, 'knl-icc', os.path.join(path, 'knl-icc.eps'),
-                    title="KNL ICC Auto-vectorization")
-    plot_categories(data, 'knl-gcc', os.path.join(path, 'knl-gcc.eps'),
-                    title="KNL GCC Auto-vectorization")
-    plot_categories(data, 'knl-pgi', os.path.join(path, 'knl-pgi.eps'),
-                    title="KNL PGI Auto-vectorization")
-    plot_categories(data, 'knl-clang', os.path.join(path, 'knl-clang.eps'),
-                    title="KNL Clang Auto-vectorization")
-
-    plot_categories(data, 'altivec-gcc', os.path.join(path, 'altivec-gcc.eps'),
-                    title="Altivec GCC Auto-vectorization")
-    plot_categories(data, 'altivec-ibm', os.path.join(path, 'altivec-ibm.eps'),
-                    title="Altivec IBM Auto-vectorization")
-    plot_categories(data, 'altivec-pgi', os.path.join(path, 'altivec-pgi.eps'),
-                    title="Altivec PGI Auto-vectorization")
-    plot_categories(data, 'altivec-clang', os.path.join(path,
-                                                        'altivec-clang.eps'),
-                    title="Altivec Clang Auto-vectorization")
+    if False:
+        print("\n- Detailed VSpectrums")
+        os.makedirs(os.path.join('plots', 'extendedtsvc_detailed'))
+        path = os.path.join('plots', 'extendedtsvc_detailed')
+        plot_categories(
+            data, 'avx2-icc', os.path.join(path, 'avx2-icc.eps'),
+            title="AVX2 ICC Auto-vectorization")
+        plot_categories(
+            data, 'avx2-gcc', os.path.join(path, 'avx2-gcc.eps'),
+            title="AVX2 GCC Auto-vectorization")
+        plot_categories(
+            data, 'avx2-pgi', os.path.join(path, 'avx2-pgi.eps'),
+            title="AVX2 PGI Auto-vectorization")
+        plot_categories(
+            data, 'avx2-clang', os.path.join(path, 'avx2-clang.eps'),
+            title="AVX Clang Auto-vectorization")
+        plot_categories(
+            data, 'avx512-icc', os.path.join(path, 'avx512-icc.eps'),
+            title="AVX512 ICC Auto-vectorization")
+        plot_categories(
+            data, 'avx512-gcc', os.path.join(path, 'avx512-gcc.eps'),
+            title="AVX512 GCC Auto-vectorization")
+        plot_categories(
+            data, 'avx512-pgi', os.path.join(path, 'avx512-pgi.eps'),
+            title="AVX512 PGI Auto-vectorization")
+        plot_categories(
+            data, 'avx512-clang', os.path.join(path, 'avx512-clang.eps'),
+            title="AVX512 Clang Auto-vectorization")
+        plt.close("all")
+        plot_categories(
+            data, 'knl-icc', os.path.join(path, 'knl-icc.eps'),
+            title="KNL ICC Auto-vectorization")
+        plot_categories(
+            data, 'knl-gcc', os.path.join(path, 'knl-gcc.eps'),
+            title="KNL GCC Auto-vectorization")
+        plot_categories(
+            data, 'knl-pgi', os.path.join(path, 'knl-pgi.eps'),
+            title="KNL PGI Auto-vectorization")
+        plot_categories(
+            data, 'knl-clang', os.path.join(path, 'knl-clang.eps'),
+            title="KNL Clang Auto-vectorization")
+        plot_categories(
+            data, 'altivec-gcc', os.path.join(path, 'altivec-gcc.eps'),
+            title="Altivec GCC Auto-vectorization")
+        plot_categories(
+            data, 'altivec-ibm', os.path.join(path, 'altivec-ibm.eps'),
+            title="Altivec IBM Auto-vectorization")
+        plot_categories(
+            data, 'altivec-pgi', os.path.join(path, 'altivec-pgi.eps'),
+            title="Altivec PGI Auto-vectorization")
+        plot_categories(
+            data, 'altivec-clang', os.path.join(path, 'altivec-clang.eps'),
+            title="Altivec Clang Auto-vectorization")
 
     # TODO: also add ISA comparsion and architecture comparison
 
