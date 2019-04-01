@@ -12,7 +12,7 @@ from plotutils import *
 
 debug = False
 
-remove_tests = ['S317', 'S2712', 'S1251']
+remove_tests = ['S2712']
 remove_categories = []  # ['REDUCTIONS','CONTROL_FLOW','SEARCHING']
 
 test_sets = {
@@ -24,13 +24,13 @@ test_sets = {
     "RUNTIME_INDEX": [
         "S111", "S1111", "S112", "S113", "S1113", "S116", "S118", "S119",
         "S1119", "S121", "S122", "S126", "S128", "S131", "S141", "S151",
-        "S431", "S161", "S275", "S277", "S171", "S172", "S173", "S174", "S175",
-        "S176", "S211", "S212", "S1213", "S221", "S1221", "S222", "S231",
-        "S232", "S233", "S2233", "S235", "S241", "S242", "S243", "S244",
-        "S1244", "S2244", "S3251", "S256", "S257", "S258", "S261", "S281",
-        "S291", "S292", "S293", "S2111", "S321", "S322", "S323", "S351",
-        "S352", "S353", "S421", "S422", "S423", "S424", "S4114", "S4116",
-        "S4117"],
+        "S431", "S161", "S275", "S277", "S171", "S172", "S173", "S174",
+        "S175", "S176", "S211", "S212", "S1213", "S221", "S1221", "S222",
+        "S231", "S232", "S233", "S2233", "S235", "S241", "S242", "S243",
+        "S244", "S1244", "S2244", "S3251", "S256", "S257", "S258", "S261",
+        "S281", "S291", "S292", "S293", "S2111", "S321", "S322", "S323",
+        "S351", "S352", "S353", "S421", "S422", "S423", "S424", "S4114",
+        "S4116", "S4117"],
 
     "RUNTIME_CONDITIONS": [
         "S123", "S124", "S161", "S1161", "S162", "S271", "S272", "S273",
@@ -110,6 +110,23 @@ all_categories = [
     "EQUIVALENCING",
     "INDIRECT_ADDRESSING",
 ]
+
+
+def geometric_mean(arr):
+    import math
+
+    # declare product variable and initialize it to 1.
+    product = 1
+    n = len(arr)
+
+    # Compute the product of all the elements in the array.
+    for i in range(0, n):
+        product = product * arr[i]
+
+    # compute geometric mean through formula pow(product, 1/n) and
+    # return the value to main function.
+    gm = (float)(math.pow(product, (1 / n)))
+    return (float)(gm)
 
 
 def load_data(data, compiler, category, parameters, parameters_path):
@@ -290,42 +307,36 @@ def data_sanity_check(data):
                               str(data[compiler][category][par2][t]))
 
 
-def plot_original_tsvc(data, output, architecture, title="", speedup_vs=None):
+def plot_original_tsvc(data, output, architecture, title=""):
     # all compilers, all categories, original tsc
     vals = []
-    labs = []
+    labels = []
 
     compiler_list = [x for x in data.keys() if architecture in x]
 
     for cat in [x for x in all_categories if x not in remove_categories]:
-        labs.append(cat)
+        labels.append(cat)
         vals2 = []
         for comp in compiler_list:
             # TODO: What should be the baseline? Is None ok?
             par = 'None'
 
-            if speedup_vs is not None:
-                baseline = np.mean(
-                    [x[0] for x in data[speedup_vs][cat][par].values()])
-                vals2.append(baseline / np.mean(
-                    [x[0] for x in data[comp][cat][par].values()]))
-            else:
-                vals2.append(np.mean(
-                    [x[2] for x in data[comp][cat][par].values()]))
+            vals2.append(geometric_mean(
+                [x[2] for x in data[comp][cat][par].values()]))
         vals.append(vals2)
 
     vals = [list(i) for i in zip(*vals)]
-    labs = [x.title().replace("_", " ") for x in labs]
+    labels = [x.title().replace("_", " ") for x in labels]
     char = [x.split("-")[1] for x in compiler_list]
 
     if debug:
         print("Original TSVC for ", architecture)
         # print(vals)
-        # print(labs)
+        # print(labels)
         # print(char)
 
         for idx, compiler in enumerate(char):
-            ordered_labeled_values = sorted(zip(labs, vals[idx]),
+            ordered_labeled_values = sorted(zip(labels, vals[idx]),
                                             key=lambda x: x[1])
             print(compiler)
             print(list(ordered_labeled_values))
@@ -335,22 +346,23 @@ def plot_original_tsvc(data, output, architecture, title="", speedup_vs=None):
 
     path = os.path.join(os.path.join('plots',
                                      'originaltsvc_vspectrum'), output)
-    plot_chart(char, labs, vals, path, title=title,
+    plot_chart(char, labels, vals, path, title=title,
                ylabel="Vector Efficiency", connect=False, draw_mean=True,
                size=(5, 4))
 
     # order with clang-avx2 increasing vector efficiencies.
-    ordered_labs = ['Recurrences', 'Statement Reordering', 'Searching',
-                    'Packing', 'Loop Restructuring', 'Node Splitting',
-                    'Crossing Thresholds', 'Loop Rerolling',
-                    'Indirect Addressing', 'Linear Dependence', 'Expansion',
-                    'Control Flow', 'Equivalencing', 'Induction Variable',
-                    'Global Data Flow', 'Symbolics', 'Reductions']
+    ordered_labels = [
+        'Recurrences', 'Statement Reordering', 'Searching',
+        'Packing', 'Loop Restructuring', 'Node Splitting',
+        'Crossing Thresholds', 'Loop Rerolling',
+        'Indirect Addressing', 'Linear Dependence', 'Expansion',
+        'Control Flow', 'Equivalencing', 'Induction Variable',
+        'Global Data Flow', 'Symbolics', 'Reductions']
     ordered_values = []
     for idx, compiler in enumerate(char):
         newl = [x[1] for x in
-                sorted(zip(labs, vals[idx]),
-                       key=lambda x: ordered_labs.index(x[0]))]
+                sorted(zip(labels, vals[idx]),
+                       key=lambda x: ordered_labels.index(x[0]))]
         ordered_values.append(newl)
 
     # print(ordered_values)
@@ -358,13 +370,13 @@ def plot_original_tsvc(data, output, architecture, title="", speedup_vs=None):
     path = os.path.join('plots', 'originaltsvc_radars')
     path = os.path.join(os.path.join('plots', 'originaltsvc_radars'),
                         output)
-    plot_radar_chart(ordered_labs, ordered_values, char, path,
+    plot_radar_chart(ordered_labels, ordered_values, char, path,
                      title=title, size=(10, 6))
 
 
-def plot_categories(data, comp, output, title="", speedup=False):
+def plot_categories(data, comp, output, title=""):
     print(title)
-    labs = []
+    labels = []
     vals = []
     char = ('None',
             'RUNTIME_ATTRIBUTES',
@@ -373,125 +385,101 @@ def plot_categories(data, comp, output, title="", speedup=False):
             'RUNTIME_LOOP_BOUNDS',
             'RUNTIME_ALL')
 
-    chars_labs = ('Evrything\nexposed to\nthe compiler',
-                  'Indices\nparameters\nhidden',
-                  'Arithmetic\nparameters\nhidden',
-                  'Loop\nbounds\nhidden',
-                  'Variable\nattributes\nhidden',
-                  'All\ninformation\nhidden')
+    chars_labels = (
+        'Evrything\nexposed to\nthe compiler',
+        'Indices\nparameters\nhidden',
+        'Arithmetic\nparameters\nhidden',
+        'Loop\nbounds\nhidden',
+        'Variable\nattributes\nhidden',
+        'All\ninformation\nhidden')
 
     for cat in [x for x in data[comp].keys() if x not in remove_categories]:
-        labs.append(cat)
+        labels.append(cat)
         vals2 = []
         for par in char:
             # print(par, "->" , data[comp][cat].keys())
-            if speedup:
-                baseline = np.mean(
-                    [x[0] for x in data[comp][cat]['None'].values()])
-                value = np.mean(
-                    [x[0] for x in data[comp][cat][par].values()])
-                speedup = baseline/value  # FIXME: Not used??
-            else:
-                vals2.append(np.mean(
-                    [x[2] for x in data[comp][cat][par].values()]))
+            vals2.append(geometric_mean(
+                [x[2] for x in data[comp][cat][par].values()]))
         vals.append(vals2)
 
     vals = [list(i) for i in zip(*vals)]
-    labs = [x.title().replace("_", " ") for x in labs]
+    labels = [x.title().replace("_", " ") for x in labels]
 
-    plot_chart(char, labs, vals, output, title=title,
+    plot_chart(char, labels, vals, output, title=title,
                ylabel="Vector Efficiency", connect=False,
                draw_mean=True, size=(7, 4), ymax=8)
 
 
-def plot_new(data, detailed_summary, parameter, output, title="",
-             speedup=False):
-    labs = []
-
-    # Average of all tests
-    vals_ct = []
-    vals_rt = []
-
-    # Average of all categories averages
-    cat_vals_ct = []
-    cat_vals_rt = []
+def plot_parameter(data, parameter, output, title=""):
+    # Lists to store plot data
+    labels = []
+    parameter_exposed = []
+    parameter_hidden = []
 
     for compiler in data.keys():
-        # if compiler.startswith('knl') : continue
-        # if compiler.endswith('pgi') : continue
-        # if compiler == 'altivec-ibm' : continue
-        labs.append(compiler)
+        labels.append(compiler)
 
-        # Set total counters to 0
-        none_sum = 0
-        par_sum = 0
-        count = 0
-
+        compiler_exposed = []
+        compiler_hidden = []
         for category in data[compiler].keys():
 
-            cat_none_sum = 0
-            cat_par_sum = 0
-            cat_count = 0
+            category_exposed = []
+            category_hidden = []
 
             for test, value in data[compiler][category]['None'].items():
-                if True:
-                    value_ct = value[2]
-                    try:
-                        rt = data[compiler][category][parameter][test]
-                    except KeyError:
-                        print("Error: " + compiler + " " + category + " " +
-                              parameter + " " + test + " does not exist.")
-                    value_rt = rt[2]
+                value_exposed = value[2]
+                try:
+                    rt = data[compiler][category][parameter][test]
+                except KeyError:
+                    print("Error: " + compiler + " " + category + " " +
+                          parameter + " " + test + " does not exist.")
+                    exit(0)
+                value_hidden = rt[2]
 
-                    if debug and (value_rt > value_ct + 0.1):
-                        print("Warrning: Test " + str(test) +
-                              " has better veff with RT")
-                        print("CT: vec " + str(value[0]) + " novec " +
-                              str(value[1]) + " veff " + str(value_ct))
-                        print("RT: vec " + str(rt[0]) + " novec " +
-                              str(rt[1]) + " veff " + str(value_rt))
+                if debug and (value_hidden > value_exposed + 0.1):
+                    print("Warrning: Test " + str(test) +
+                          " has better veff with RT")
+                    print("CT: vec " + str(value[0]) + " novec " +
+                          str(value[1]) + " veff " + str(value_exposed))
+                    print("RT: vec " + str(rt[0]) + " novec " +
+                          str(rt[1]) + " veff " + str(value_hidden))
 
-                    if value_rt == 0.0 or value_ct == 0.0:
-                        print("Error: " + str(test) + " contains 0")
-                        exit(0)
+                if value_hidden == 0.0 or value_exposed == 0.0:
+                    print("Error: " + str(test) + " contains 0")
+                    exit(0)
 
-                    cat_none_sum = cat_none_sum + value_ct
-                    cat_par_sum = cat_par_sum + value_rt
-                    cat_count = cat_count + 1
+                category_exposed.append(value_exposed)
+                category_hidden.append(value_hidden)
 
-            # Save category averages on detailed_summary
-            if(cat_count == 0):
-                print("Error: " + compiler + " " + parameter + " " +
-                      category + " count is 0")
-                detailed_summary[compiler]['None'][category] = 0
-                detailed_summary[compiler][parameter][category] = 0
-            else:
-                detailed_summary[compiler]['None'][category] = \
-                    float(cat_none_sum/cat_count)
-                detailed_summary[compiler][parameter][category] = \
-                    float(cat_par_sum/cat_count)
+            category_geomean_exposed = geometric_mean(category_exposed)
+            category_geomean_hidden = geometric_mean(category_hidden)
 
-            none_sum = none_sum + cat_none_sum
-            par_sum = par_sum + cat_par_sum
-            count = count + cat_count
+            compiler_exposed.append(category_geomean_exposed)
+            compiler_hidden.append(category_geomean_hidden)
 
         # Aggregate platform-compiler pair results
-        if(count == 0):
-            print("Warrning!: " + str(compiler) +
-                  " NONE contains no tests. Set to 0")
-            vals_ct.append(0)
-            vals_rt.append(0)
-        else:
-            vals_ct.append(none_sum/count)
-            vals_rt.append(par_sum/count)
+        compiler_geomean_exposed = geometric_mean(compiler_exposed)
+        compiler_geomean_hidden = geometric_mean(compiler_hidden)
+        parameter_exposed.append(compiler_geomean_exposed)
+        parameter_hidden.append(compiler_geomean_hidden)
 
     char = ('Known at\nCompile Time', 'Hidden at\nCompile Time')
-    vals = [vals_ct, vals_rt]
-    labs = [x.title() for x in labs]
+    vals = [parameter_exposed, parameter_hidden]
+    labels = [x.title() for x in labels]
 
-    # print(char, labs, vals)
-    plot_chart(char, labs, vals, output, title=title,
-               ylabel="Vector Efficiency", connect=True, ymax=8)
+    print("\nParameter: ", parameter)
+    for i in range(len(labels)):
+        variation = (parameter_exposed[i] / parameter_hidden[i] * 100) - 100
+        print("{} ({:3.2f}, {:3.2f}): {:3.1f}".format(
+            labels[i],
+            parameter_exposed[i],
+            parameter_hidden[i],
+            round(variation, 1)
+            ))
+
+    plot_vspectrum(
+        char, labels, vals, output, title=title,
+        ylabel="Vector Efficiency GeoMean", connect=True, ymin=1, ymax=2.5)
 
 
 def print_summary(data):
@@ -501,12 +489,12 @@ def print_summary(data):
     parameters = ['None', 'RUNTIME_ATTRIBUTES', 'RUNTIME_INDEX',
                   'RUNTIME_LOOP_BOUNDS', 'RUNTIME_CONDITIONS', 'RUNTIME_ALL']
 
-    mappars = {'None': 'Known at ct.',
-               'RUNTIME_ATTRIBUTES': 'rt. Attributes',
-               'RUNTIME_INDEX': 'rt. Indices',
-               'RUNTIME_LOOP_BOUNDS': 'rt. L. Bounds',
-               'RUNTIME_CONDITIONS': 'rt. Conditions',
-               'RUNTIME_ALL': 'rt. All'}
+    mappars = {'None': 'All info',
+               'RUNTIME_ATTRIBUTES': 'Attributes h.',
+               'RUNTIME_INDEX': 'Indices h.',
+               'RUNTIME_LOOP_BOUNDS': 'L. Bounds h.',
+               'RUNTIME_CONDITIONS': 'Conditions h.',
+               'RUNTIME_ALL': 'All info h.'}
 
     rotation = 90
     cat_num = len(categories)
@@ -515,21 +503,28 @@ def print_summary(data):
     fname = os.path.join(os.path.join('plots', 'latex_table'), 'output.tex')
     with open(fname, 'w') as f:
         f.write("\\documentclass{article}\n")
+        f.write("\\usepackage[left=1cm]{geometry}\n")
         f.write("\\usepackage{array,longtable}\n")
         f.write("\\usepackage{multicol}\n")
         f.write("\\usepackage{multirow}\n")
         f.write("\\begin{document}\n")
+        f.write("\\small\n")
+        f.write("\\setlength\\tabcolsep{3pt}")
 
         # Begin table 1 with altivec and avx2
         f.write("\\begin{longtable}{")
-        f.write(("|p{2cm}"+"|c"*(9))+"|}\n")
-        f.write("\\cline{3-10} \\multicolumn{2}{c|}{}")
+        f.write(("|p{2cm}"+"|c"*(17))+"|}\n")
+        f.write("\\cline{3-18} \\multicolumn{2}{c|}{}")
         f.write(" & \\multicolumn{4}{|c|}{ Altivec (on Power8)}")
-        f.write(" & \\multicolumn{4}{|c|}{ AVX2 (on Skylake)} \\\\\n")
+        f.write(" & \\multicolumn{4}{|c|}{ AVX2 (on Skylake)}")
+        f.write(" & \\multicolumn{4}{|c|}{ AVX512 (on Skylake)}")
+        f.write(" & \\multicolumn{4}{|c|}{ AVX512 (on KNL)} \\\\\n")
 
-        f.write("\\cline{3-10} \\multicolumn{2}{c|}{}")
+        f.write("\\cline{3-18} \\multicolumn{2}{c|}{}")
         f.write("& GNU & Clang & PGI & IBM ")
-        f.write("& GNU & Clang & PGI & Intel \\\\ \\hline\n")
+        f.write("& GNU & Clang & PGI & Intel ")
+        f.write("& GNU & Clang & PGI & Intel ")
+        f.write("& GNU & Clang & PGI & Intel \\\\ \\hline \\hline\n")
         # f.write("\\endhead\n")
 
         for cat in categories:
@@ -539,41 +534,50 @@ def print_summary(data):
                 f.write(" & " + mappars[par])
                 for c in ['altivec-gcc', 'altivec-clang', 'altivec-pgi',
                           'altivec-ibm', 'avx2-gcc', 'avx2-clang',
-                          'avx2-pgi', 'avx2-icc']:
-                    f.write(" & " + "{:3.1f}".format(np.mean(
+                          'avx2-pgi', 'avx2-icc', 'avx512-gcc',
+                          'avx512-clang', 'avx512-pgi', 'avx512-icc',
+                          'knl-gcc', 'knl-clang', 'knl-pgi', 'knl-icc']:
+                    f.write(" & " + "{:3.1f}".format(geometric_mean(
                         [v[2] for v in data[c][cat][par].values()]
                         )))
-                f.write("\\\\ \\cline{2-10}\n")
-            f.write("\\hline\n")
-        f.write("\\end{longtable}\n")
+                f.write("\\\\ \\cline{2-18}\n")
+            f.write("\\hline \\hline\n")
+        f.write("\\end{longtable}")
 
         # Begin table 1 with altivec and avx2
         f.write("\\begin{longtable}{")
-        f.write(("|p{2cm}"+"|c"*(9))+"|}\n")
-        f.write("\\cline{3-10} \\multicolumn{2}{c|}{}")
+        f.write(("|p{2cm}"+"|c"*(17))+"|}\n")
+        f.write("\\cline{3-18} \\multicolumn{2}{c|}{}")
+        f.write(" & \\multicolumn{4}{|c|}{ Altivec (on Power8)}")
+        f.write(" & \\multicolumn{4}{|c|}{ AVX2 (on Skylake)}")
         f.write(" & \\multicolumn{4}{|c|}{ AVX512 (on Skylake)}")
         f.write(" & \\multicolumn{4}{|c|}{ AVX512 (on KNL)} \\\\\n")
 
-        f.write("\\cline{3-10} \\multicolumn{2}{c|}{}")
+        f.write("\\cline{3-18} \\multicolumn{2}{c|}{}")
+        f.write("& GNU & Clang & PGI & IBM ")
         f.write("& GNU & Clang & PGI & Intel ")
-        f.write("& GNU & Clang & PGI & Intel \\\\ \\hline\n")
+        f.write("& GNU & Clang & PGI & Intel ")
+        f.write("& GNU & Clang & PGI & Intel \\\\ \\hline \\hline\n")
         # f.write("\\endhead\n")
 
         for cat in categories:
-            f.write("\\multirow{" + str(par_num) + "}{*}{ \\parbox{2cm}{" +
-                    cat.replace('_', '\\\\').title() + "}}")
-            for par in parameters:
-                f.write(" & " + mappars[par])
-                for c in ['avx512-gcc', 'avx512-clang', 'avx512-pgi',
-                          'avx512-icc', 'knl-gcc', 'knl-clang', 'knl-pgi',
-                          'knl-icc']:
-                    f.write(" & " + "{:3.1f}".format(np.mean(
-                        [v[2] for v in data[c][cat][par].values()]
-                        )))
-                f.write("\\\\ \\cline{2-10}\n")
-            f.write("\\hline\n")
-        f.write("\\end{longtable}\n")
-        f.write("\\end{document}\n")
+            for test in data['avx2-gcc'][cat][parameters[0]].keys():
+                f.write("\\multirow{" + str(par_num) + "}{*}{ \\parbox{2cm}{" +
+                        test.replace('_', '\\\\').title() + "}}")
+                for par in parameters:
+                    f.write(" & " + mappars[par])
+                    for c in ['altivec-gcc', 'altivec-clang', 'altivec-pgi',
+                              'altivec-ibm', 'avx2-gcc', 'avx2-clang',
+                              'avx2-pgi', 'avx2-icc', 'avx512-gcc',
+                              'avx512-clang', 'avx512-pgi', 'avx512-icc',
+                              'knl-gcc', 'knl-clang', 'knl-pgi', 'knl-icc']:
+                        f.write(" & " + "{:3.1f}".format(
+                            data[c][cat][par][test][2]
+                            ))
+                    f.write("\\\\ \\cline{2-18}\n")
+                f.write("\\hline \\hline\n")
+        f.write("\\end{longtable}")
+        f.write("\\end{document}")
 
 
 def main():
@@ -606,9 +610,6 @@ def main():
     # where execution is [rtvec, rtnovec, ctvec, ctnovec] = float
     microkernel_data = nested_dict(4, float)
 
-    # Nested dictionary of {compiler, parameter, category} = avg_vector_eff
-    # detailed_summary = nested_dict(3, float)
-
     def getfolders(path):
         return filter(lambda x: os.path.isdir(os.path.join(path, x)),
                       os.listdir(path))
@@ -630,31 +631,35 @@ def main():
     print("\nWriting summary to file...")
     os.makedirs(os.path.join('plots', 'latex_table'))
     print_summary(data)
-    exit(0)
 
     print("\n- Ploting Summary VSpectrums..")
     os.makedirs(os.path.join('plots', 'extendedtsvc_summary'))
     path = os.path.join('plots', 'extendedtsvc_summary')
-    plot_new(data, detailed_summary, 'RUNTIME_INDEX',
-             os.path.join(path, 'index_parameters.eps'),
-             'Index Parameters')
-    plot_new(data, detailed_summary, 'RUNTIME_LOOP_BOUNDS',
-             os.path.join(path, 'loop_bound.eps'),
-             'Loop Bounds Parameters')
-    plot_new(data, detailed_summary, 'RUNTIME_CONDITIONS',
-             os.path.join(path, 'conditional_parameters.eps'),
-             'Conditional Parameters')
-    plot_new(data, detailed_summary, 'RUNTIME_ARITHMETIC',
-             os.path.join(path, 'arithmetic_parameters.eps'),
-             'Arithmetic Parameters')
-    plot_new(data, detailed_summary, 'RUNTIME_ATTRIBUTES',
-             os.path.join(path, 'variable_attributes.eps'),
-             'Variable attributes')
-    plot_new(data, detailed_summary, 'RUNTIME_ALL',
-             os.path.join(path, 'all.eps'),
-             'All Parameters')
+    plot_parameter(
+        data, 'RUNTIME_INDEX',
+        os.path.join(path, 'index_parameters.eps'), 'Index Parameters')
+    plot_parameter(
+        data, 'RUNTIME_LOOP_BOUNDS',
+        os.path.join(path, 'loop_bound.eps'), 'Loop Bounds Parameters')
+    plot_parameter(
+        data, 'RUNTIME_CONDITIONS',
+        os.path.join(path, 'conditional_parameters.eps'),
+        'Conditional Parameters')
+    # plot_parameter(
+    #     data, 'RUNTIME_ARITHMETIC',
+    #     os.path.join(path, 'arithmetic_parameters.eps'),
+    #     'Arithmetic Parameters')
+    plot_parameter(
+        data, 'RUNTIME_ATTRIBUTES',
+        os.path.join(path, 'variable_attributes.eps'),
+        'Variable attributes')
+    plot_parameter(
+        data, 'RUNTIME_ALL',
+        os.path.join(path, 'all.eps'),
+        'All Parameters')
+
     plt.close("all")
-    # exit(0)
+    exit(0)
 
     print("\n- Compiler comparison")
     os.makedirs(os.path.join('plots', 'originaltsvc_radars'))
@@ -674,43 +679,43 @@ def main():
     os.makedirs(os.path.join('plots', 'extendedtsvc_detailed'))
     path = os.path.join('plots', 'extendedtsvc_detailed')
     plot_categories(data, 'avx2-icc', os.path.join(path, 'avx2-icc.eps'),
-                    title="AVX2 ICC Auto-vectorization", speedup=False)
+                    title="AVX2 ICC Auto-vectorization")
     plot_categories(data, 'avx2-gcc', os.path.join(path, 'avx2-gcc.eps'),
-                    title="AVX2 GCC Auto-vectorization", speedup=False)
+                    title="AVX2 GCC Auto-vectorization")
     plot_categories(data, 'avx2-pgi', os.path.join(path, 'avx2-pgi.eps'),
-                    title="AVX2 PGI Auto-vectorization", speedup=False)
+                    title="AVX2 PGI Auto-vectorization")
     plot_categories(data, 'avx2-clang', os.path.join(path, 'avx2-clang.eps'),
-                    title="AVX Clang Auto-vectorization", speedup=False)
+                    title="AVX Clang Auto-vectorization")
 
     plot_categories(data, 'avx512-icc', os.path.join(path, 'avx512-icc.eps'),
-                    title="AVX512 ICC Auto-vectorization", speedup=False)
+                    title="AVX512 ICC Auto-vectorization")
     plot_categories(data, 'avx512-gcc', os.path.join(path, 'avx512-gcc.eps'),
-                    title="AVX512 GCC Auto-vectorization", speedup=False)
+                    title="AVX512 GCC Auto-vectorization")
     plot_categories(data, 'avx512-pgi', os.path.join(path, 'avx512-pgi.eps'),
-                    title="AVX512 PGI Auto-vectorization", speedup=False)
+                    title="AVX512 PGI Auto-vectorization")
     plot_categories(data, 'avx512-clang', os.path.join(path,
                                                        'avx512-clang.eps'),
-                    title="AVX512 Clang Auto-vectorization", speedup=False)
+                    title="AVX512 Clang Auto-vectorization")
 
     plt.close("all")
     plot_categories(data, 'knl-icc', os.path.join(path, 'knl-icc.eps'),
-                    title="KNL ICC Auto-vectorization", speedup=False)
+                    title="KNL ICC Auto-vectorization")
     plot_categories(data, 'knl-gcc', os.path.join(path, 'knl-gcc.eps'),
-                    title="KNL GCC Auto-vectorization", speedup=False)
+                    title="KNL GCC Auto-vectorization")
     plot_categories(data, 'knl-pgi', os.path.join(path, 'knl-pgi.eps'),
-                    title="KNL PGI Auto-vectorization", speedup=False)
+                    title="KNL PGI Auto-vectorization")
     plot_categories(data, 'knl-clang', os.path.join(path, 'knl-clang.eps'),
-                    title="KNL Clang Auto-vectorization", speedup=False)
+                    title="KNL Clang Auto-vectorization")
 
     plot_categories(data, 'altivec-gcc', os.path.join(path, 'altivec-gcc.eps'),
-                    title="Altivec GCC Auto-vectorization", speedup=False)
+                    title="Altivec GCC Auto-vectorization")
     plot_categories(data, 'altivec-ibm', os.path.join(path, 'altivec-ibm.eps'),
-                    title="Altivec IBM Auto-vectorization", speedup=False)
+                    title="Altivec IBM Auto-vectorization")
     plot_categories(data, 'altivec-pgi', os.path.join(path, 'altivec-pgi.eps'),
-                    title="Altivec PGI Auto-vectorization", speedup=False)
+                    title="Altivec PGI Auto-vectorization")
     plot_categories(data, 'altivec-clang', os.path.join(path,
                                                         'altivec-clang.eps'),
-                    title="Altivec Clang Auto-vectorization", speedup=False)
+                    title="Altivec Clang Auto-vectorization")
 
     # TODO: also add ISA comparsion and architecture comparison
 

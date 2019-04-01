@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 from matplotlib.path import Path
@@ -7,6 +8,50 @@ import matplotlib.cm as cmx
 import matplotlib.colors as colors
 from matplotlib.projections.polar import PolarAxes
 from matplotlib.projections import register_projection
+
+debug = False
+
+
+def rgb(x):
+    return [float(x[0])/255, float(x[1])/255, float(x[2])/255]
+
+
+palette = {
+        "Avx2-Icc": rgb([67, 0, 167]),
+        "Avx2-Gcc": rgb([162, 255, 105]),
+        "Avx2-Pgi": rgb([255, 93, 171]),
+        "Avx2-Clang": rgb([51, 161, 0]),
+        "Altivec-Ibm": rgb([30, 0, 33]),
+        "Altivec-Gcc": rgb([255, 166, 69]),
+        "Altivec-Pgi": rgb([1, 92, 135]),
+        "Altivec-Clang": rgb([1, 92, 135]),
+        "Avx512-Gcc": rgb([150, 89, 0]),
+        "Avx512-Icc": rgb([99, 183, 80]),
+        "Avx512-Clang": rgb([121, 0, 7]),
+        "Avx512-Pgi": rgb([121, 0, 7]),
+        "Knl-Gcc": rgb([150, 89, 0]),
+        "Knl-Icc": rgb([99, 183, 80]),
+        "Knl-Clang": rgb([121, 0, 7]),
+        "Knl-Pgi": rgb([121, 0, 7]),
+
+        "Linear Dependence": rgb([218, 145, 51]),
+        "Induction Variable": rgb([89, 112, 216]),
+        "Global Data Flow": rgb([180, 179, 53]),
+        "Control Flow": rgb([164, 91, 207]),
+        "Symbolics": rgb([99, 183, 80]),
+        "Statement Reordering": rgb([202, 73, 160]),
+        "Loop Restructuring": rgb([78, 182, 152]),
+        "Node Splitting": rgb([215, 60, 102]),
+        "Expansion": rgb([85, 122, 52]),
+        "Crossing Thresholds": rgb([206, 139, 203]),
+        "Reductions": rgb([174, 159, 89]),
+        "Recurrences": rgb([121, 96, 164]),
+        "Searching": rgb([206, 77, 51]),
+        "Packing": rgb([94, 155, 213]),
+        "Loop Rerolling": rgb([146, 93, 39]),
+        "Equivalencing": rgb([224, 122, 139]),
+        "Indirect Addressing": rgb([220, 136, 102]),
+    }
 
 
 def radar_factory(num_vars, frame='circle'):
@@ -183,7 +228,7 @@ def plot_radar_chart(categories, values, labels, outputfile, title="",
     plt.savefig(outputfile, dpi=100, bbox_inches='tight', format='eps')
 
 
-def add_box(ax, name, values, labels, ymax, draw_mean=False):
+def add_box(ax, name, values, labels, ymin, ymax, draw_mean=False):
 
     if len(list(values)) != len(list(labels)):
         print("Error: Inconsisten number of values/labels")
@@ -203,16 +248,16 @@ def add_box(ax, name, values, labels, ymax, draw_mean=False):
         print("Error: value out of chart axis")
         exit(0)
 
-    ax.set_ylim(bottom=0, top=ymax)
+    ax.set_ylim(bottom=ymin, top=ymax)
     ax.tick_params(axis='x', which='both', bottom='off', top='off',
                    labelbottom='off')
     ax.set_xlabel(name.title().replace("_", "\n"), rotation=0,
                   fontsize='small')
 
 
-def plot_chart(charts, labels, values, outputfile, title="Auto-vectorization",
-               ylabel='Vector efficiency', connect=False, draw_mean=False,
-               size=(4, 4), ymax=8):
+def plot_vspectrum(charts, labels, values, outputfile,
+                   title="", ylabel="Vector efficiency", connect=False,
+                   draw_mean=False, size=(4, 4), ymin=0, ymax=8):
 
     if len(list(values)) != len(list(charts)):
         print("Error: Inconsistent number of charts/values")
@@ -239,7 +284,7 @@ def plot_chart(charts, labels, values, outputfile, title="Auto-vectorization",
         print("Warning: Reset the chart ymax to", ymax)
 
     for ax, c, v in zip(axis[:-1], list(charts), list(values)):
-        add_box(ax, c, v, labels, ymax,  draw_mean)
+        add_box(ax, c, v, labels, ymin, ymax,  draw_mean)
 
     for idx, (val, lab) in enumerate(sorted(zip(values[-1], labels))):
         v_loc = idx*(float(1)/len(labels))
