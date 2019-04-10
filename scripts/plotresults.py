@@ -434,8 +434,16 @@ def plot_max_info_architecture(data, output, architecture, title=""):
         ordered_values.append(newl)
 
     # Plot using bars (ordered)
-    # path = os.path.join(
-    #    os.path.join('plots', 'categories_maxinfo_bars'), output)
+    path = os.path.join(
+       os.path.join('plots', 'categories_maxinfo_bars'), output)
+    barslabels = []
+    flatlist = []
+    for idx1, label in enumerate(ordered_labels):
+        for idx2, compiler in enumerate(char):
+            barslabels.append(label+'-'+compiler)
+            flatlist.append(ordered_values[idx2][idx1])
+    plot_bars(barslabels, flatlist, None, None, None, path, title,
+              size=(12, 5), longversion=True)
 
 
 def plot_categories(data, comp, output, title=""):
@@ -680,7 +688,7 @@ def main():
         plt.close("all")
         # exit(0)
 
-    if False:
+    if True:
         print("\n- Compiler comparison")
         os.makedirs(os.path.join('plots', 'categories_maxinfo_radars'))
         os.makedirs(os.path.join('plots', 'categories_maxinfo_vspectrum'))
