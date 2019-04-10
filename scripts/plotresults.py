@@ -469,9 +469,9 @@ def plot_categories(data, comp, output, title=""):
     vals = [list(i) for i in zip(*vals)]
     labels = [x.title().replace("_", " ") for x in labels]
 
-    plot_chart(char, labels, vals, output, title=title,
-               ylabel="Vector Efficiency", connect=False,
-               draw_mean=True, size=(7, 4), ymax=8)
+    plot_vspectrum(char, labels, vals, output, title=title,
+                   ylabel="Vector Efficiency", connect=False,
+                   draw_mean=True, size=(7, 4), ymax=8)
 
 
 def print_summary(data):
@@ -654,7 +654,7 @@ def main():
         plt.close("all")
         # exit(0)
 
-    if True:
+    if False:
         print("\n- Compiler comparison")
         os.makedirs(os.path.join('plots', 'categories_maxinfo_radars'))
         os.makedirs(os.path.join('plots', 'categories_maxinfo_vspectrum'))
@@ -690,7 +690,7 @@ def main():
             title="AVX2 PGI Auto-vectorization")
         plot_categories(
             data, 'avx2-clang', os.path.join(path, 'avx2-clang.eps'),
-            title="AVX Clang Auto-vectorization")
+            title="AVX2 Clang Auto-vectorization")
         plot_categories(
             data, 'avx512-icc', os.path.join(path, 'avx512-icc.eps'),
             title="AVX512 ICC Auto-vectorization")
@@ -729,7 +729,12 @@ def main():
             data, 'altivec-clang', os.path.join(path, 'altivec-clang.eps'),
             title="Altivec Clang Auto-vectorization")
 
-    # TODO: also add ISA comparsion and architecture comparison
+    if True:
+        print("\n- MicroKernels")
+        os.makedirs(os.path.join('plots', 'microkernels'))
+        plot_kernel(
+            data, 'altivec-clang', os.path.join(path, 'altivec-clang.eps'),
+            title="Altivec Clang Auto-vectorization")
 
 
 if __name__ == "__main__":

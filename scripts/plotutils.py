@@ -254,11 +254,6 @@ def add_box(ax, name, values, labels, ymin, ymax, draw_mean=False):
     ax.set_xlabel(name.title().replace("_", "\n"), rotation=0,
                   fontsize='small')
 
-def plot_vspectrum(charts, labels, values, outputfile,
-                   title="", ylabel="Vector efficiency",
-                   size=(4, 4), ymin=0, ymax=8):
-    pass
-
 
 def plot_vspectrum(charts, labels, values, outputfile,
                    title="", ylabel="Vector efficiency", connect=False,
