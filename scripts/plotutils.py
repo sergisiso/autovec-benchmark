@@ -228,36 +228,35 @@ def plot_radar_chart(categories, values, labels, outputfile, title="",
     plt.savefig(outputfile, dpi=100, bbox_inches='tight', format='eps')
 
 
-def add_box(ax, name, values, labels, ymin, ymax, draw_mean=False):
-
-    if len(list(values)) != len(list(labels)):
-        print("Error: Inconsisten number of values/labels")
-        exit(-1)
-
-    for value, label in zip(values, labels):
-        if not np.isnan(value):
-            ax.axhline(value, 0, 1, color=palette[label], label=label)
-
-    if draw_mean:
-        mean = np.mean([v for v in values if not np.isnan(v)])
-        ax.axhline(mean, 0, 1, color='black', linestyle="--")
-        ax.text(0.5, mean+0.05, "Avg. = " + "{:.2f}".format(mean),
-                ha='center', va='bottom', fontsize=8)
-
-    if max(values) > ymax:
-        print("Error: value out of chart axis")
-        exit(0)
-
-    ax.set_ylim(bottom=ymin, top=ymax)
-    ax.tick_params(axis='x', which='both', bottom='off', top='off',
-                   labelbottom='off')
-    ax.set_xlabel(name.title().replace("_", "\n"), rotation=0,
-                  fontsize='small')
-
-
 def plot_vspectrum(charts, labels, values, outputfile,
                    title="", ylabel="Vector efficiency", connect=False,
                    draw_mean=False, size=(4, 4), ymin=0, ymax=8):
+
+    def add_box(ax, name, values, labels, ymin, ymax, draw_mean=False):
+
+        if len(list(values)) != len(list(labels)):
+            print("Error: Inconsisten number of values/labels")
+            exit(-1)
+
+        for value, label in zip(values, labels):
+            if not np.isnan(value):
+                ax.axhline(value, 0, 1, color=palette[label], label=label)
+
+        if draw_mean:
+            mean = np.mean([v for v in values if not np.isnan(v)])
+            ax.axhline(mean, 0, 1, color='black', linestyle="--")
+            ax.text(0.5, mean+0.05, "Avg. = " + "{:.2f}".format(mean),
+                    ha='center', va='bottom', fontsize=8)
+
+        if max(values) > ymax:
+            print("Error: value out of chart axis")
+            exit(0)
+
+        ax.set_ylim(bottom=ymin, top=ymax)
+        ax.tick_params(axis='x', which='both', bottom='off', top='off',
+                       labelbottom='off')
+        ax.set_xlabel(name.title().replace("_", "\n"), rotation=0,
+                      fontsize='small')
 
     if len(list(values)) != len(list(charts)):
         print("Error: Inconsistent number of charts/values")
@@ -338,3 +337,79 @@ def plot_vspectrum(charts, labels, values, outputfile,
     # fig.suptitle(title)
     fig.set_size_inches(size[0], size[1])
     plt.savefig(outputfile, dpi=100, bbox_inches='tight', format='eps')
+
+
+def plot_bars(labels, data1, data2, data3, data4, output, title):
+    from collections import Counter, OrderedDict
+
+    def add_line(ax, xpos, ypos):
+        line = plt.Line2D([xpos, xpos], [ypos + .1, ypos],
+                          transform=ax.transAxes, color='black')
+        line.set_clip_on(False)
+        ax.add_line(line)
+
+    plt.rc('font', size=12)
+    colorm = cmx.Set1.colors
+
+    N = len(labels)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0 + box.height * 0.05,
+                     box.width, box.height * 0.95])
+    xticks = np.arange(N) + 1
+    width = 0.2
+
+    bars1 = ax.bar(xticks - 1.5 * width, data1, width,
+                   color=colorm[0], edgecolor='black',
+                   hatch='//', align='center')
+    bars3 = ax.bar(xticks + 0.5 * width, data3, width,
+                   color=colorm[2],  edgecolor='black', hatch='',
+                   align='center')
+    bars2 = ax.bar(xticks - 0.5 * width, data2, width,
+                   color=colorm[1],  edgecolor='black', hatch='-',
+                   align='center')
+    bars4 = ax.bar(xticks + 1.5 * width, data4, width,
+                   color=colorm[3],  edgecolor='black', hatch='\\\\',
+                   align='center')
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([l.split('-')[1] for l in labels])
+    ax.set_xlim(0.5, N + 0.5)
+    ax.yaxis.grid(True)
+
+    # add some text for labels, title and axes ticks
+    ax.set_ylabel('Speed-Up')
+    # ax.set_yscale('log')
+    # ax.set_title(titlemap[test])
+    ax.xaxis.set_ticks_position('none')
+
+    scale = 1. / N
+    for pos in range(N + 1):
+        add_line(ax, pos * scale, -.1)
+    ypos = -0.2
+    pos = 0
+
+    class OrderedCounter(Counter, OrderedDict):
+        pass
+    oc = OrderedCounter([l.split('-')[0] for l in labels])
+
+    for arch, rpos in oc.items():
+        lxpos = (pos + .5 * rpos) * scale
+        ax.text(lxpos, ypos, arch, ha='center', transform=ax.transAxes)
+        add_line(ax, pos * scale, ypos)
+        pos += rpos
+
+    add_line(ax, pos * scale, ypos)
+
+    # ax.legend((bars1[0], bars2[0],bars3[0],bars4[0]), (
+    #    'Configuration C1: vectorization:disabled, information:withdrawn',
+    #    'Configuration C2: vectorization:enabled, information:withdrawn',
+    #    'Configuration C3: vectorization:disabled, information:supplied',
+    #    'Configuration C4: vectorization:enabled, information:supplied'),
+    #    loc='center', bbox_to_anchor=(0.5,0.5),fancybox=True,
+    #    shadow=True, ncol=2)
+    fig.set_size_inches(8, 5)
+    fig.tight_layout()
+    fig.subplots_adjust(bottom=0.2)
+    plt.savefig(output, format='eps')

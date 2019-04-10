@@ -474,6 +474,32 @@ def plot_categories(data, comp, output, title=""):
                    draw_mean=True, size=(7, 4), ymax=8)
 
 
+def plot_kernel(kerneldata, output, title="Empty"):
+
+    labels = []
+    sp_rt_novec = []
+    sp_rt_vec = []
+    sp_ct_novec = []
+    sp_ct_vec = []
+
+    for arch, archdict in kerneldata.items():
+        for compiler, compdict in archdict.items():
+            def compute_speedup(d, execution):
+                if d[execution] == 'Error':
+                    return 0.0
+                else:
+                    return d['RT NO-VEC']/d[execution]
+
+            labels.append(arch+'-'+compiler)
+            sp_rt_novec.append(compute_speedup(compdict, 'RT NO-VEC'))
+            sp_rt_vec.append(compute_speedup(compdict, 'RT VEC'))
+            sp_ct_novec.append(compute_speedup(compdict, 'CT NO-VEC'))
+            sp_ct_vec.append(compute_speedup(compdict, 'CT VEC'))
+
+    plot_bars(labels, sp_rt_novec, sp_rt_vec, sp_ct_novec, sp_ct_vec,
+              output, title)
+
+
 def print_summary(data):
     categories = all_categories
 
@@ -728,13 +754,32 @@ def main():
         plot_categories(
             data, 'altivec-clang', os.path.join(path, 'altivec-clang.eps'),
             title="Altivec Clang Auto-vectorization")
+        plt.close("all")
 
     if True:
         print("\n- MicroKernels")
         os.makedirs(os.path.join('plots', 'microkernels'))
-        plot_kernel(
-            data, 'altivec-clang', os.path.join(path, 'altivec-clang.eps'),
-            title="Altivec Clang Auto-vectorization")
+        path = os.path.join('plots', 'microkernels')
+        plot_kernel(microkernel_data['ao'], os.path.join(path, 'ao.eps'),
+                    title="Ambient Occlusion")
+        plot_kernel(microkernel_data['binomial'],
+                    os.path.join(path, 'binomial.eps'),
+                    title="Binomial Options")
+        plot_kernel(microkernel_data['black-scholes'],
+                    os.path.join(path, 'black-scholes.eps'),
+                    title="Black-Scholes Options")
+        plot_kernel(microkernel_data['convolution'],
+                    os.path.join(path, 'convolution.eps'),
+                    title="Convolution")
+        plot_kernel(microkernel_data['mandelbrot'],
+                    os.path.join(path, 'mandelbrot.eps'),
+                    title="Mandelbrot")
+        plot_kernel(microkernel_data['matrixmult'],
+                    os.path.join(path, 'matrixmult.eps'),
+                    title="Small Matrix Multiplications")
+        plot_kernel(microkernel_data['stencil'],
+                    os.path.join(path, 'stencil.eps'),
+                    title="Stencil Computation")
 
 
 if __name__ == "__main__":
