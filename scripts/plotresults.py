@@ -412,11 +412,11 @@ def plot_max_info_architecture(data, output, architecture, title=""):
                   "  Median=", round(statistics.median(values[idx]), 1))
 
     # Plot using Vector Spectrum charts
-    path = os.path.join(
-        os.path.join('plots', 'categories_maxinfo_vspectrum'), output)
-    plot_vspectrum(
-        char, labels, values, path, title=title, ylabel="Vector Efficiency",
-        connect=False, draw_mean=True, size=(5, 4))
+    # path = os.path.join(
+    #     os.path.join('plots', 'categories_maxinfo_vspectrum'), output)
+    # plot_vspectrum(
+    #    char, labels, values, path, title=title, ylabel="Vector Efficiency",
+    #    connect=False, draw_mean=True, size=(5, 4))
 
     # order with clang-avx2 increasing vector efficiencies.
     ordered_labels = [
@@ -658,7 +658,7 @@ def main():
     os.makedirs(os.path.join('plots', 'latex_table'))
     print_summary(data)
 
-    if False:
+    if True:
         print("\n- Ploting Summary VSpectrums..")
         os.makedirs(os.path.join('plots', 'extendedtsvc_summary'))
         path = os.path.join('plots', 'extendedtsvc_summary')
@@ -690,8 +690,8 @@ def main():
 
     if True:
         print("\n- Compiler comparison")
-        os.makedirs(os.path.join('plots', 'categories_maxinfo_radars'))
-        os.makedirs(os.path.join('plots', 'categories_maxinfo_vspectrum'))
+        # os.makedirs(os.path.join('plots', 'categories_maxinfo_radars'))
+        # os.makedirs(os.path.join('plots', 'categories_maxinfo_vspectrum'))
         os.makedirs(os.path.join('plots', 'categories_maxinfo_bars'))
         plot_max_info_architecture(
             data, 'compilers-avx2.eps', 'avx2',
@@ -707,9 +707,8 @@ def main():
             'Altivec Compiler comparison')
 
         plt.close("all")
-        exit(0)
 
-    if False:
+    if True:
         print("\n- Detailed VSpectrums")
         os.makedirs(os.path.join('plots', 'extendedtsvc_detailed'))
         path = os.path.join('plots', 'extendedtsvc_detailed')
@@ -768,8 +767,8 @@ def main():
         print("\n- MicroKernels")
         os.makedirs(os.path.join('plots', 'microkernels'))
         path = os.path.join('plots', 'microkernels')
-        plot_kernel(microkernel_data['ao'], os.path.join(path, 'ao.eps'),
-                    title="Ambient Occlusion")
+        # plot_kernel(microkernel_data['ao'], os.path.join(path, 'ao.eps'),
+        #             title="Ambient Occlusion")
         plot_kernel(microkernel_data['binomial'],
                     os.path.join(path, 'binomial.eps'),
                     title="Binomial Options")

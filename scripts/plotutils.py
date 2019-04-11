@@ -396,7 +396,10 @@ def plot_bars(labels, data1, data2, data3, data4, output, title,
     scale = 1. / N
     for pos in range(N + 1):
         add_line(ax, pos * scale, -.1)
-    ypos = -0.4
+
+    ypos = -0.2
+    if longversion:
+        ypos = -0.4
     pos = 0
 
     class OrderedCounter(Counter, OrderedDict):
@@ -405,8 +408,13 @@ def plot_bars(labels, data1, data2, data3, data4, output, title,
 
     for arch, rpos in oc.items():
         lxpos = (pos + .5 * rpos) * scale
-        ax.text(lxpos, ypos, arch, ha='center', transform=ax.transAxes,
-                rotation='vertical')
+
+        if longversion:
+            ax.text(lxpos, ypos, arch, ha='center', transform=ax.transAxes,
+                    rotation='vertical', fontsize='small')
+        else:
+            ax.text(lxpos, ypos, arch, ha='center', transform=ax.transAxes)
+
         add_line(ax, pos * scale, ypos)
         pos += rpos
 
