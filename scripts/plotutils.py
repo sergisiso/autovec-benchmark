@@ -1,6 +1,8 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
+from matplotlib.patches import Patch
 from matplotlib.path import Path
 from matplotlib.spines import Spine
 from matplotlib.lines import Line2D
@@ -16,23 +18,25 @@ def rgb(x):
     return [float(x[0])/255, float(x[1])/255, float(x[2])/255]
 
 
+colorscheme = cmx.tab20c.colors
+
 palette = {
-        "Avx2-Icc": rgb([67, 0, 167]),
-        "Avx2-Gcc": rgb([162, 255, 105]),
-        "Avx2-Pgi": rgb([255, 93, 171]),
-        "Avx2-Clang": rgb([51, 161, 0]),
-        "Altivec-Ibm": rgb([30, 0, 33]),
-        "Altivec-Gcc": rgb([255, 166, 69]),
-        "Altivec-Pgi": rgb([1, 92, 135]),
-        "Altivec-Clang": rgb([1, 92, 135]),
-        "Avx512-Gcc": rgb([150, 89, 0]),
-        "Avx512-Icc": rgb([99, 183, 80]),
-        "Avx512-Clang": rgb([121, 0, 7]),
-        "Avx512-Pgi": rgb([121, 0, 7]),
-        "Knl-Gcc": rgb([150, 89, 0]),
-        "Knl-Icc": rgb([99, 183, 80]),
-        "Knl-Clang": rgb([121, 0, 7]),
-        "Knl-Pgi": rgb([121, 0, 7]),
+        "Avx2-Icc": colorscheme[0],
+        "Avx2-Gcc": colorscheme[1],
+        "Avx2-Pgi": colorscheme[2],
+        "Avx2-Clang": colorscheme[3],
+        "Altivec-Ibm": colorscheme[4],
+        "Altivec-Gcc": colorscheme[5],
+        "Altivec-Pgi": colorscheme[6],
+        "Altivec-Clang": colorscheme[7],
+        "Avx512-Gcc": colorscheme[8],
+        "Avx512-Icc": colorscheme[9],
+        "Avx512-Clang": colorscheme[10],
+        "Avx512-Pgi": colorscheme[11],
+        "Knl-Gcc": cmx.tab20b.colors[12 + 4],
+        "Knl-Icc": cmx.tab20b.colors[13 + 4],
+        "Knl-Clang": cmx.tab20b.colors[14 + 4],
+        "Knl-Pgi": cmx.tab20b.colors[15 + 4],
 
         "Linear Dependence": rgb([218, 145, 51]),
         "Induction Variable": rgb([89, 112, 216]),
@@ -339,7 +343,7 @@ def plot_vspectrum(charts, labels, values, outputfile,
     plt.savefig(outputfile, dpi=100, bbox_inches='tight', format='eps')
 
 
-def plot_bars(labels, data1, data2, data3, data4, output, title,
+def plot_bars(labels, data1, data2, data3, data4, output, title, chars,
               size=(8, 5), longversion=False):
     from collections import Counter, OrderedDict
 
@@ -350,7 +354,30 @@ def plot_bars(labels, data1, data2, data3, data4, output, title,
         ax.add_line(line)
 
     plt.rc('font', size=12)
+
     colorm = cmx.Set1.colors
+    hatches = ('//', '', '-', '\\\\', '||')
+
+    la = ('Configuration C1: vectorization:disabled, information:withdrawn',
+          'Configuration C2: vectorization:enabled, information:withdrawn',
+          'Configuration C3: vectorization:disabled, information:supplied',
+          'Configuration C4: vectorization:enabled, information:supplied')
+    legendmap = None
+    if longversion:
+        legendmap = {
+            'gcc': (colorm[0], hatches[0], 'GNU Compiler'),
+            'clang': (colorm[1], hatches[1], 'LLVM Clang'),
+            'pgi': (colorm[2], hatches[2], 'PGI Compiler'),
+            'icc': (colorm[3], hatches[3], 'Intel Compiler'),
+            'ibm': (colorm[4], hatches[4], 'IBM XLC'),
+            }
+    else:
+        legendmap = {
+            'hidden_novec': (colorm[0], hatches[0], la[0]),
+            'hidden_vec': (colorm[1], hatches[1], la[1]),
+            'exposed_novec': (colorm[2], hatches[2], la[2]),
+            'exposed_vec': (colorm[3], hatches[3], la[3]),
+            }
 
     N = len(labels)
 
@@ -365,25 +392,24 @@ def plot_bars(labels, data1, data2, data3, data4, output, title,
 
     if data1 and data2 and data3 and data4:
         bars1 = ax.bar(xticks - 1.5 * width, data1, width,
-                       color=colorm[0], edgecolor='black',
-                       hatch='//', align='center')
-        bars3 = ax.bar(xticks + 0.5 * width, data3, width,
-                       color=colorm[2],  edgecolor='black', hatch='',
-                       align='center')
+                       color=legendmap[chars[0]][0], edgecolor='black',
+                       hatch=legendmap[chars[0]][1], align='center')
         bars2 = ax.bar(xticks - 0.5 * width, data2, width,
-                       color=colorm[1],  edgecolor='black', hatch='-',
-                       align='center')
+                       color=legendmap[chars[1]][0], edgecolor='black',
+                       hatch=legendmap[chars[1]][1], align='center')
+        bars3 = ax.bar(xticks + 0.5 * width, data3, width,
+                       color=legendmap[chars[2]][0], edgecolor='black',
+                       hatch=legendmap[chars[2]][1], align='center')
         bars4 = ax.bar(xticks + 1.5 * width, data4, width,
-                       color=colorm[3],  edgecolor='black', hatch='\\\\',
-                       align='center')
-    else:
-        bars1 = ax.bar(xticks - 0.5 * width, data1, width * 2,
-                       color=colorm[0], edgecolor='black',
-                       hatch='//', align='center')
+                       color=legendmap[chars[3]][0], edgecolor='black',
+                       hatch=legendmap[chars[3]][1], align='center')
 
     ax.set_xticks(xticks)
     plt.xticks(rotation='vertical')
-    ax.set_xticklabels([l.split('-')[1] for l in labels])
+    if longversion:
+        ax.set_xticklabels([l.replace(' ', '\n') for l in labels])
+    else:
+        ax.set_xticklabels([l.split('-')[1] for l in labels])
     ax.set_xlim(0.5, N + 0.5)
     ax.yaxis.grid(True)
 
@@ -406,31 +432,37 @@ def plot_bars(labels, data1, data2, data3, data4, output, title,
         pass
     oc = OrderedCounter([l.split('-')[0].replace(' ', '\n') for l in labels])
 
-    for arch, rpos in oc.items():
-        lxpos = (pos + .5 * rpos) * scale
-
-        if longversion:
-            ax.text(lxpos, ypos, arch, ha='center', transform=ax.transAxes,
-                    rotation='vertical', fontsize='small')
-        else:
+    if not longversion:
+        for arch, rpos in oc.items():
+            lxpos = (pos + .5 * rpos) * scale
             ax.text(lxpos, ypos, arch, ha='center', transform=ax.transAxes)
+            add_line(ax, pos * scale, ypos)
+            pos += rpos
 
         add_line(ax, pos * scale, ypos)
-        pos += rpos
 
-    add_line(ax, pos * scale, ypos)
+    figlegend = plt.figure()
+    clabs = []
+    patches = []
+    for color, hatch, label in legendmap.values():
+        patches.append(Patch(facecolor=color, hatch=hatch))
+        clabs.append(label)
 
-    # ax.legend((bars1[0], bars2[0],bars3[0],bars4[0]), (
-    #    'Configuration C1: vectorization:disabled, information:withdrawn',
-    #    'Configuration C2: vectorization:enabled, information:withdrawn',
-    #    'Configuration C3: vectorization:disabled, information:supplied',
-    #    'Configuration C4: vectorization:enabled, information:supplied'),
-    #    loc='center', bbox_to_anchor=(0.5,0.5),fancybox=True,
-    #    shadow=True, ncol=2)
-    fig.set_size_inches(size[0], size[1])
-    fig.tight_layout()
     if longversion:
-        fig.subplots_adjust(bottom=0.4)
+        fig.subplots_adjust(bottom=0.35)
+        figlegend.set_size_inches(9, 0.5)
+        figlegend.legend(patches, clabs, loc='center',
+                         bbox_to_anchor=(0.5, 0.5), fancybox=True,
+                         shadow=True, ncol=5)
     else:
         fig.subplots_adjust(bottom=0.2)
-    plt.savefig(output, format='eps')
+        figlegend.set_size_inches(12, 0.8)
+        figlegend.legend(patches, clabs, loc='center',
+                         bbox_to_anchor=(0.5, 0.5), fancybox=True,
+                         shadow=True, ncol=2)
+
+    fig.set_size_inches(size[0], size[1])
+    fig.tight_layout()
+    figlegend.savefig(os.path.join(os.path.dirname(output), 'legend.eps'),
+                      format='eps')
+    fig.savefig(output, format='eps')

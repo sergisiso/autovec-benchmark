@@ -437,13 +437,18 @@ def plot_max_info_architecture(data, output, architecture, title=""):
     path = os.path.join(
        os.path.join('plots', 'categories_maxinfo_bars'), output)
     barslabels = []
-    flatlist = []
-    for idx1, label in enumerate(ordered_labels):
-        for idx2, compiler in enumerate(char):
+    barvalues = []
+    barchars = []
+    for idx2, compiler in enumerate(char):
+        barcat = []
+        barchars.append(compiler)
+        for idx1, label in enumerate(ordered_labels):
             barslabels.append(label+'-'+compiler)
-            flatlist.append(ordered_values[idx2][idx1])
-    plot_bars(barslabels, flatlist, None, None, None, path, title,
-              size=(12, 5), longversion=True)
+            barcat.append(ordered_values[idx2][idx1])
+        barvalues.append(barcat)
+    plot_bars(ordered_labels, barvalues[0], barvalues[1], barvalues[2],
+              barvalues[3], path, title, barchars,
+              size=(12, 4), longversion=True)
 
 
 def plot_categories(data, comp, output, title=""):
@@ -505,7 +510,8 @@ def plot_kernel(kerneldata, output, title="Empty"):
             sp_ct_vec.append(compute_speedup(compdict, 'CT VEC'))
 
     plot_bars(labels, sp_rt_novec, sp_rt_vec, sp_ct_novec, sp_ct_vec,
-              output, title)
+              output, title, chars=('hidden_novec', 'hidden_vec',
+                                    'exposed_novec', 'exposed_vec'))
 
 
 def print_summary(data):
@@ -688,7 +694,7 @@ def main():
         plt.close("all")
         # exit(0)
 
-    if True:
+    if False:
         print("\n- Compiler comparison")
         # os.makedirs(os.path.join('plots', 'categories_maxinfo_radars'))
         # os.makedirs(os.path.join('plots', 'categories_maxinfo_vspectrum'))
@@ -708,7 +714,7 @@ def main():
 
         plt.close("all")
 
-    if True:
+    if False:
         print("\n- Detailed VSpectrums")
         os.makedirs(os.path.join('plots', 'extendedtsvc_detailed'))
         path = os.path.join('plots', 'extendedtsvc_detailed')
@@ -763,7 +769,7 @@ def main():
             title="Altivec Clang Auto-vectorization")
         plt.close("all")
 
-    if True:
+    if False:
         print("\n- MicroKernels")
         os.makedirs(os.path.join('plots', 'microkernels'))
         path = os.path.join('plots', 'microkernels')
