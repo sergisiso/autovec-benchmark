@@ -42,7 +42,9 @@ c_flags = {
         "opt": " -O3 -ffast-math",
         "unopt": " -O0 ",
         "report": " -fopt-info-optimized=",
-        "assem": " -S"
+        "assem": " -S",
+        "pgo-profile": " -fprofile-generate",
+        "pgo-use": " -fprofile-use="
     },
     "icc": {
         "call": "icc -std=c99 -g",
@@ -132,8 +134,13 @@ def main():
                         help="Specify output folder")
     parser.add_argument('--source', default="../src",
                         help="Specify tsvc source location")
+    parser.add_argument('--pgo-profile', action="store_true",
+                        help="Enable PGO Profiling flags")
+    parser.add_argument('--pgo-use', action="store_true",
+                        help="Use PGO information to improve compilation")
     parser.add_argument('--repeat', type=int, default=1,
-                        help="Specify tsvc source location")
+                        help="Repeat each benchmarks the specified number of"
+                             "times")
     args = parser.parse_args()
 
     # Select all combinations when no parameter has been selected
@@ -157,8 +164,7 @@ def main():
     # Create Output folder
     basedir = "results-"+str(args.results)
     if os.path.exists(basedir):
-        print("Error: ", basedir, "already exists!")
-        return -1
+        print("Warning: ", basedir, "already exists!")
     else:
         os.makedirs(basedir)
 
@@ -166,34 +172,56 @@ def main():
     for compiler in c_list:  # All selected compilers
         compiler_dir = os.path.join(basedir, args.isa + "-" + compiler)
         print("Creating ", compiler_dir, " folder")
-        os.makedirs(compiler_dir)
 
-        # Store platform information
-        cmd = "lscpu"
-        p = subprocess.Popen(cmd, cwd=compiler_dir,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE, shell=True)
-        platform_out, platform_err = p.communicate()
+        if os.path.exists(compiler_dir):
+            print("Warning: ", compiler_dir, "already exists!")
+        else:
+            os.makedirs(compiler_dir)
 
-        cmd = c_flags[compiler]['call'] + " --version"
-        p = subprocess.Popen(cmd, cwd=compiler_dir,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE, shell=True)
-        compiler_out, compiler_err = p.communicate()
+            # Store platform information
+            cmd = "lscpu"
+            p = subprocess.Popen(cmd, cwd=compiler_dir,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE, shell=True)
+            platform_out, platform_err = p.communicate()
 
-        with open(os.path.join(compiler_dir, 'info.txt'), 'w') as f:
-            f.write("Platform:\n" + platform_out.decode("utf-8") + "\n")
-            f.write("Compiler:\n" + compiler_out.decode("utf-8") + "\n")
+            cmd = c_flags[compiler]['call'] + " --version"
+            p = subprocess.Popen(cmd, cwd=compiler_dir,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE, shell=True)
+            compiler_out, compiler_err = p.communicate()
+
+            with open(os.path.join(compiler_dir, 'info.txt'), 'w') as f:
+                f.write("Platform:\n" + platform_out.decode("utf-8") + "\n")
+                f.write("Compiler:\n" + compiler_out.decode("utf-8") + "\n")
 
         for category in b_list:  # All selected benchmarks/categories
             category_dir = os.path.join(compiler_dir, category)
             print("Creating ", category_dir, " folder")
-            os.makedirs(category_dir)
+            if os.path.exists(category_dir):
+                print("Warning: ", category_dir, "already exists!")
+            else:
+                os.makedirs(category_dir)
 
             for info in p_list:  # All selected parameters
                 test_dir = os.path.join(category_dir, info)
+
+                pgoflags = ""
+                if args.pgo_profile:
+                    test_dir = test_dir+"-pgoprofile"
+                    pgoflags_vec = c_flags[compiler]['pgo-profile']
+                    pgoflags_novec = c_flags[compiler]['pgo-profile']
+                elif args.pgo_use:
+                    pgoflags_vec = c_flags[compiler]['pgo-use'] + "../" \
+                        + test_dir + "-pgoprofile/tscrtvec.gcda"
+                    pgoflags_novec = c_flags[compiler]['pgo-use'] + "../" \
+                        + test_dir + "-pgoprofile/tscrtnovec.gcda"
+                    test_dir = test_dir+"-pgouse"
+
                 info_flags = parameterflags[info]
                 print("Creating ", test_dir, " folder")
+                if os.path.exists(test_dir):
+                    print("Error: ", testdir, "already exists!")
                 os.makedirs(test_dir)
 
                 # Copy TSVC inside the new folder
@@ -205,26 +233,29 @@ def main():
                                 os.path.join(test_dir, "parameters.dat"))
 
                 print("Compiling TSVC ", category, info)
+                # Compile Dummy file
                 exec_comp(c_flags[compiler]['call']
                           + c_flags[compiler]['unopt']
                           + ' -c -o dummy.o dummy.c', test_dir)
 
+                # Compile Vector version
                 exec_comp(c_flags[compiler]['call']
                           + c_flags[compiler]['opt']
                           + c_flags[compiler]['vec']
                           + c_flags[compiler]['arch'][args.isa]
                           + c_flags[compiler]['report']+compiler+'_'
-                          + args.isa+'_vec.txt'
+                          + args.isa+'_vec.txt' + pgoflags_vec
                           + ' -c -o tscrtvec.o tsc_runtime.c'
                           + ' -D' + category + info_flags,
                           test_dir, 'compiler_vec.out')
 
+                # Compile Scalar version
                 exec_comp(c_flags[compiler]['call']
                           + c_flags[compiler]['opt']
                           + c_flags[compiler]['novec']
                           + c_flags[compiler]['arch'][args.isa]
                           + c_flags[compiler]['report']+compiler+'_'
-                          + args.isa+'_novec.txt'
+                          + args.isa+'_novec.txt' + pgoflags_novec
                           + ' -c -o tscrtnovec.o tsc_runtime.c'
                           + ' -D' + category + info_flags,
                           test_dir, 'compiler_novec.out')
@@ -236,7 +267,6 @@ def main():
                           + c_flags[compiler]['arch'][args.isa]
                           + ' -S -o tscrtvec.s tsc_runtime.c'
                           + ' -D' + category + info_flags, test_dir)
-
                 exec_comp(c_flags[compiler]['call']
                           + c_flags[compiler]['opt']
                           + c_flags[compiler]['novec']
@@ -244,12 +274,12 @@ def main():
                           + ' -S -o tscrtnovec.s tsc_runtime.c'
                           + ' -D' + category + info_flags, test_dir)
 
-                # Link  tsvc vector and scalar versions
+                # Link TSVC vector and scalar versions
                 exec_comp(c_flags[compiler]['call']
-                          + c_flags[compiler]['unopt']
+                          + c_flags[compiler]['unopt'] + pgoflags
                           + ' dummy.o tscrtvec.o -o runrtvec -lm', test_dir)
                 exec_comp(c_flags[compiler]['call']
-                          + c_flags[compiler]['unopt']
+                          + c_flags[compiler]['unopt'] + pgoflags
                           + ' dummy.o tscrtnovec.o -o runrtnovec -lm',
                           test_dir)
 
