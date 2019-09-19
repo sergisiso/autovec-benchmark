@@ -29,10 +29,10 @@ for c in "${compilers[@]}"; do
         ctnovec=$(./${t}.ct-novec | grep "$t serial" | awk '{print $3}')
 
         cd ..
-        echo "$t RT NO-VEC cycles = $rtnovec" >> output-$c-${isa}.txt
-        echo "$t RT VEC cycles = $rtvec" >> output-$c-${isa}.txt
-        echo "$t CT NO-VEC cycles = $ctnovec" >> output-$c-${isa}.txt
-        echo "$t CT VEC cycles = $ctvec"  >> output-$c-${isa}.txt
+        echo "$t RT NO-VEC = $rtnovec" >> output-$c-${isa}.txt
+        echo "$t RT VEC = $rtvec" >> output-$c-${isa}.txt
+        echo "$t CT NO-VEC = $ctnovec" >> output-$c-${isa}.txt
+        echo "$t CT VEC = $ctvec"  >> output-$c-${isa}.txt
     done
 done
 

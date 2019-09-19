@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from plotutils import *
 
-debug = False
+debug = True
 
 remove_tests = ['S2712']
 remove_categories = []  # ['REDUCTIONS','CONTROL_FLOW','SEARCHING']
@@ -195,11 +195,15 @@ def load_data(data, compiler, category, parameters, parameters_path):
             # Get the minimum in order to minimize system noise.
             vec_time = min(vectimes)
             novec_time = min(novectimes)
-            # vecstd = statistics.stdev(vectimes)
-            # novecstd = statistics.stdev(novectimes)
+            vecvarcoef = statistics.stdev(vectimes) / statistics.mean(vectimes)
+            novecvarcoef = statistics.stdev(novectimes) / statistics.mean(novectimes)
+            if debug:
+                if vecvarcoef > 0.1 or novecvarcoef > 0.1:
+                    print("Info: ", test, compiler, category, parameters,
+                          "stdev: ", vecstd, novecstd)
 
             # Check that time is big enough to be significant
-            if float(novec_time) < 0.1 or float(vec_time) < 0.1:
+            if debug and (float(novec_time) < 0.1 or float(vec_time) < 0.1):
                 print("Warning: Time too small ",
                       str([novec_time, vec_time]), test, compiler,
                       category, parameters)
@@ -323,6 +327,9 @@ def plot_parameter(data, parameter, output, title=""):
             category_exposed = []
             category_hidden = []
 
+            if debug:
+                print("* ", compiler, " - ", category)
+
             for test, value in data[compiler][category]['None'].items():
                 value_exposed = value[2]
                 try:
@@ -333,7 +340,7 @@ def plot_parameter(data, parameter, output, title=""):
                     exit(0)
                 value_hidden = rt[2]
 
-                if debug and (value_hidden > value_exposed + 0.1):
+                if debug and (value_hidden > value_exposed + 2):
                     print("Warrning: Test " + str(test) +
                           " has better veff with RT")
                     print("CT: vec " + str(value[0]) + " novec " +
@@ -664,7 +671,7 @@ def main():
     os.makedirs(os.path.join('plots', 'latex_table'))
     print_summary(data)
 
-    if True:
+    if False:
         print("\n- Ploting Summary VSpectrums..")
         os.makedirs(os.path.join('plots', 'extendedtsvc_summary'))
         path = os.path.join('plots', 'extendedtsvc_summary')
@@ -678,10 +685,10 @@ def main():
             data, 'RUNTIME_CONDITIONS',
             os.path.join(path, 'conditional_parameters.eps'),
             'Conditional Parameters')
-        # plot_parameter(
-        #     data, 'RUNTIME_ARITHMETIC',
-        #     os.path.join(path, 'arithmetic_parameters.eps'),
-        #     'Arithmetic Parameters')
+        plot_parameter(
+             data, 'RUNTIME_ARITHMETIC',
+             os.path.join(path, 'arithmetic_parameters.eps'),
+             'Arithmetic Parameters')
         plot_parameter(
             data, 'RUNTIME_ATTRIBUTES',
             os.path.join(path, 'variable_attributes.eps'),

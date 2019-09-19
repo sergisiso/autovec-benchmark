@@ -10,6 +10,7 @@ import matplotlib.cm as cmx
 import matplotlib.colors as colors
 from matplotlib.projections.polar import PolarAxes
 from matplotlib.projections import register_projection
+from matplotlib.ticker import *
 
 debug = False
 
@@ -414,8 +415,15 @@ def plot_bars(labels, data1, data2, data3, data4, output, title, chars,
     ax.yaxis.grid(True)
 
     # add some text for labels, title and axes ticks
-    ax.set_ylabel('Speed-Up')
-    # ax.set_yscale('log')
+    #ax.set_ylabel('Speed-Up against C1 (log scale)')
+    ax.set_ylabel('Vector Efficiency GeoMean')
+    #ax.set_yscale('log', basey=2)
+    #yint = range(min(y), math.ceil(max(y))+1)
+    #ax.yaxis.set_yticks(yint)
+    ax.yaxis.set_minor_formatter(ScalarFormatter())
+    #ax.yaxis.set_major_formatter(ScalarFormatter())
+    #ax.get_yaxis().get_major_formatter().set_useOffset(False)
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     # ax.set_title(titlemap[test])
     ax.xaxis.set_ticks_position('none')
 

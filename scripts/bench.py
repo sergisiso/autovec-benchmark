@@ -69,7 +69,9 @@ c_flags = {
         "opt": " -O3 -ffast-math ",
         "unopt": " -O0 ",
         "report": " -fsave-optimization-record -foptimization-record-file=",
-        "assem": " -S"
+        "assem": " -S",
+        "pgo-profile": " -fprofile-instr-generate",
+        "pgo-use": " -fprofile-instr-use="
     },
     "pgi": {
         "call": " pgcc",
@@ -276,23 +278,37 @@ def main():
 
                 # Link TSVC vector and scalar versions
                 exec_comp(c_flags[compiler]['call']
-                          + c_flags[compiler]['unopt'] + pgoflags
+                          + c_flags[compiler]['unopt'] + pgoflags_vec
                           + ' dummy.o tscrtvec.o -o runrtvec -lm', test_dir)
                 exec_comp(c_flags[compiler]['call']
-                          + c_flags[compiler]['unopt'] + pgoflags
+                          + c_flags[compiler]['unopt'] + pgoflags_novec
                           + ' dummy.o tscrtnovec.o -o runrtnovec -lm',
                           test_dir)
 
                 # Run commands
+                prefixvec = ""
+                prefixnovec = ""
+                postfixvec = ""
+                postfixnovec = ""
+                if compiler == 'clang' and args.pgo_profile:
+                    prefixvec = "LLVM_PROFILE_FILE=\"runrtvec.profraw\" "
+                    prefixnovec = "LLVM_PROFILE_FILE=\"runrtnovec.profraw\" "
+                    postfixvec = " && llvm-profdata merge -output=runrtvec."\
+                                 "profdata runrtvec.profraw"
+                    postfixnovec = " && llvm-profdata merge -output="\
+                                   "runrtnovec.profdata runrtnovec.profraw"
+
                 for i in range(args.repeat):
                     run_cmd(scriptdir=compiler_dir,
                             scriptname=args.isa+'-'+compiler+'_'+category,
                             testdir="/".join(test_dir.split('/')[2:]),
-                            cmd='./runrtvec > runrtvec'+str(i)+'.txt')
+                            cmd=prefixvec + './runrtvec > runrtvec' +
+                            str(i)+'.txt' + postfixvec)
                     run_cmd(scriptdir=compiler_dir,
                             scriptname=args.isa+'-'+compiler+'_'+category,
                             testdir="/".join(test_dir.split('/')[2:]),
-                            cmd='./runrtnovec > runrtnovec'+str(i)+'.txt')
+                            cmd=prefixnovec + './runrtnovec > runrtnovec' +
+                            str(i)+'.txt' + postfixnovec)
 
 
 def exec_comp(cmd, test_dir, save=None):
