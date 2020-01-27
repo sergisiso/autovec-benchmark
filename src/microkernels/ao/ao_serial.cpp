@@ -1,5 +1,8 @@
-// -*- mode: c++ -*-
-/*
+/*  Copyright (c) 2019, Sergi siso 
+
+  This file incorporates work covered by the following copyright and  
+  permission notice: 
+
   Copyright (c) 2010-2011, Intel Corporation
   All rights reserved.
 
@@ -32,6 +35,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 */
 /*
+  Extended from: https://github.com/ispc/ispc/tree/master/examples
   Based on Syoyo Fujita's aobench: http://code.google.com/p/aobench
 */
 
