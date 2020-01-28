@@ -126,7 +126,8 @@ def main():
     parser.add_argument('--compiler', nargs='+', choices=c_flags.keys(),
                         help="Select compiler", required=True)
     parser.add_argument('--parameters', nargs='+',
-                        choices=parameterflags.keys(), help="Select compiler",
+                        choices=parameterflags.keys(),
+                        help="Select the parameters provided at run-time",
                         default="ALL")
     parser.add_argument('--isa', required=True,
                         help="Specify vector isa to test", choices=isas)
