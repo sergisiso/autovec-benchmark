@@ -64,10 +64,14 @@ the following parameters:
 4. Generate analysis plots and tables using `scripts/plotresults.py`.
 
 
-## Results
+## Results Summary
 
+![Results](results-2019/extendedtsvc_summary/all.png)
 
-## References
-- http://polaris.cs.uiuc.edu/~maleki1/TSVC.tar.gz
+## Contributors 
+Sergi Siso (sergi.siso@stfc.ac.uk)
+Jeyan Thiyagalingam (t.jeyan@stfc.ac.uk)
+
+This project incorporates and extends work (see [license.txt](license.txt)) from:
 - https://github.com/llvm-mirror/test-suite/blob/master/MultiSource/Benchmarks/TSVC
-- https://ispc.github.io/
+- https://github.com/ispc/ispc/master/examples
