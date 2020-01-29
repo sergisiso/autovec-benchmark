@@ -1,8 +1,8 @@
-# Auto-vectorization Benchmark through withdrawal of useful information
+# Auto-vectorization test suite with withdrawal of useful compile-time information
 
 This Test-Suite evaluates the auto-vectorization capabilities of compilers for
 different amounts of compile-time provided information. It contrasts with
-traditional test-suites that only provide implementation-specific source to
+traditional test-suites that only provide an implementation-specific source to
 the compiler. To achieve this we have extended the TSVC benchmark and 6
 micro-kernels (Binomial options, Black-Scholes, MandelBrot, Convolutions,
 Small matrix-matrix multiplication and Stencil computation) with preprocessor
@@ -29,8 +29,8 @@ Path                | Description
 src/                | Source files of the test suite which inclues the extended TSVC and the micro-kernels.
 scripts/            | Scripts to help with the execution of the full suite and the analysis of the results.
 results-2019/       | Results associated with the published paper.
-license.txt         | Copyright and permission notices
-README              | This file
+license.txt         | Copyright and permission notices.
+README              | This file.
 
 It is possible to compile and run the tests with the `Makefiles` in the `src/`
 directory but to facilitate a methodic execution of all tests we recommend to
@@ -49,14 +49,14 @@ the following parameters:
                         LOOP_REROLLING, EQUIVALENCING, INDIRECT_ADDRESSING,
                         CONTROL_LOOPS
   --compiler {icc,gcc,ibm,clang,pgi}
-                        Select compiler
+                        Select the compiler
   --parameters {None,RUNTIME_ALL,RUNTIME_ATTRIBUTES,RUNTIME_ARITHMETIC,RUNTIME_INDEX,RUNTIME_CONDITIONS,RUNTIME_LOOP_BOUNDS}
                         Select the parameters provided at run-time
   --isa {knl,avx2,altivec,avx512}
-                        Specify vector isa to test
-  --results RESULTS     Specify output folder
-  --source SOURCE       Specify benchmark source location
-  --repeat REPEAT       Repeat each benchmarks the specified number oftimes
+                        Specify the vector isa to test
+  --results RESULTS     Specify the output folder
+  --source SOURCE       Specify the benchmark source location
+  --repeat REPEAT       Repeat each benchmark a specified number of times
 ```
 
 2. Execute the generated `runall.sh` bash script (or submit it to the target cluster).
@@ -73,10 +73,14 @@ hidden at compile-time. The benchmark (and the associated paper) provide a more
 detailed examination of the performance of each test category and the effect of
 withdrawing from the compiler each of the information classes individually.
 
-![Results](results-2019/extendedtsvc_summary/all.png | width=450)
+<p align="center">
+<img src="results-2019/extendedtsvc_summary/all.png" width="60%">
+</p>
 
 ## Contributors 
+
 Sergi Siso (sergi.siso@stfc.ac.uk)
+
 Jeyan Thiyagalingam (t.jeyan@stfc.ac.uk)
 
 This project incorporates and extends work (see [license.txt](license.txt)) from:
