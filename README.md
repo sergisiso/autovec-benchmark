@@ -34,7 +34,7 @@ README              | This file
 
 It is possible to compile and run the tests with the `Makefiles` in the `src/`
 directory but to facilitate a methodic execution of all tests we recommend to
-follow the steps:
+follow the steps below:
 
 1. Generate the TSVC Benchmarks with `scripts/bench.py`. The generation accepts
 the following parameters:
@@ -66,7 +66,14 @@ the following parameters:
 
 ## Results Summary
 
-![Results](results-2019/extendedtsvc_summary/all.png)
+The figure below presents a summary of the Vector Efficiency of a series of
+compiler-architecture pairs. This figure only shows the aggregated geomean of all
+tested categories when all the information classes are exposed or
+hidden at compile-time. The benchmark (and the associated paper) provide a more
+detailed examination of the performance of each test category and the effect of
+withdrawing from the compiler each of the information classes individually.
+
+![Results](results-2019/extendedtsvc_summary/all.png | width=450)
 
 ## Contributors 
 Sergi Siso (sergi.siso@stfc.ac.uk)
