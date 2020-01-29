@@ -1,4 +1,32 @@
 #!/usr/bin/env python
+
+# Copyright (c) 2019 Sergi Siso
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#   1. Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimer.
+#   2. Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimer in the
+#   documentation and/or other materials provided with the distribution.
+#   3. Neither the name of the copyright holder nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this software without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+# GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+# OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
 import argparse
 import os
 import sys
@@ -208,6 +236,8 @@ def main():
                 test_dir = os.path.join(category_dir, info)
 
                 pgoflags = ""
+                pgoflags_vec = ""
+                pgoflags_novec = ""
                 if args.pgo_profile:
                     test_dir = test_dir+"-pgoprofile"
                     pgoflags_vec = c_flags[compiler]['pgo-profile']
@@ -222,7 +252,7 @@ def main():
                 info_flags = parameterflags[info]
                 print("Creating ", test_dir, " folder")
                 if os.path.exists(test_dir):
-                    print("Error: ", testdir, "already exists!")
+                    print("Error: ", test_dir, "already exists!")
                 os.makedirs(test_dir)
 
                 # Copy TSVC inside the new folder
@@ -304,8 +334,8 @@ def exec_comp(cmd, test_dir, save=None):
     errcode = p.returncode
     if save:
         with open(os.path.join(test_dir, save), 'w') as f:
-            f.write("Output: " + out.decode("utf-8"))
-            f.write("Error: " + err.decode("utf-8"))
+            f.write("Output: " + out)
+            f.write("Error: " + err)
 
 
 def run_cmd(scriptdir, scriptname, testdir, cmd):
