@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Copyright (c) 2019 Sergi Siso
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
@@ -13,7 +13,7 @@
 #   3. Neither the name of the copyright holder nor the names of its
 #   contributors may be used to endorse or promote products derived from
 #   this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,18 +25,16 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
+""" This application prepares the TSVC benchmark with the selected
+parameters. """
 
 import argparse
 import os
-import sys
 import shutil
 import subprocess
-import re
-from datetime import datetime
 
 # TSVC Categories
-benchmarks = [
+BENCHMARKS = [
     "LINEAR_DEPENDENCE",
     "INDUCTION_VARIABLE",
     "GLOBAL_DATA_FLOW",
@@ -58,13 +56,13 @@ benchmarks = [
 ]
 
 # Compiler Flags
-c_flags = {
+C_FLAGS = {
     "gcc": {
         "call": "gcc",
-        "arch": {"avx2": " -march=skylake ",
-                 "avx512": " -march=skylake-avx512 -mprefer-vector-width=512",
-                 "knl": " -march=knl ",
-                 "altivec": " -mcpu=power8 "},
+        "arch": {"avx2": " -mtune=native ",
+                 "avx512": " -mtune=skylake-avx512 -mprefer-vector-width=512",
+                 "knl": " -mtune=knl ",
+                 "altivec": " -mtune=power8 "},
         "vec": " ",
         "novec": " -fno-tree-vectorize ",
         "opt": " -O3 -ffast-math",
@@ -125,7 +123,7 @@ c_flags = {
 }
 
 # Information classes flags
-parameterflags = {
+PARAMETER_FLAGS = {
     "None": " ",
     "RUNTIME_ALL": " -DRUNTIME_LOOP_BOUNDS_PARAMETERS"
                    " -DRUNTIME_ARITHMETIC_PARAMETERS"
@@ -140,25 +138,28 @@ parameterflags = {
 }
 
 # Vector ISAs
-isas = {"avx2", "avx512", "knl", "altivec"}
+ISAS = {"avx2", "avx512", "knl", "altivec"}
 
 
 def main():
-    # Use argparse to select the appropiate benchmark set
+    """ Benchmark application entry point """
+    # pylint: disable=too-many-statements, too-many-branches, too-many-locals
+
+    # Use argparse to select the appropriate benchmark set
     parser = argparse.ArgumentParser(
         description='Execute Compiler Autovectorization Benchmarks.')
-    parser.add_argument('--benchmark', nargs='+', choices=benchmarks,
+    parser.add_argument('--benchmark', nargs='+', choices=BENCHMARKS,
                         default="ALL", help="Space separated list of case "
                         "sensitive benchmark names. Allowed values are " +
-                        ", ".join(benchmarks), metavar='')
-    parser.add_argument('--compiler', nargs='+', choices=c_flags.keys(),
+                        ", ".join(BENCHMARKS), metavar='')
+    parser.add_argument('--compiler', nargs='+', choices=C_FLAGS.keys(),
                         help="Select compiler", required=True)
     parser.add_argument('--parameters', nargs='+',
-                        choices=parameterflags.keys(),
+                        choices=PARAMETER_FLAGS.keys(),
                         help="Select the parameters provided at run-time",
                         default="ALL")
     parser.add_argument('--isa', required=True,
-                        help="Specify vector isa to test", choices=isas)
+                        help="Specify vector isa to test", choices=ISAS)
     parser.add_argument('--results', required=True,
                         help="Specify output folder")
     parser.add_argument('--source', default="../src",
@@ -167,6 +168,8 @@ def main():
                         help="Enable PGO Profiling flags")
     parser.add_argument('--pgo-use', action="store_true",
                         help="Use PGO information to improve compilation")
+    parser.add_argument('--run-locally', action="store_true",
+                        help="Run each benchmark locally after they are generated")
     parser.add_argument('--repeat', type=int, default=1,
                         help="Repeat each benchmarks the specified number of"
                              "times")
@@ -174,17 +177,17 @@ def main():
 
     # Select all combinations when no parameter has been selected
     if args.benchmark == "ALL":
-        b_list = benchmarks
+        b_list = BENCHMARKS
     else:
         b_list = args.benchmark
 
     if args.compiler == "ALL":
-        c_list = c_flags.keys()
+        c_list = C_FLAGS.keys()
     else:
         c_list = args.compiler
 
     if args.parameters == "ALL":
-        p_list = parameterflags.keys()
+        p_list = PARAMETER_FLAGS.keys()
     else:
         p_list = args.parameters
 
@@ -209,20 +212,21 @@ def main():
 
             # Store platform information
             cmd = "lscpu"
-            p = subprocess.Popen(cmd, cwd=compiler_dir,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, shell=True)
-            platform_out, platform_err = p.communicate()
+            process = subprocess.Popen(cmd, cwd=compiler_dir,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE, shell=True)
+            platform_out, _ = process.communicate()
 
-            cmd = c_flags[compiler]['call'] + " --version"
-            p = subprocess.Popen(cmd, cwd=compiler_dir,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, shell=True)
-            compiler_out, compiler_err = p.communicate()
+            cmd = C_FLAGS[compiler]['call'] + " --version"
+            process = subprocess.Popen(cmd, cwd=compiler_dir,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE, shell=True)
+            compiler_out, compiler_err = process.communicate()
 
-            with open(os.path.join(compiler_dir, 'info.txt'), 'w') as f:
-                f.write("Platform:\n" + platform_out.decode("utf-8") + "\n")
-                f.write("Compiler:\n" + compiler_out.decode("utf-8") + "\n")
+            with open(os.path.join(compiler_dir, 'info.txt'), 'w') as fout:
+                fout.write("Platform:\n" + platform_out.decode("utf-8") + "\n")
+                fout.write("Compiler:\n" + compiler_out.decode("utf-8") + "\n")
+                fout.write("Compiler:\n" + compiler_err.decode("utf-8") + "\n")
 
         for category in b_list:  # All selected benchmarks/categories
             category_dir = os.path.join(compiler_dir, category)
@@ -239,20 +243,21 @@ def main():
                 pgoflags_vec = ""
                 pgoflags_novec = ""
                 if args.pgo_profile:
-                    test_dir = test_dir+"-pgoprofile"
-                    pgoflags_vec = c_flags[compiler]['pgo-profile']
-                    pgoflags_novec = c_flags[compiler]['pgo-profile']
+                    test_dir = test_dir + "-pgoprofile"
+                    pgoflags_vec = C_FLAGS[compiler]['pgo-profile']
+                    pgoflags_novec = C_FLAGS[compiler]['pgo-profile']
                 elif args.pgo_use:
-                    pgoflags_vec = c_flags[compiler]['pgo-use'] + "../" \
+                    pgoflags_vec = C_FLAGS[compiler]['pgo-use'] + "../" \
                         + test_dir + "-pgoprofile/tscrtvec.gcda"
-                    pgoflags_novec = c_flags[compiler]['pgo-use'] + "../" \
+                    pgoflags_novec = C_FLAGS[compiler]['pgo-use'] + "../" \
                         + test_dir + "-pgoprofile/tscrtnovec.gcda"
                     test_dir = test_dir+"-pgouse"
 
-                info_flags = parameterflags[info]
+                info_flags = PARAMETER_FLAGS[info]
                 print("Creating ", test_dir, " folder")
                 if os.path.exists(test_dir):
-                    print("Error: ", test_dir, "already exists!")
+                    print("Error: ", test_dir, "already exists! Skipping!")
+                    break
                 os.makedirs(test_dir)
 
                 # Copy TSVC inside the new folder
@@ -265,92 +270,101 @@ def main():
 
                 print("Compiling TSVC ", category, info)
                 # Compile Dummy file
-                exec_comp(c_flags[compiler]['call']
-                          + c_flags[compiler]['unopt']
+                exec_comp(C_FLAGS[compiler]['call']
+                          + C_FLAGS[compiler]['unopt']
                           + ' -c -o dummy.o dummy.c', test_dir)
 
                 # Compile Vector version
-                exec_comp(c_flags[compiler]['call']
-                          + c_flags[compiler]['opt']
-                          + c_flags[compiler]['vec']
-                          + c_flags[compiler]['arch'][args.isa]
-                          + c_flags[compiler]['report']+compiler+'_'
+                exec_comp(C_FLAGS[compiler]['call']
+                          + C_FLAGS[compiler]['opt']
+                          + C_FLAGS[compiler]['vec']
+                          + C_FLAGS[compiler]['arch'][args.isa]
+                          + C_FLAGS[compiler]['report']+compiler+'_'
                           + args.isa+'_vec.txt' + pgoflags_vec
                           + ' -c -o tscrtvec.o tsc_runtime.c'
                           + ' -D' + category + info_flags,
                           test_dir, 'compiler_vec.out')
 
                 # Compile Scalar version
-                exec_comp(c_flags[compiler]['call']
-                          + c_flags[compiler]['opt']
-                          + c_flags[compiler]['novec']
-                          + c_flags[compiler]['arch'][args.isa]
-                          + c_flags[compiler]['report']+compiler+'_'
+                exec_comp(C_FLAGS[compiler]['call']
+                          + C_FLAGS[compiler]['opt']
+                          + C_FLAGS[compiler]['novec']
+                          + C_FLAGS[compiler]['arch'][args.isa]
+                          + C_FLAGS[compiler]['report']+compiler+'_'
                           + args.isa+'_novec.txt' + pgoflags_novec
                           + ' -c -o tscrtnovec.o tsc_runtime.c'
                           + ' -D' + category + info_flags,
                           test_dir, 'compiler_novec.out')
 
                 # Generate assembly files
-                exec_comp(c_flags[compiler]['call']
-                          + c_flags[compiler]['opt']
-                          + c_flags[compiler]['vec']
-                          + c_flags[compiler]['arch'][args.isa]
+                exec_comp(C_FLAGS[compiler]['call']
+                          + C_FLAGS[compiler]['opt']
+                          + C_FLAGS[compiler]['vec']
+                          + C_FLAGS[compiler]['arch'][args.isa]
                           + ' -S -o tscrtvec.s tsc_runtime.c'
                           + ' -D' + category + info_flags, test_dir)
-                exec_comp(c_flags[compiler]['call']
-                          + c_flags[compiler]['opt']
-                          + c_flags[compiler]['novec']
-                          + c_flags[compiler]['arch'][args.isa]
+                exec_comp(C_FLAGS[compiler]['call']
+                          + C_FLAGS[compiler]['opt']
+                          + C_FLAGS[compiler]['novec']
+                          + C_FLAGS[compiler]['arch'][args.isa]
                           + ' -S -o tscrtnovec.s tsc_runtime.c'
                           + ' -D' + category + info_flags, test_dir)
 
                 # Link TSVC vector and scalar versions
-                exec_comp(c_flags[compiler]['call']
-                          + c_flags[compiler]['unopt'] + pgoflags
+                exec_comp(C_FLAGS[compiler]['call']
+                          + C_FLAGS[compiler]['unopt'] + pgoflags
                           + ' dummy.o tscrtvec.o -o runrtvec -lm', test_dir)
-                exec_comp(c_flags[compiler]['call']
-                          + c_flags[compiler]['unopt'] + pgoflags
+                exec_comp(C_FLAGS[compiler]['call']
+                          + C_FLAGS[compiler]['unopt'] + pgoflags
                           + ' dummy.o tscrtnovec.o -o runrtnovec -lm',
                           test_dir)
 
                 # Run commands
                 for i in range(args.repeat):
-                    run_cmd(scriptdir=compiler_dir,
-                            scriptname=args.isa+'-'+compiler+'_'+category,
-                            testdir="/".join(test_dir.split('/')[2:]),
-                            cmd='./runrtvec > runrtvec'+str(i)+'.txt')
-                    run_cmd(scriptdir=compiler_dir,
-                            scriptname=args.isa+'-'+compiler+'_'+category,
-                            testdir="/".join(test_dir.split('/')[2:]),
-                            cmd='./runrtnovec > runrtnovec'+str(i)+'.txt')
+                    if args.run_locally:
+                        scriptname = None
+                    else:
+                        scriptname = 'runall_'+args.isa+'-'+compiler+ \
+                            '_'+category+'.sh'
+                    run_cmd(testdir="/".join(test_dir.split('/')[2:]),
+                            cmd='./runrtvec > runrtvec'+str(i)+'.txt',
+                            scriptdir=compiler_dir, scriptfname=scriptname)
+                    run_cmd(testdir="/".join(test_dir.split('/')[2:]),
+                            cmd='./runrtnovec > runrtnovec'+str(i)+'.txt',
+                            scriptdir=compiler_dir, scriptfname=scriptname)
 
 
-def exec_comp(cmd, test_dir, save=None):
+def exec_comp(cmd, test_dir, save_file=None):
+    """ Execute Compiler command """
     print("Compiling: ", cmd)
-    p = subprocess.Popen(cmd, cwd=test_dir, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, shell=True)
-    out, err = p.communicate()
-    errcode = p.returncode
-    if save:
-        with open(os.path.join(test_dir, save), 'w') as f:
-            f.write("Output: " + out)
-            f.write("Error: " + err)
+    process = subprocess.Popen(cmd, cwd=test_dir, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE, shell=True)
+    out, err = process.communicate()
+    errcode = process.returncode
+    if save_file:
+        with open(os.path.join(test_dir, save_file), 'w') as fout:
+            fout.write("Output: " + str(out))
+            fout.write("Return code: " + str(errcode))
+            fout.write("Error: " + str(err))
 
 
-def run_cmd(scriptdir, scriptname, testdir, cmd):
-    if True:  # Create a bash script with the list of benchmarks
-        fname = os.path.join(scriptdir, 'runall_'+scriptname+'.sh')
-        with open(fname, 'a') as f:
-            f.write('cd '+testdir+'; '+cmd+'; cd -;\n')
-    elif False:  # Run the benchmarks locally
+def run_cmd(testdir, cmd, scriptdir, scriptfname=None):
+    """ Run benchmark locally or append run command in a script to be
+    executed later. """
+    if scriptfname:  # Create a bash script with the list of benchmarks
+        scriptfile = os.path.join(scriptdir, scriptfname)
+        with open(scriptfile, 'a') as fout:
+            fout.write('cd '+testdir+'; '+cmd+'; cd -;\n')
+    else:  # Run the benchmarks locally
         print("Executing: ", cmd)
-        p = subprocess.Popen(cmd, cwd=test_dir, stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE, shell=True)
-        out, err = p.communicate()
-        errcode = p.returncode
-        print(out)
-        print(err)
+        run_dir = os.path.join(scriptdir, testdir)
+        process = subprocess.Popen(cmd, cwd=run_dir, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE, shell=True)
+        out, err = process.communicate()
+        errcode = process.returncode
+        print("Output: " + str(out))
+        print("Return code: " + str(errcode))
+        print("Error: " + str(err))
 
 
 if __name__ == "__main__":
