@@ -30,6 +30,7 @@ parameters. """
 
 import argparse
 import os
+import sys
 import shutil
 import subprocess
 
@@ -170,6 +171,11 @@ def main():
                         help="Use PGO information to improve compilation")
     parser.add_argument('--run-locally', action="store_true",
                         help="Run each benchmark locally after they are generated")
+    parser.add_argument('--generate-assembly', action="store_true",
+                        help="Generate the assembly file of each test in "
+                             "addition to the binary.")
+    parser.add_argument('--cmd-prefix', default="",
+                        help="Add a prefix before each compiler invocation")
     parser.add_argument('--repeat', type=int, default=1,
                         help="Repeat each benchmarks the specified number of"
                              "times")
@@ -202,7 +208,8 @@ def main():
 
     # Prepare all folders with compiled tests inside
     for compiler in c_list:  # All selected compilers
-        compiler_dir = os.path.join(basedir, args.isa + "-" + compiler)
+        compiler_dir = os.path.join(basedir, args.isa + "-" + \
+            args.cmd_prefix.replace(" ", "_")  + compiler)
         print("Creating ", compiler_dir, " folder")
 
         if os.path.exists(compiler_dir):
@@ -270,12 +277,12 @@ def main():
 
                 print("Compiling TSVC ", category, info)
                 # Compile Dummy file
-                exec_comp(C_FLAGS[compiler]['call']
+                exec_comp(args.cmd_prefix + ' ' + C_FLAGS[compiler]['call']
                           + C_FLAGS[compiler]['unopt']
                           + ' -c -o dummy.o dummy.c', test_dir)
 
                 # Compile Vector version
-                exec_comp(C_FLAGS[compiler]['call']
+                exec_comp(args.cmd_prefix + ' ' + C_FLAGS[compiler]['call']
                           + C_FLAGS[compiler]['opt']
                           + C_FLAGS[compiler]['vec']
                           + C_FLAGS[compiler]['arch'][args.isa]
@@ -286,7 +293,7 @@ def main():
                           test_dir, 'compiler_vec.out')
 
                 # Compile Scalar version
-                exec_comp(C_FLAGS[compiler]['call']
+                exec_comp(args.cmd_prefix + ' ' + C_FLAGS[compiler]['call']
                           + C_FLAGS[compiler]['opt']
                           + C_FLAGS[compiler]['novec']
                           + C_FLAGS[compiler]['arch'][args.isa]
@@ -297,24 +304,25 @@ def main():
                           test_dir, 'compiler_novec.out')
 
                 # Generate assembly files
-                exec_comp(C_FLAGS[compiler]['call']
-                          + C_FLAGS[compiler]['opt']
-                          + C_FLAGS[compiler]['vec']
-                          + C_FLAGS[compiler]['arch'][args.isa]
-                          + ' -S -o tscrtvec.s tsc_runtime.c'
-                          + ' -D' + category + info_flags, test_dir)
-                exec_comp(C_FLAGS[compiler]['call']
-                          + C_FLAGS[compiler]['opt']
-                          + C_FLAGS[compiler]['novec']
-                          + C_FLAGS[compiler]['arch'][args.isa]
-                          + ' -S -o tscrtnovec.s tsc_runtime.c'
-                          + ' -D' + category + info_flags, test_dir)
+                if args.generate_assembly:
+                    exec_comp(args.cmd_prefix + ' ' + C_FLAGS[compiler]['call']
+                              + C_FLAGS[compiler]['opt']
+                              + C_FLAGS[compiler]['vec']
+                              + C_FLAGS[compiler]['arch'][args.isa]
+                              + ' -S -o tscrtvec.s tsc_runtime.c'
+                              + ' -D' + category + info_flags, test_dir)
+                    exec_comp(args.cmd_prefix + ' ' + C_FLAGS[compiler]['call']
+                              + C_FLAGS[compiler]['opt']
+                              + C_FLAGS[compiler]['novec']
+                              + C_FLAGS[compiler]['arch'][args.isa]
+                              + ' -S -o tscrtnovec.s tsc_runtime.c'
+                              + ' -D' + category + info_flags, test_dir)
 
                 # Link TSVC vector and scalar versions
-                exec_comp(C_FLAGS[compiler]['call']
+                exec_comp(args.cmd_prefix + ' ' + C_FLAGS[compiler]['call']
                           + C_FLAGS[compiler]['unopt'] + pgoflags
                           + ' dummy.o tscrtvec.o -o runrtvec -lm', test_dir)
-                exec_comp(C_FLAGS[compiler]['call']
+                exec_comp(args.cmd_prefix + ' ' + C_FLAGS[compiler]['call']
                           + C_FLAGS[compiler]['unopt'] + pgoflags
                           + ' dummy.o tscrtnovec.o -o runrtnovec -lm',
                           test_dir)
@@ -343,9 +351,14 @@ def exec_comp(cmd, test_dir, save_file=None):
     errcode = process.returncode
     if save_file:
         with open(os.path.join(test_dir, save_file), 'w') as fout:
-            fout.write("Output: " + str(out))
-            fout.write("Return code: " + str(errcode))
-            fout.write("Error: " + str(err))
+            fout.write("Output:\n" + out.decode("utf-8") + "\n")
+            fout.write("Return code: " + str(errcode) + "\n")
+            fout.write("Error:\n" + err.decode("utf-8") + "\n")
+    if errcode != 0:
+        print("Output:\n" + out.decode("utf-8"))
+        print("Return code: " + str(errcode))
+        print("Error:\n" + err.decode("utf-8"))
+        sys.exit()
 
 
 def run_cmd(testdir, cmd, scriptdir, scriptfname=None):
@@ -362,9 +375,9 @@ def run_cmd(testdir, cmd, scriptdir, scriptfname=None):
                                    stderr=subprocess.PIPE, shell=True)
         out, err = process.communicate()
         errcode = process.returncode
-        print("Output: " + str(out))
+        print("Output:\n" + out.decode("utf-8"))
         print("Return code: " + str(errcode))
-        print("Error: " + str(err))
+        print("Error:\n" + err.decode("utf-8"))
 
 
 if __name__ == "__main__":
