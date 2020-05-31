@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2019 Sergi Siso
+# Copyright (c) 2019-2020 Sergi Siso
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -59,7 +59,7 @@ BENCHMARKS = [
 # Compiler Flags
 C_FLAGS = {
     "gcc": {
-        "call": "gcc",
+        "call": "gcc -DTYPE=float",
         "arch": {"avx2": " -mtune=native ",
                  "avx512": " -mtune=skylake-avx512 -mprefer-vector-width=512",
                  "knl": " -mtune=knl ",

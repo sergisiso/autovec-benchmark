@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-# Copyright (c) 2019 Sergi Siso
-# 
+# Copyright (c) 2019-2020 Sergi Siso
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
@@ -13,7 +13,7 @@
 #   3. Neither the name of the copyright holder nor the names of its
 #   contributors may be used to endorse or promote products derived from
 #   this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,17 +25,18 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+""" Provide statistics and plots from a TSVC results folder. """
 
 import sys
 import os
 import shutil
-import math
 import statistics
+import argparse
 from collections import defaultdict
-import numpy as np
 import matplotlib.pyplot as plt
 from plotutils import *
 
+NUM_REPS = 1
 debug = False
 
 remove_tests = ['S2712']
@@ -107,7 +108,7 @@ palette = {
         "Indirect Addressing": rgb([220, 136, 102]),
     }
 
-all_parameters = [
+ALL_PARAMETERS = [
         'RUNTIME_INDEX',
         'RUNTIME_ATTRIBUTES',
         'RUNTIME_LOOP_BOUNDS',
@@ -117,7 +118,7 @@ all_parameters = [
         'RUNTIME_CONDITIONS'
         ]
 
-all_categories = [
+ALL_CATEGORIES = [
     "LINEAR_DEPENDENCE",
     "INDUCTION_VARIABLE",
     "GLOBAL_DATA_FLOW",
@@ -155,8 +156,10 @@ def geometric_mean(arr):
     return (float)(gm)
 
 
-def load_data(data, compiler, category, parameters, parameters_path):
+def load_data(data, compiler, category, parameters, parameters_path,
+              print_results):
 
+    print("Load " + parameters_path)
     # Set filenames for tsc or tsc_runtime results
     if parameters == 'original':
         vecfname = 'runvec.txt'
@@ -170,12 +173,12 @@ def load_data(data, compiler, category, parameters, parameters_path):
     novecresults = []
     file_number = 0
     try:
-        for i in range(5):
+        for i in range(NUM_REPS):
             file_number = i
-            vecf = open(os.path.join(parameters_path,
-                        vecfname.replace('0', str(i))), 'r')
-            novecf = open(os.path.join(parameters_path,
-                          novecfname.replace('0', str(i))), 'r')
+            vecf = open(os.path.join(parameters_path, \
+                vecfname.replace('0', str(i))), 'r')
+            novecf = open(os.path.join(parameters_path, \
+                novecfname.replace('0', str(i))), 'r')
             vecresults.append(vecf.readlines())
             novecresults.append(novecf.readlines())
     except FileNotFoundError:
@@ -185,35 +188,36 @@ def load_data(data, compiler, category, parameters, parameters_path):
                   " not found!")
         else:
             print("Warning: Not all files found in ", parameters_path)
-        exit(0)
+        sys.exit(0)
 
     for indx, base in enumerate(vecresults[0]):
         # If line starts with S it is a test
         if base[0] == 'S':
-            test, exetime, cs = base.split()
+            test, _, check = base.split()
 
             # Skip ignored tests
             if test in remove_tests:
+                print("Warning: Test'" + test + "' has been removed.")
                 continue
 
             # Check individual test data
             vectimes = []
             novectimes = []
-            for i in range(5):
+            for i in range(NUM_REPS):
                 test_novec, novec_time, cs1 = novecresults[i][indx].split()
                 test_vec, vec_time, cs2 = vecresults[i][indx].split()
 
                 if test_novec != test or test_vec != test:
-                    print("Error: Tests possitions do not much", compiler,
+                    print("Error: Tests positions do not match", compiler,
                           category, parameters, test)
-                    exit(0)
+                    sys.exit(0)
 
                 # Check that results are within tolerance.
-                if (abs(float(cs) - float(cs1)) > abs(float(cs) * 0.01)) \
-                   or (abs(float(cs) - float(cs2)) > abs(float(cs) * 0.01)):
+                if (abs(float(check) - float(cs1)) > abs(float(check) * 0.01)) \
+                   or (abs(float(check) - float(cs2)) > abs(float(check) * 0.01)):
                     print("Warning checksums differ! ", compiler,
-                          category, parameters, test, cs, cs1, cs2)
-                    exit(0)
+                          category, parameters, test, check, cs1, cs2)
+                    sys.exit(0)
 
                 vectimes.append(float(vec_time))
                 novectimes.append(float(novec_time))
@@ -230,11 +234,16 @@ def load_data(data, compiler, category, parameters, parameters_path):
                       str([novec_time, vec_time]), test, compiler,
                       category, parameters)
 
-            data[compiler][category][parameters][test] = [
-                float(vec_time),
-                float(novec_time),
-                float(novec_time)/float(vec_time)
-                ]
+            if float(vec_time) == 0.0:
+                data[compiler][category][parameters][test] = [0, 0, 0]
+            else:
+                data[compiler][category][parameters][test] = [
+                    float(vec_time),
+                    float(novec_time),
+                    float(novec_time)/float(vec_time)
+                    ]
+            if print_results:
+                print(f"{test}\t{check}\t{vec_time}")
 
 
 def load_microkernels(data, path, archcomp):
@@ -638,27 +647,70 @@ def print_summary(data):
         f.write("\\end{document}")
 
 
+def getfolders(path):
+    """Return the list of folders inside the given path"""
+    return list(filter(lambda x: os.path.isdir(os.path.join(path, x)),
+                       os.listdir(path)))
+
+
+def nested_dict(level, element_type):
+    """ Return a nested dictionary """
+    if level == 1:
+        return defaultdict(element_type)
+    return defaultdict(lambda: nested_dict(level-1, element_type))
+
+
 def main():
+    """ Plotting script entry point """
+    # pylint: disable=too-many-statements, too-many-branches, too-many-locals
 
-    # Get results folder from first argument and check whether it exists
-    if len(sys.argv) != 2:
-        print("Expecting an argument with a path to a results foler")
-        exit(-1)
-    datadir = sys.argv[1]
-    if not os.path.exists(datadir):
-        print("Results folder does not exist")
-        exit(-2)
+    # Use argparse to select the appropriate benchmark set
+    parser = argparse.ArgumentParser(
+        description='Execute Compiler Autovectorization Benchmarks.')
+    parser.add_argument('--testdir', required=True,
+                        help="Specify folder containing the TSVC results.")
+    parser.add_argument('--compilers', nargs='+', default="ALL",
+                        help="Space separated list of case sensitive compilers"
+                             "to analyse inside the testdir.")
+    parser.add_argument('--parameters', nargs='+', default="ALL",
+                        help="Space separated list of case sensitive parameters"
+                             "to analyse inside the testdir.")
+    parser.add_argument('--microkernels', action="store_true",
+                        help="Enable microkernel analysis")
+    parser.add_argument('--tsvc', action="store_true",
+                        help="Enable TSVC analysis")
+    parser.add_argument('--strict-all', action="store_true",
+                        help="Result folder must contain all categories and "
+                             "all parameter classes")
+    parser.add_argument('--print-results', action="store_true",
+                        help="Write the results to stdout")
+    args = parser.parse_args()
 
-    if os.path.exists('plots'):
-        shutil.rmtree('plots')
-    os.makedirs('plots')
 
-    def nested_dict(n, type):
-        from collections import defaultdict
-        if n == 1:
-            return defaultdict(type)
-        else:
-            return defaultdict(lambda: nested_dict(n-1, type))
+    # Check that the results folder exist
+    if not os.path.exists(args.testdir):
+        print("Results folder '" + args.testdir + "' does not exist!")
+        sys.exit(-2)
+
+    # Select compilers for the analysis
+    selected_compilers = []
+    if args.compilers == 'ALL':
+        selected_compilers = getfolders(args.testdir)
+    else:
+        for folder in args.compilers:
+            if  not os.path.exists(os.path.join(args.testdir, folder)):
+                print("Compiler results for '" + folder + "' do not exist!")
+                print("Available compilers are:")
+                print(str(list(getfolders(args.testdir))))
+                sys.exit(-2)
+            else:
+                selected_compilers.append(folder)
+
+    # Create output directory
+    outputdir = "results-plots"
+    if os.path.exists(outputdir):
+        shutil.rmtree(outputdir)
+    os.makedirs(outputdir)
 
     # Nested dictionary of {compiler, category, parameters, test} =
     #     [performance vec, performance novec, vector eff]
@@ -668,28 +720,38 @@ def main():
     # where execution is [rtvec, rtnovec, ctvec, ctnovec] = float
     microkernel_data = nested_dict(4, float)
 
-    def getfolders(path):
-        return filter(lambda x: os.path.isdir(os.path.join(path, x)),
-                      os.listdir(path))
-
     print("Loading data...")
-    for compiler in getfolders(datadir):
-        print(compiler)
-        compiler_path = os.path.join(datadir, compiler)
-        load_microkernels(microkernel_data, compiler_path, compiler)
-        for category in all_categories:  # getfolders(compiler_path):
-            category_path = os.path.join(compiler_path, category)
-            for parameters in all_parameters:  # getfolders(category_path):
-                parameters_path = os.path.join(category_path, parameters)
-                load_data(data, compiler, category, parameters,
-                          parameters_path)
+    for compiler in selected_compilers:
+        print("-------------- " + compiler + " ---------------")
+        compiler_path = os.path.join(args.testdir, compiler)
+        if args.microkernels:
+            load_microkernels(microkernel_data, compiler_path, compiler)
+        if args.tsvc:
+            categories = getfolders(compiler_path)
+            for category in categories:
+                category_path = os.path.join(compiler_path, category)
+                parameters = getfolders(category_path)
+                for parameter in parameters:
+                    parameters_path = os.path.join(category_path, parameter)
+                    load_data(data, compiler, category, parameter,
+                              parameters_path, args.print_results)
 
-    print("\nData sanity check...")
-    data_sanity_check(data)
-    print("\nWriting summary to file...")
-    os.makedirs(os.path.join('plots', 'latex_table'))
-    print_summary(data)
+    if args.tsvc:
+        print("\nData sanity check...")
+        data_sanity_check(data)
+        print("\nWriting summary to file...")
+        os.makedirs(os.path.join('plots', 'latex_table'))
+        print_summary(data)
 
+    exit(0)
+    if args.strict_all:
+        if ALL_CATEGORIES in categories:
+            print("Error: It should contain all categories!")
+            sys.exit(-3)
+    if args.strict_all:
+        if ALL_PARAMETERS in parameters:
+            print("Error: It should contain all parameters kind!")
+            sys.exit(-3)
     if True:
         print("\n- Ploting Summary VSpectrums..")
         os.makedirs(os.path.join('plots', 'extendedtsvc_summary'))
