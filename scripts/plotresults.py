@@ -39,7 +39,7 @@ from plotutils import *
 NUM_REPS = 1
 debug = False
 
-remove_tests = ['S2712']
+remove_tests = []  #['S2712']
 remove_categories = []  # ['REDUCTIONS','CONTROL_FLOW','SEARCHING']
 
 test_sets = {
@@ -159,7 +159,7 @@ def geometric_mean(arr):
 def load_data(data, compiler, category, parameters, parameters_path,
               print_results):
 
-    print("Load " + parameters_path)
+    print("Load " + compiler + " " + category + " " + parameters)
     # Set filenames for tsc or tsc_runtime results
     if parameters == 'original':
         vecfname = 'runvec.txt'
@@ -280,26 +280,26 @@ def data_sanity_check(data):
         if len(data[compiler].keys()) != 17:
             print("Error: " + compiler + " missing categories")
             print(data[compiler].keys())
-            exit(0)
+            sys.exit(-1)
         else:
             for category in data[compiler].keys():
-                if category not in all_categories:
+                if category not in ALL_CATEGORIES:
                     print("Error: " + compiler + " unknown category " +
                           category)
-                    exit(0)
+                    sys.exit(-1)
 
         for category in data[compiler].keys():
             if len(data[compiler][category].keys()) != 7:
                 print("Error: " + compiler + " " + category +
                       " missing parameters")
                 print(data[compiler][category].keys())
-                exit(0)
+                sys.exit(-1)
             else:
                 for parameter in data[compiler][category].keys():
-                    if parameter not in all_parameters:
+                    if parameter not in ALL_PARAMETERS:
                         print("Error: " + compiler + " " + category +
                               " missing parameters")
-                        exit(0)
+                        sys.exit(-1)
 
             for parameter in data[compiler][category].keys():
                 if data[compiler][category][parameter].keys() != \
@@ -308,11 +308,11 @@ def data_sanity_check(data):
                           " " + category + " " + parameter)
                     print(data[compiler][category][parameter].keys())
                     print(data[compiler][category]['None'].keys())
-                    exit(0)
+                    sys.exit(-1)
                 if len(data[compiler][category][parameter].keys()) < 1:
                     print("Error: Empty " + compiler + " " + category +
                           " " + parameter)
-                    exit(0)
+                    sys.exit(0-1)
 
             total = total + len(data[compiler][category]['None'].keys())
             tests_per_category.append(len(
@@ -706,6 +706,18 @@ def main():
             else:
                 selected_compilers.append(folder)
 
+    # Check parameters input
+    selected_parameters = []
+    if args.parameters == 'ALL':
+        selected_parameters = ALL_PARAMETERS
+    else:
+        for parameter in args.parameters:
+            if not parameter in ALL_PARAMETERS:
+                print("Error: Parameter '" + parameter + "' is not valid.")
+                sys.exit(-1)
+            else:
+                selected_parameters.append(parameter)
+
     # Create output directory
     outputdir = "results-plots"
     if os.path.exists(outputdir):
@@ -730,14 +742,15 @@ def main():
             categories = getfolders(compiler_path)
             for category in categories:
                 category_path = os.path.join(compiler_path, category)
-                parameters = getfolders(category_path)
+                #parameters = getfolders(category_path)
+                parameters = selected_parameters
                 for parameter in parameters:
                     parameters_path = os.path.join(category_path, parameter)
                     load_data(data, compiler, category, parameter,
                               parameters_path, args.print_results)
 
     if args.tsvc:
-        print("\nData sanity check...")
+        print("\nData sanity check (necessary for plots) ...")
         data_sanity_check(data)
         print("\nWriting summary to file...")
         os.makedirs(os.path.join('plots', 'latex_table'))

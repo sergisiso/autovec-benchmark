@@ -66,7 +66,7 @@ C_FLAGS = {
                  "altivec": " -mtune=power8 "},
         "vec": " ",
         "novec": " -fno-tree-vectorize ",
-        "opt": " -O3 -ffast-math",
+        "opt": " -O3", # "-O0 -g ", #debugging - undo
         "unopt": " -O0 ",
         "report": " -fopt-info-optimized=",
         "assem": " -S",
@@ -80,7 +80,7 @@ C_FLAGS = {
                  "knl": " -xMIC-AVX512"},
         "vec": " ",
         "novec": " -no-simd -no-vec ",
-        "opt": " -O3 -fp-model fast=2 ",
+        "opt": " -O3",
         "unopt": " -O0 ",
         "report": " -qopt-report=5 -qopt-report-file=",
         "assem": " -Fa"
@@ -93,7 +93,7 @@ C_FLAGS = {
                  "altivec": " -mcpu=power8 "},
         "vec": " ",
         "novec": " -fno-vectorize ",
-        "opt": " -O3 -ffast-math ",
+        "opt": " -O3",
         "unopt": " -O0 ",
         "report": " -fsave-optimization-record -foptimization-record-file=",
         "assem": " -S"
@@ -106,7 +106,7 @@ C_FLAGS = {
                  "altivec": " "},
         "vec": " -Mvect=simd ",
         "novec": " -Mnovect ",
-        "opt": " -O3 -fast -fastsse",
+        "opt": " -O3",
         "unopt": " -O0 ",
         "report": " -D",
         "assem": " -S"
@@ -114,8 +114,8 @@ C_FLAGS = {
     "ibm": {
         "call": "xlc",
         "arch": {"altivec": " "},
-        "vec": " -qaltivec -qhot=vector:fastmath -qsimd=auto ",
-        "novec": " -qnoaltivec -qhot=novector:fastmath -qsimd=noauto",
+        "vec": " -qaltivec -qhot=vector -qsimd=auto ",
+        "novec": " -qnoaltivec -qhot=novector -qsimd=noauto",
         "opt": " -O3",
         "unopt": " -O0 ",
         "report": " -D",
