@@ -649,6 +649,8 @@ int init(char* name)
 		set1d(a,zero,unit);
 		set1d(b, one,unit);
 		set1d(c, one,unit);
+		set1d(d, one,unit);
+		set1d(e, one,unit);
 	} else if (!strcmp(name, "s291 ")) {
 		set1d(a,zero,unit);
 		set1d(b, one,unit);
@@ -677,6 +679,8 @@ int init(char* name)
 		set1d(a, any,frac);
 	} else if (!strcmp(name, "s315 ")) {
 		set1d(a, any,frac);
+	    for (int i = 0; i < LEN; i++)
+		    a[i] = (i * 7) % LEN;
 	} else if (!strcmp(name, "s316 ")) {
 		set1d(a, any,frac);
 	} else if (!strcmp(name, "s317 ")) {
@@ -923,7 +927,7 @@ int s000()
 		for (int i = 0; i < lll; i++) {
 			X[i] = Y[i] + ap_n1;
 		}
-		//dummy((TYPE*)X, (TYPE*)Y, (TYPE*)Z, (TYPE*)U, (TYPE*)V, aa, bb, cc, 0.);
+		dummy((TYPE*)X, (TYPE*)Y, (TYPE*)Z, (TYPE*)U, (TYPE*)V, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -949,7 +953,7 @@ int s111()
 		for (int i = 1; i < LEN; i += 2) {
 			a[i] = a[i - ip_n1] + b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -972,7 +976,7 @@ int s1111()
 		for (int i = 0; i < LEN/2; i++) {
 			a[ip_n2*i] = c[i] * b[i] + d[i] * b[i] + c[i] * c[i] + d[i] * b[i] + d[i] * c[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif /1000000.0);
@@ -1000,7 +1004,7 @@ int s112()
 		for (int i = LEN - 2; i >= bp_n0; i--) {
 			a[i+ip_n1] = a[i] + b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1026,7 +1030,7 @@ int s1112()
 		for (int i = LEN - 1; i >= bp_n0; i--) {
 			a[i] = b[i] + (TYPE) ap_n1;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif /1000000.0);
@@ -1054,7 +1058,7 @@ int s113()
 		for (int i = bp_n1; i < LEN; i++) {
 			a[i] = a[ip_n0] + b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1079,7 +1083,7 @@ int s1113()
 		for (int i = 0; i < LEN; i++) {
 			a[i] = a[LEN/ip_n2] + b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1109,7 +1113,7 @@ int s114()
 				aa[i*LEN2+j] = aa[j*LEN2+i] + bb[i*LEN2+j];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 
 	end_t = clock(); clock_dif = end_t - start_t;
@@ -1139,7 +1143,7 @@ int s115()
 				a[i] -= aa[j*LEN2+i] * a[j];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1166,7 +1170,7 @@ int s1115()
 				aa[i*LEN2+j] = aa[i*LEN2+j]*cc[j*LEN2+i] + bb[i*LEN2+j];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1196,7 +1200,7 @@ int s116()
 			a[i + ip_n3] = a[i + ip_n4] * a[i + ip_n3];
 			a[i + ip_n4] = a[i + ip_n5] * a[i + ip_n4];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1225,7 +1229,7 @@ int s118()
 				a[i] += bb[j*LEN2+i] * a[i-j-ip_n1];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1254,7 +1258,7 @@ int s119()
 				aa[i*LEN2+j] = aa[(i-ip_n1)*LEN2+(j-ip_n1)] + bb[i*LEN2+j];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif /1000000.0);
@@ -1283,7 +1287,7 @@ int s1119()
 				aa[i*LEN2+j] = aa[(i-ip_n1)*LEN2+j] + bb[i*LEN2+j];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif /1000000.0);
@@ -1318,7 +1322,7 @@ int s121()
 			j = i + ip_n1;
 			a[i] = a[j] + b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1350,7 +1354,7 @@ int s122(int n1, int n3)
 			k += j;
 			a[i] += b[LEN - k];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1385,7 +1389,7 @@ int s123()
 				a[j] = c[i] + d[i] * e[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1420,7 +1424,7 @@ int s124()
 				a[j] = c[i] + d[i] * e[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1451,7 +1455,7 @@ int s125()
 				array[k] = aa[i*LEN2+j] + bb[i*LEN2+j] * cc[i*LEN2+j];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1483,7 +1487,7 @@ int s126()
 			}
 			++k;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1515,7 +1519,7 @@ int s127()
 			j++;
 			a[j] = b[i] + d[i] * e[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1548,7 +1552,7 @@ int s128()
 			j = k + ip_n1;
 			b[k] = a[i] + c[k];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 1.);
+		dummy(a, b, c, d, e, aa, bb, cc, 1.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1575,7 +1579,7 @@ int s453()
 			s += (TYPE)ap_n2;
 			a[i] = s * b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1607,7 +1611,7 @@ int s131()
 		for (int i = 0; i < LEN - 1; i++) {
 			a[i] = a[i + m] + b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1635,7 +1639,7 @@ int s132()
 		for (int i= 1; i < LEN2; i++) {
 			aa[j*LEN2+i] = aa[k*LEN2+(i-ip_n1)] + b[i] * c[ip_n1];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1668,7 +1672,7 @@ int s141()
 				k += j+ip_n1;
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1699,7 +1703,7 @@ int s151()
 
 	for (int nl = 0; nl < 5*ntimes; nl++) {
 		s151s(a, b, ip_n1);
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1732,7 +1736,7 @@ int s152()
 			b[i] = d[i] * e[i];
 			s152s(a, b, c, i);
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1760,7 +1764,7 @@ int s431()
 		for (int i = 0; i < LEN; i++) {
 			a[i] = a[i+k] + b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1790,7 +1794,7 @@ int s451()
 			a[i] = sin(b[i]) + cos(c[i]);
 #endif
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1817,7 +1821,7 @@ int s452()
 		for (int i = 0; i < LEN; i++) {
 			a[i] = b[i] + c[i] * (TYPE) (i+ap_n1);
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1850,7 +1854,7 @@ int s471(){
 			s471s();
 			b[i] = c[i] + d[i] * e[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1884,7 +1888,7 @@ int s4121()
 		for (int i = 0; i < LEN; i++) {
 			a[i] += f(b[i],c[i]);
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1926,7 +1930,7 @@ L20:
 L10:
 			;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1960,7 +1964,7 @@ L20:
 L10:
 			;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -1988,7 +1992,7 @@ int s162(int k)
 				a[i] = a[i + k] + b[i] * c[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2016,7 +2020,7 @@ int s271()
 				a[i] += b[i] * c[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2046,7 +2050,7 @@ int s272(TYPE t)
 				b[i] += c[i] * c[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2076,7 +2080,7 @@ int s273()
 				b[i] += d[i] * e[i];
 			c[i] += a[i] * d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2108,7 +2112,7 @@ int s274()
 				a[i] = d[i] * e[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2139,7 +2143,7 @@ int s275()
 				}
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2166,7 +2170,7 @@ int s2275()
 			}
 			a[i] = b[i] + c[i] * d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2198,7 +2202,7 @@ int s276()
 				a[i] += b[i] * d[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2234,7 +2238,7 @@ L30:
 L20:
 ;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2269,7 +2273,7 @@ L20:
 L30:
 			a[i] = b[i] + c[i] * d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2308,7 +2312,7 @@ L20:
 L30:
 			a[i] = b[i] + c[i] * d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2337,7 +2341,7 @@ int s1279()
 				}
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2378,7 +2382,7 @@ int s2710( TYPE x)
 				}
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2406,7 +2410,7 @@ int s2711()
 				a[i] += b[i] * c[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2435,7 +2439,7 @@ int s2712()
 				a[i] += b[i] * c[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2466,7 +2470,7 @@ int s441()
 				a[i] += c[i] * c[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2511,7 +2515,7 @@ L40:
 L50:
 			;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2549,7 +2553,7 @@ L30:
 L50:
 			;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2577,7 +2581,7 @@ int s481()
 			}
 			a[i] += b[i] * c[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2606,7 +2610,7 @@ int s482()
 			a[i] += b[i] * c[i];
 			if (c[i] > b[i]) break;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2639,7 +2643,7 @@ int s171(int inc)
 		for (int i = 0; i < LEN; i++) {
 			a[i * inc] += b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2665,7 +2669,7 @@ int s172( int n1, int n3)
 		for (int i = n1-1; i < LEN; i += n3) {
 			a[i] += b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2692,7 +2696,7 @@ int s173()
 		for (int i = 0; i < LEN/2; i++) {
 			a[i+k] = a[i] + b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2719,7 +2723,7 @@ int s174(int M)
 		for (int i = 0; i < M; i++) {
 			a[i+M] = a[i] + b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2746,7 +2750,7 @@ int s175(int inc)
 		for (int i = 0; i < LEN-1; i += inc) {
 			a[i] = a[i + inc] + b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2776,7 +2780,7 @@ int s176()
 				a[i] += b[i+m-j-ip_n1] * c[j];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2808,7 +2812,7 @@ int s211()
 			a[i] = b[i - ip_n1] + c[i] * d[i];
 			b[i] = b[i + ip_n1] - e[i] * d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2835,7 +2839,7 @@ int s212()
 			a[i] *= c[i];
 			b[i] += a[i + 1] * d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2860,7 +2864,7 @@ int s1213()
 			a[i] = b[i-ip_n1]+c[i];
 			b[i] = a[i+ip_n1]*d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2892,7 +2896,7 @@ int s221()
 			a[i] += c[i] * d[i];
 			b[i] = b[i - ip_n1] + a[i] + d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2916,7 +2920,7 @@ int s1221()
 		for (int i = 4; i < LEN; i++) {
 			b[i] = b[i - ip_n4] + a[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2945,7 +2949,7 @@ int s222()
 			e[i] = e[i - ip_n1] * e[i - ip_n1];
 			a[i] -= b[i] * c[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -2973,7 +2977,7 @@ int s231()
 				aa[j*LEN2+i] = aa[(j - ip_n1)*LEN2+i] + bb[j*LEN2+i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3002,7 +3006,7 @@ int s232()
 				aa[j*LEN2+i] = aa[j*LEN2+(i-ip_n1)]*aa[j*LEN2+(i-ip_n1)]+bb[j*LEN2+i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 1.);
+		dummy(a, b, c, d, e, aa, bb, cc, 1.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3029,7 +3033,7 @@ int s1232()
 				aa[i*LEN2+j] = bb[i*LEN2+j] + cc[i*LEN2+j];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 1.);
+		dummy(a, b, c, d, e, aa, bb, cc, 1.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3061,7 +3065,7 @@ int s233()
 				bb[j*LEN2+i] = bb[j*LEN2+(i-ip_n1)] + cc[j*LEN2+i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3091,7 +3095,7 @@ int s2233()
 				bb[i*LEN2+j] = bb[(i-ip_n1)*LEN2+j] + cc[i*LEN2+j];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3120,7 +3124,7 @@ int s235()
 				aa[j*LEN2+i] = aa[(j-ip_n1)*LEN2+i] + bb[j*LEN2+i] * a[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3153,7 +3157,7 @@ int s241()
 			a[i] = b[i] * c[i  ] * d[i];
 			b[i] = a[i] * a[i+ip_n1] * d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3180,7 +3184,7 @@ int s242(TYPE s1, TYPE s2)
 		for (int i = 1; i < LEN; ++i) {
 			a[i] = a[i - 1] + s1 + s2 + b[i] + c[i] + d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3209,7 +3213,7 @@ int s243()
 			b[i] = a[i] + d[i  ] * e[i];
 			a[i] = b[i] + a[i+1] * d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3238,7 +3242,7 @@ int s244()
 			b[i] = c[i] + b[i];
 			a[i+1] = b[i] + a[i+1] * d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3264,7 +3268,7 @@ int s1244()
 			a[i] = b[i] + c[i] * c[i] + b[i]*b[i] + c[i];
 			d[i] = a[i] + a[i+ip_n1];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3290,7 +3294,7 @@ int s2244()
 			a[i+ip_n1] = b[i] + e[i];
 			a[i] = b[i] + c[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3323,7 +3327,7 @@ int s251()
 			s = b[i] + c[i] * d[i];
 			a[i] = s * s;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3351,7 +3355,7 @@ int s1251()
 			b[i] = a[i]+d[i];
 			a[i] = s*e[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3379,7 +3383,7 @@ int s2251()
 			s = b[i]+c[i];
 			b[i] = a[i]+d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3405,7 +3409,7 @@ int s3251()
 			b[i]   = c[i]*e[i];
 			d[i]   = a[i]*e[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3436,7 +3440,7 @@ int s252()
 			a[i] = s + t;
 			t = s;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3469,7 +3473,7 @@ int s253()
 				a[i] = s;
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3499,7 +3503,7 @@ int s254()
 			a[i] = (b[i] + x) * (TYPE) ap_n5;
 			x = b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3531,7 +3535,7 @@ int s255()
 			y = x;
 			x = b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3561,7 +3565,7 @@ int s256()
 				cc[j*LEN2+i] = a[j] + bb[j*LEN2+i]*d[j];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3591,7 +3595,7 @@ int s257()
 				aa[j*LEN2+i] = a[i] + bb[j*LEN2+i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3622,7 +3626,7 @@ int s258()
 			b[i] = s * c[i] + d[i];
 			e[i] = (s + (TYPE) ap_n1) * aa[ip_n0*LEN2+i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3653,7 +3657,7 @@ int s261()
 			t = c[i] * d[i];
 			c[i] = t;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3687,7 +3691,7 @@ int s281()
 			a[i] = x-(TYPE)ap_n1;
 			b[i] = x;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3716,7 +3720,7 @@ int s1281()
 			a[i] = x-(TYPE)ap_n1;
 			b[i] = x;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3746,7 +3750,7 @@ int s291()
 			a[i] = (b[i] + b[im1]) * (TYPE)ap_n05;
 			im1 = i;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3779,7 +3783,7 @@ int s292()
 			im2 = im1;
 			im1 = i;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3805,7 +3809,7 @@ int s293()
 		for (int i = 0; i < LEN; i++) {
 			a[i] = a[ip_n0];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3833,7 +3837,7 @@ int s2101()
 		for (int i = 0; i < LEN2; i++) {
 			aa[i*LEN2+i] += bb[i*LEN2+i] * cc[i*LEN2+i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3863,7 +3867,7 @@ int s2102()
 			}
 			aa[i*LEN2+i] = (TYPE)ap_n1;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3890,7 +3894,7 @@ int s2111()
 				aa[j*LEN2+i] = aa[j*LEN2+(i-ip_n1)] + aa[(j-ip_n1)*LEN2+i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3923,12 +3927,12 @@ int s311()
 	start_t = clock();
 
 	TYPE sum;
-	for (int nl = 0; nl < ntimes*5; nl++) {
+	for (int nl = 0; nl < 2*ntimes; nl++) {
 		sum = (TYPE)0.;
 		for (int i = 0; i < LEN; i++) {
 			sum += a[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, sum);
+		dummy(a, b, c, d, e, aa, bb, cc, sum);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3958,7 +3962,7 @@ int s31111()
 	start_t = clock();
 
 	TYPE sum;
-	for (int nl = 0; nl < 5000*ntimes; nl++) {
+	for (int nl = 0; nl < 50*ntimes; nl++) {
 		sum = (TYPE)ap_n0;
 		sum += test(a);
 		sum += test(&a[4]);
@@ -3968,7 +3972,7 @@ int s31111()
 		sum += test(&a[20]);
 		sum += test(&a[24]);
 		sum += test(&a[28]);
-		//dummy(a, b, c, d, e, aa, bb, cc, sum);
+		dummy(a, b, c, d, e, aa, bb, cc, sum);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -3992,12 +3996,12 @@ int s312()
 	start_t = clock();
 
 	TYPE prod;
-	for (int nl = 0; nl < 5*ntimes; nl++) {
+	for (int nl = 0; nl < 2*ntimes; nl++) {
 		prod = (TYPE)1.;
 		for (int i = 0; i < LEN; i++) {
 			prod *= a[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, prod);
+		dummy(a, b, c, d, e, aa, bb, cc, prod);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4026,7 +4030,7 @@ int s313()
 		for (int i = 0; i < LEN; i++) {
 			dot += a[i] * b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, dot);
+		dummy(a, b, c, d, e, aa, bb, cc, dot);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4058,7 +4062,7 @@ int s314()
 				x = a[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, x);
+		dummy(a, b, c, d, e, aa, bb, cc, x);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4080,8 +4084,6 @@ int s315()
 
 
 	init( "s315 ");
-	for (int i = 0; i < LEN; i++)
-		a[i] = (i * 7) % LEN;
 	start_t = clock();
 
 	TYPE x, chksum;
@@ -4096,7 +4098,7 @@ int s315()
 			}
 		}
 		chksum = x + (TYPE) index;
-		//dummy(a, b, c, d, e, aa, bb, cc, chksum);
+		dummy(a, b, c, d, e, aa, bb, cc, chksum);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4128,7 +4130,7 @@ int s316()
 				x = a[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, x);
+		dummy(a, b, c, d, e, aa, bb, cc, x);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4159,7 +4161,7 @@ int s317()
 		for (int i = 0; i < LEN/2; i++) {
 			q *= (TYPE)ap_n099;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, q);
+		dummy(a, b, c, d, e, aa, bb, cc, q);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4201,7 +4203,7 @@ L5:
 			k += inc;
 		}
 		chksum = max + (TYPE) index;
-		//dummy(a, b, c, d, e, aa, bb, cc, chksum);
+		dummy(a, b, c, d, e, aa, bb, cc, chksum);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4226,7 +4228,7 @@ int s319()
 	start_t = clock();
 
 	TYPE sum;
-	for (int nl = 0; nl < 2*ntimes; nl++) {
+	for (int nl = 0; nl < ntimes; nl++) {
 		sum = 0.;
 		for (int i = 0; i < LEN; i++) {
 			a[i] = c[i] + d[i];
@@ -4234,7 +4236,7 @@ int s319()
 			b[i] = c[i] + e[i];
 			sum += b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, sum);
+		dummy(a, b, c, d, e, aa, bb, cc, sum);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4275,7 +4277,7 @@ int s3110()
 			}
 		}
 		chksum = max + (TYPE) xindex + (TYPE) yindex;
-		//dummy(a, b, c, d, e, aa, bb, cc, chksum);
+		dummy(a, b, c, d, e, aa, bb, cc, chksum);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4311,7 +4313,7 @@ int s13110()
 			}
 		}
 		chksum = max + (TYPE) xindex + (TYPE) yindex;
-		//dummy(a, b, c, d, e, aa, bb, cc, chksum);
+		dummy(a, b, c, d, e, aa, bb, cc, chksum);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4343,7 +4345,7 @@ int s3111()
 				sum += a[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, sum);
+		dummy(a, b, c, d, e, aa, bb, cc, sum);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4374,7 +4376,7 @@ int s3112()
 			sum += a[i];
 			b[i] = sum;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, sum);
+		dummy(a, b, c, d, e, aa, bb, cc, sum);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4406,7 +4408,7 @@ int s3113()
 				max = abs(a[i]);
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, max);
+		dummy(a, b, c, d, e, aa, bb, cc, max);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4438,7 +4440,7 @@ int s321()
 		for (int i = 1; i < LEN; i++) {
 			a[i] += a[i-ip_n1] * b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4465,7 +4467,7 @@ int s322()
 		for (int i = 2; i < LEN; i++) {
 			a[i] = a[i] + a[i - ip_n1] * b[i] + a[i - ip_n2] * c[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4493,7 +4495,7 @@ int s323()
 			a[i] = b[i-ip_n1] + c[i] * d[i];
 			b[i] = a[i] + c[i] * e[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4530,7 +4532,7 @@ int s331()
 			}
 		}
 		chksum = (TYPE) j;
-		//dummy(a, b, c, d, e, aa, bb, cc, chksum);
+		dummy(a, b, c, d, e, aa, bb, cc, chksum);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4568,7 +4570,7 @@ int s332( TYPE t)
 		}
 L20:
 		chksum = value + (TYPE) index;
-		//dummy(a, b, c, d, e, aa, bb, cc, chksum);
+		dummy(a, b, c, d, e, aa, bb, cc, chksum);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4606,7 +4608,7 @@ int s341()
 				a[j] = b[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4639,7 +4641,7 @@ int s342()
 				a[i] = b[j];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4674,7 +4676,7 @@ int s343()
 				}
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4710,7 +4712,7 @@ int s351()
 			a[i + ip_n3] += alpha * b[i + ip_n3];
 			a[i + ip_n4] += alpha * b[i + ip_n4];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4740,7 +4742,7 @@ int s1351()
 			B++;
 			C++;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4769,7 +4771,7 @@ int s352()
 		for (int i = 0; i < LEN; i += ip_n5) {
 			dot = dot + a[i] * b[i] + a[i + ip_n1] * b[i + ip_n1] + a[i + ip_n2] * b[i + ip_n2] + a[i + ip_n3] * b[i + ip_n3] + a[i + ip_n4] * b[i + ip_n4];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, dot);
+		dummy(a, b, c, d, e, aa, bb, cc, dot);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4804,7 +4806,7 @@ int s353(int * RESTRICT ip)
 			a[i + ip_n3] += alpha * b[ip[i + ip_n3]];
 			a[i + ip_n4] += alpha * b[ip[i + ip_n4]];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4837,7 +4839,7 @@ int s421()
 		for (int i = 0; i < LEN - 1; i++) {
 			xx[i] = yy[i+ip_n1] + a[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 1.);
+		dummy(a, b, c, d, e, aa, bb, cc, 1.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4866,7 +4868,7 @@ int s1421()
 		for (int i = 0; i < LEN/2; i++) {
 			b[i] = xx[i] + a[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 1.);
+		dummy(a, b, c, d, e, aa, bb, cc, 1.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4900,7 +4902,7 @@ int s422()
 		for (int i = 0; i < LEN; i++) {
 			xx[i] = array[i + ip_n8] + a[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4931,7 +4933,7 @@ int s423()
 		for (int i = 0; i < LEN - 1; i++) {
 			array[i+ip_n1] = xx[i] + a[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 1.);
+		dummy(a, b, c, d, e, aa, bb, cc, 1.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -4965,7 +4967,7 @@ int s424()
 		for (int i = 0; i < LEN - 1; i++) {
 			xx[i+ip_n1] = array[i] + a[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 1.);
+		dummy(a, b, c, d, e, aa, bb, cc, 1.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5007,7 +5009,7 @@ int s491(int* RESTRICT ip)
 		for (int i = 0; i < LEN; i++) {
 			a[ip[i]] = b[i] + c[i] * d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5035,7 +5037,7 @@ int s4112(int* RESTRICT ip, TYPE s)
 		for (int i = 0; i < LEN; i++) {
 			a[i] += b[ip[i]] * s;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5064,7 +5066,7 @@ int s4113(int* RESTRICT ip)
 		for (int i = 0; i < LEN; i++) {
 			a[ip[i]] = b[ip[i]] + c[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5096,7 +5098,7 @@ int s4114(int* RESTRICT ip, int n1)
 			a[i] = b[i] + c[LEN-k+1-2] * d[i];
 			k += ip_n5;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5127,7 +5129,7 @@ int s4115(int* RESTRICT ip)
 		for (int i = 0; i < LEN; i++) {
 			sum += a[i] * b[ip[i]];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5161,7 +5163,7 @@ int s4116(int* RESTRICT ip, int j, int inc)
 			off = inc + i;
 			sum += a[off] * aa[(j-1)*LEN2+ip[i]];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5189,7 +5191,7 @@ int s4117()
 		for (int i = 0; i < LEN; i++) {
 			a[i] = b[i] + c[i/ip_n2] * d[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5219,7 +5221,7 @@ int va()
 		for (int i = 0; i < LEN; i++) {
 			a[i] = b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5248,7 +5250,7 @@ int vag( int* RESTRICT ip)
 		for (int i = 0; i < LEN; i++) {
 			a[i] = b[ip[i]];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5277,7 +5279,7 @@ int vas( int* RESTRICT ip)
 		for (int i = 0; i < LEN; i++) {
 			a[ip[i]] = b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5306,7 +5308,7 @@ int vif()
 				a[i] = b[i];
 			}
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5333,7 +5335,7 @@ int vpv()
 		for (int i = 0; i < LEN; i++) {
 			a[i] += b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5361,7 +5363,7 @@ int vtv()
 		for (int i = 0; i < LEN; i++) {
 			a[i] *= b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5388,7 +5390,7 @@ int vpvtv()
 		for (int i = 0; i < LEN; i++) {
 			a[i] += b[i] * c[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5415,7 +5417,7 @@ int vpvts( TYPE s)
 		for (int i = 0; i < LEN; i++) {
 			a[i] += b[i] * s;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5442,7 +5444,7 @@ int vpvpv()
 		for (int i = 0; i < LEN; i++) {
 			a[i] += b[i] + c[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5469,7 +5471,7 @@ int vtvtv()
 		for (int i = 0; i < LEN; i++) {
 			a[i] = a[i] * b[i] * c[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5498,7 +5500,7 @@ int vsumr()
 		for (int i = 0; i < LEN; i++) {
 			sum += a[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, sum);
+		dummy(a, b, c, d, e, aa, bb, cc, sum);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5527,7 +5529,7 @@ int vdotr()
 		for (int i = 0; i < LEN; i++) {
 			dot += a[i] * b[i];
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, dot);
+		dummy(a, b, c, d, e, aa, bb, cc, dot);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
@@ -5570,7 +5572,7 @@ int vbor()
 			d1 = d1 * e1 * f1;
 			x[i] = a1 * b1 * c1 * d1;
 		}
-		//dummy(a, b, c, d, e, aa, bb, cc, 0.);
+		dummy(a, b, c, d, e, aa, bb, cc, 0.);
 	}
 	end_t = clock(); clock_dif = end_t - start_t;
 	clock_dif_sec = (double) (clock_dif/1000000.0);
