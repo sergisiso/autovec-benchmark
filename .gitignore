@@ -1,1 +1,6 @@
-scripts/compilers
+scripts/results-test
+*.o
+*.exe
+*.doping.cpp
+*_report.txt
+*.ppm

@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     // Lattice Boltzmann, serial implementation
     //
     double lattice_boltzmann_t = 1e30;
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 1; ++i) {
         reset_and_start_timer();
         lattice_boltzmann_serial(array, array_new, array_pot, lbphi, lbg, lbincp, lbtf, lbbdforcex, lbbdforcey, lbbdforcez);
         double dt = get_elapsed_msec();

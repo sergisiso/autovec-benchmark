@@ -26,7 +26,19 @@
 # Don't change the order of the following 3 statements
 APP := mandelbrot
 include ../common.mk
-NAME=$(APP)_$(VECSTRING)_$(SPECSTRING)
+
+ifndef PREFIX
+PREFIXCMD ?=
+else
+$(info Here)
+PREFIXCMD := $(PREFIX) --
+EXTRALDFLAGS = -I/home/sergi/workspace/phd/doping/bin /home/sergi/workspace/phd/doping/bin/libdoping.so -rdynamic -ldl
+PREFSTRING = _doping
+endif
+
+NAME=$(APP)_$(VECSTRING)_$(SPECSTRING)$(PREFSTRING)
+
+#CC := $(PREFIX) $(CC)
 
 all: compile
 
@@ -37,11 +49,12 @@ compileall:
 	make compile NOVEC=no SPECIALIZE=no
 
 compile:
-	${CC} ${CFLAGS} ${REPORT} -c -o ${NAME}.o ${APP}_serial.cpp
-	${CC} ${CFLAGS} -c ${ASM}$(NAME).s ${APP}_serial.cpp
-	${CC} ${CFLAGS} -o ${NAME}.exe ${NAME}.o ${APP}.cpp
+	$(PREFIXCMD) ${CC} ${CFLAGS} ${REPORT} -I. -c -o ${NAME}.o ${APP}_serial.cpp
+	# ${CC} ${CFLAGS} -c ${ASM}$(NAME).s ${APP}_serial.cpp
+	${CC} ${CFLAGS} -o ${NAME}.exe ${NAME}.o ${APP}.cpp $(EXTRALDFLAGS)
+	
 
 clean:
-	rm -rf *.ppm *.o *.optrpt gnu_* *.exe
+	rm -rf *.ppm *.o *.optrpt gnu_* *.exe *.doping.cpp
 
 

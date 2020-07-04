@@ -70,7 +70,7 @@ writePPM(int *buf, int width, int height, const char *fn) {
 
 
 int main(int argc, char *argv[]) {
-    static unsigned int test_iterations = 5;
+    static unsigned int test_iterations = 1;
     unsigned int width = 1024;
     unsigned int height = 1024;
     float x0 = -2;

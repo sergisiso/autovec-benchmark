@@ -41,6 +41,12 @@
 #include <iostream>
 #include <cstdlib>
 
+ 
+void mandelbrot_serial(float x0p, float y0p, float x1p, float y1p,
+                       int widthp, int heightp, int maxIterationsp,
+                       int output[])
+{
+    
 #if SPECIALIZE
     constexpr float x0 = -2.f;
     constexpr float yy0 = -1.f;
@@ -58,12 +64,7 @@
     int height;
     int maxIterations;
 #endif
- 
-void mandelbrot_serial(float x0p, float y0p, float x1p, float y1p,
-                       int widthp, int heightp, int maxIterationsp,
-                       int output[])
-{
-    
+
 #if SPECIALIZE
     //std::cout << " specialize -------------" << std::endl;
 #else
