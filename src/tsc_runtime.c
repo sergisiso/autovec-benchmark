@@ -217,8 +217,6 @@ void allocate_arrays(
 
 int set1d(TYPE* RESTRICT arr, TYPE value, int stride)
 {
-    ASSUMEALIGN(arr)
-
 	if (stride == -1) {
 		for (int i = 0; i < LEN; i++) {
 			arr[i] = 1. / (TYPE) (i+1);
@@ -237,7 +235,6 @@ int set1d(TYPE* RESTRICT arr, TYPE value, int stride)
 
 int set1ds(int _n, TYPE* RESTRICT arr, TYPE value, int stride)
 {
-    //ASSUMEALIGN(arr)
 	if (stride == -1) {
 		for (int i = 0; i < LEN; i++) {
 			arr[i] = 1. / (TYPE) (i+1);
@@ -247,7 +244,7 @@ int set1ds(int _n, TYPE* RESTRICT arr, TYPE value, int stride)
 			arr[i] = 1. / (TYPE) ((i+1) * (i+1));
 		}
 	} else {
-		for (int i = 0; i < LEN; i += stride) {
+		for (int i = 0; i < _n; i += stride) {
 			arr[i] = value;
 		}
 	}
@@ -408,13 +405,13 @@ int init(char* name)
 		set1d(d, any,frac);
 		set1d(e, any,frac);
 	} else if (!strcmp(name, "s125 ")) {
-		set1ds(LEN*LEN, array,zero,unit);
+		set1ds(LEN2*LEN2, array,zero,unit);
 		set2d(aa, one,unit);
 		set2d(bb,half,unit);
 		set2d(cc, two,unit);
 	} else if (!strcmp(name, "s126 ")) {
 		set2d(bb, one,unit);
-		set1ds(LEN*LEN,array,any,frac);
+		set1ds(LEN2*LEN2,array,any,frac);
 		set2d(cc, any,frac);
 	} else if (!strcmp(name, "s127 ")) {
 		set1d(a,zero,unit);
@@ -435,7 +432,7 @@ int init(char* name)
 		set1d(b, any,frac);
 		set1d(c, any,frac);
 	} else if (!strcmp(name, "s141 ")) {
-		set1ds(LEN*LEN,array, one,unit);
+		set1ds(LEN2*LEN2,array, one,unit);
 		set2d(bb, any,frac2);
 	} else if (!strcmp(name, "s151 ")) {
 		set1d(a, one,unit);
@@ -626,7 +623,7 @@ int init(char* name)
 	} else if (!strcmp(name, "s279 ")) {
 		set1ds(LEN/2,a,-one,unit);
 		set1ds(LEN/2,&a[LEN/2],one,unit);
-//		set1d(a, -one,unit);
+		set1d(a, -one,unit);
 		set1d(b, one,unit);
 		set1d(c, any,frac);
 		set1d(d, any,frac);
@@ -5974,7 +5971,7 @@ int main(int argc, char *argv[]){
 	vbor();fflush(stdout);
 #endif
 
-    /*free(X);
+    free(X);
     free(Y);
     free(Z);
     free(U);
@@ -5991,7 +5988,8 @@ int main(int argc, char *argv[]){
     free(bb);
     free(cc);
     free(tt);
-    free(xx);*/
+    free(xx);
+    free(ip);
 	return 0;
 }
 
