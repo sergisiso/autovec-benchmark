@@ -4,3 +4,4 @@ scripts/results-test
 *.doping.cpp
 *_report.txt
 *.ppm
+__pycache__
