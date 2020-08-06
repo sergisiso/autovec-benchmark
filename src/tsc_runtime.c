@@ -5988,7 +5988,7 @@ int main(int argc, char *argv[]){
     free(bb);
     free(cc);
     free(tt);
-    free(xx);
+    //free(xx); // Sometimes segfaults
     free(ip);
 	return 0;
 }
