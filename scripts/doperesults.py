@@ -33,7 +33,6 @@ import shutil
 import statistics
 import argparse
 from collections import defaultdict
-import matplotlib.pyplot as plt
 from plotutils import *
 
 NUM_REPS = 1
@@ -156,7 +155,8 @@ def geometric_mean(arr):
     return (float)(gm)
 
 
-def load_data(data, compiler, category, parameters, parameters_path, baseline_path):
+def load_data(data, compiler, category, parameters, parameters_path,
+        baseline_path, expected_path=None):
 
     if parameters != "RUNTIME_ALL":
         print("Just loading 'runtime all' for now!")
@@ -177,6 +177,8 @@ def load_data(data, compiler, category, parameters, parameters_path, baseline_pa
     basevecresults = []
     basenovecresults = []
 
+    expectedvecresults = []
+
     file_number = 0
     try:
         for i in range(NUM_REPS):
@@ -185,10 +187,15 @@ def load_data(data, compiler, category, parameters, parameters_path, baseline_pa
             novecf = open(os.path.join(parameters_path, novecfname.replace('0', str(i))), 'r')
             basevecf = open(os.path.join(baseline_path, vecfname.replace('0', str(i))), 'r')
             basenovecf = open(os.path.join(baseline_path, novecfname.replace('0', str(i))), 'r')
-            vecresults.append(vecf.readlines())
-            novecresults.append(novecf.readlines())
-            basevecresults.append(basevecf.readlines())
-            basenovecresults.append(basenovecf.readlines())
+            vecresults.append([line for line in vecf.readlines() if line[0] == 'S' or
+                (line.split() and line.split()[0] == "DopingRuntime:")])
+            novecresults.append([line for line in novecf.readlines() if line[0] == 'S' or
+                (line.split() and line.split()[0] == "DopingRuntime:")])
+            basevecresults.append([line for line in basevecf.readlines() if line[0] == 'S'])
+            basenovecresults.append([line for line in basenovecf.readlines() if line[0] == 'S'])
+            if expected_path:
+                expectedvecf = open(os.path.join(expected_path, vecfname.replace('0', str(i))), 'r')
+                expectedvecresults.append([line for line in expectedvecf.readlines() if line[0] == 'S'])
     except FileNotFoundError:
         if file_number == 0:
             print("Warning, files ", os.path.join(parameters_path, vecfname),
@@ -214,6 +221,7 @@ def load_data(data, compiler, category, parameters, parameters_path, baseline_pa
             novectimes = []
             basevectimes = []
             basenovectimes = []
+            expectedvectimes = []
             for i in range(NUM_REPS):
                 basetest_novec, basenovec_time, cs1 = basenovecresults[i][indx].split()
                 basetest_vec, basevec_time, cs2 = basevecresults[i][indx].split()
@@ -225,6 +233,12 @@ def load_data(data, compiler, category, parameters, parameters_path, baseline_pa
                     _, overhead, _, vec_time, test_vec, _, _, _, _, _, cs4 = vecresults[i][indx].split()
                 else:
                     _, overhead, _, vec_time, test_vec, _, cs4 = vecresults[i][indx].split()
+                if expected_path:
+                    expected_test, expectedvec_time, _ = expectedvecresults[i][indx].split()
+                    if test != expected_test:
+                        print("Expected test mismatch!")
+                        sys.exit(0)
+
 
                 if (test_novec != test or test_vec != test or
                     basetest_novec != test or basetest_vec != test):
@@ -246,6 +260,7 @@ def load_data(data, compiler, category, parameters, parameters_path, baseline_pa
                 novectimes.append(float(novec_time))
                 basevectimes.append(float(basevec_time))
                 basenovectimes.append(float(basenovec_time))
+                expectedvectimes.append(float(expectedvec_time))
 
             # Get the minimum in order to minimize system noise.
             overhead = statistics.mean(overheads)
@@ -253,6 +268,7 @@ def load_data(data, compiler, category, parameters, parameters_path, baseline_pa
             novec_time = min(novectimes)
             basevec_time = min(basevectimes)
             basenovec_time = min(basenovectimes)
+            expectedvec_time = min(expectedvectimes)
             # vecstd = statistics.stdev(vectimes)
             # novecstd = statistics.stdev(novectimes)
 
@@ -270,7 +286,8 @@ def load_data(data, compiler, category, parameters, parameters_path, baseline_pa
             else:
                 data[compiler][category][parameters][test] = [
                     overhead, vec_time, novec_time, novec_time/vec_time,
-                    basevec_time, basenovec_time, basenovec_time/basevec_time
+                    basevec_time, basenovec_time, basenovec_time/basevec_time,
+                    expectedvec_time
                     ]
 
 
@@ -306,10 +323,12 @@ def data_sanity_check(data):
         # does the difference comes from baseline of vector?
         print("")
         print("Tests that regress with Doping:")
+        speedups = []
         regressions = 0
         same_perf = 0
         small_impr = 0
         big_impr = 0
+        expected_sum = 0
         for compiler in sorted(data.keys()):
             for category in data[compiler].keys():
 
@@ -317,19 +336,24 @@ def data_sanity_check(data):
                 for test, results in data[compiler][category]['RUNTIME_ALL'].items():
                     # [doping_overhead, performance vec, performance novec,
                     # veff, baseline vec, baseline novec, baseline veff]
-                    _, doping, _, _, baseline, novec, _ = results
+                    _, doping, _, _, baseline, novec, _, expected = results
+                    speedups.append(baseline/doping)
 
-                    if baseline/doping < 0.95:  # or novec*1.1 < baseline:
+                    if baseline/doping < 0.9:  # or novec*1.1 < baseline:
                         regressions = regressions + 1
                         found = True
                         print(test, "has doping=", doping, " baseline=",
                               baseline, " novec=", novec)
-                    elif baseline/doping < 1.05:
+                    elif baseline/doping < 1.1:
                         same_perf = same_perf + 1
                     elif baseline/doping < 2:
                         small_impr = small_impr + 1
                     else:
                         big_impr = big_impr + 1
+
+                    if doping > expected*1.1:
+                        print(test, "has doping=", doping, " expected=", expected)
+                        expected_sum += 1
 
                 if found:
                     print("in ", compiler, category)
@@ -338,6 +362,10 @@ def data_sanity_check(data):
         print("Same perf in ", same_perf)
         print("Small improvement in ", small_impr)
         print("Big improvement in ", big_impr)
+        print("Tests that are less than expected: ", expected_sum)
+        print("Average:", statistics.mean(speedups),
+              " median:", statistics.median(speedups),
+              " geomean:", geometric_mean(speedups))
         print("")
 
 
@@ -354,7 +382,7 @@ def print_table(data):
             for test, results in data[compiler][category]['RUNTIME_ALL'].items():
                 # [doping_overhead, performance vec, performance novec, veff,
                 #  baseline vec, baseline novec, baseline veff]
-                overhead, doping, _, _, baseline, novec, _ = results
+                overhead, doping, _, _, baseline, novec, _, _ = results
                 print("{:<8} {:<8} {:<8} {:<8} {:<8} ".format(
                     test, baseline, doping, overhead, baseline/doping))
 
@@ -372,8 +400,25 @@ def nested_dict(level, element_type):
     return defaultdict(lambda: nested_dict(level-1, element_type))
 
 
-def plot_compiler(data):
-    pass
+def plot_compiler(data, outputdir):
+    import matplotlib.pyplot as plt
+    plt.figure()
+
+    overheads = []
+    speedups = []
+
+    compiler = [k for k in data.keys()][0]
+    for category in data[compiler].keys():
+        for test, results in data[compiler][category]['RUNTIME_ALL'].items():
+            overhead, doping, _, _, baseline, novec, _, _ = results
+            overheads.append(overhead)
+            speedups.append(baseline/doping)
+
+    boxplot = plt.boxplot(overheads)
+
+    plt.show()
+    boxplot = plt.boxplot(speedups)
+    plt.show()
 
 
 def main():
@@ -415,24 +460,26 @@ def main():
     for category in getfolders(args.testdir):
         category_path = os.path.join(args.testdir, category)
         baseline_category_path = os.path.join(baseline_folder, category)
-        for parameter in getfolders(category_path):
-            parameters_path = os.path.join(category_path, parameter)
-            baseline_parameters_path = os.path.join(baseline_category_path,
-                                                    parameter)
-            load_data(data, compiler, category, parameter, parameters_path,
-                      baseline_parameters_path)
+        parameter = 'RUNTIME_ALL'
+        doping_path = os.path.join(category_path, parameter)
+        baseline_path = os.path.join(baseline_category_path, parameter)
+        expected_path = os.path.join(baseline_category_path, 'RUNTIME_ATTRIBUTES')
+        # expected_path = os.path.join(baseline_category_path, 'None')
+        load_data(data, compiler, category, parameter, doping_path,
+                  baseline_path, expected_path)
 
     print("\nData sanity check (necessary for plots) ...")
     data_sanity_check(data)
 
-    if (args.print_results):
+    if args.print_results:
         print_table(data)
 
     if ALL_CATEGORIES in getfolders(args.testdir):
         print("Error: It should contain all categories!")
         sys.exit(-3)
 
-    plot_compiler(data, outputdir)
+    if False:
+        plot_compiler(data, outputdir)
 
 
 if __name__ == "__main__":
