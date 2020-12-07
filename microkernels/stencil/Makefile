@@ -27,32 +27,7 @@
 APP := stencil
 include ../common.mk
 
-ifndef PREFIX
-PREFIXCMD ?=
-else
-$(info Here)
-PREFIXCMD := $(PREFIX) --
-EXTRALDFLAGS = -I/home/sergi/workspace/phd/doping/bin /home/sergi/workspace/phd/doping/bin/libdoping.so -rdynamic -ldl
-PREFSTRING = _doping
-endif
-
-NAME=$(APP)_$(VECSTRING)_$(SPECSTRING)$(PREFSTRING)
-
-#CC := $(PREFIX) $(CC)
-
 all: compile
-
-compileall:
-	make compile NOVEC=yes SPECIALIZE=yes
-	make compile NOVEC=no SPECIALIZE=yes
-	make compile NOVEC=yes SPECIALIZE=no
-	make compile NOVEC=no SPECIALIZE=no
-
-compile:
-	$(PREFIXCMD) ${CC} ${CFLAGS} ${REPORT} -I. -c -o ${NAME}.o ${APP}_serial.cpp
-	# ${CC} ${CFLAGS} -c ${ASM}$(NAME).s ${APP}_serial.cpp
-	${CC} ${CFLAGS} -o ${NAME}.exe ${NAME}.o ${APP}.cpp $(EXTRALDFLAGS)
-	
 
 clean:
 	rm -rf *.ppm *.o *.optrpt gnu_* *.exe *.doping.cpp

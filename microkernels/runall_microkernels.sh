@@ -31,7 +31,7 @@ echo "RTCT auto-vectorization test"
 #module load mypgi18.4
 #module load myclang6
 #module load ibm/13.1.3
-module load mygcc8
+#module load mygcc8
 
 isa=$1
 #compilers=(gnu intel pgi clang)
