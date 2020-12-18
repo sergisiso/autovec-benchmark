@@ -58,7 +58,7 @@
 
 extern void ao_serial(int w, int h, float image[]);
 
-static unsigned int test_iterations = 5;
+static unsigned int test_iterations = 1;
 static unsigned int width, height;
 static unsigned char *img;
 static float *fimg;
@@ -105,12 +105,9 @@ savePPM(const char *fname, int w, int h)
 int main(int argc, char **argv)
 {
     if (argc == 1){
-        width = 256;
-        height = 256;
-    }else if (argc < 3) {
-        printf ("%s\n", argv[0]);
-        printf ("Usage: ao [width] [height] [ispc iterations] [tasks iterations] [serial iterations]\n");
-        getchar();
+        width = 1024;
+        height = 1024;
+    }else{
         exit(-1);
     }
 
@@ -132,9 +129,12 @@ int main(int argc, char **argv)
         minTimeSerial = std::min(minTimeSerial, t);
     }
 
+    float sum = 0.;
+    for (int i = 0; i < width * height; ++i)
+        sum += fimg[i];
     // Report more results, save another image...
-    printf("[ao serial]:\t\t[%.3f] mseconds (%d x %d image)\n", minTimeSerial, 
-           width, height);
+    printf("[ao serial]:\t\t%.3f mseconds (%d x %d image, chksum %f)\n", minTimeSerial, 
+           width, height, sum);
     savePPM("ao-serial.ppm", width, height);
         
     return 0;

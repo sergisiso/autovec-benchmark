@@ -153,7 +153,16 @@ run:
 rundoping:
 	${MAKE} run PREFIX=dope NOVEC=no SPECIALIZE=no
 
+runrt:
+	${MAKE} run NOVEC=no SPECIALIZE=no
+
+runct:
+	${MAKE} run NOVEC=no SPECIALIZE=yes
+
 runall:
 	${MAKE} run NOVEC=no SPECIALIZE=no
 	${MAKE} run NOVEC=no SPECIALIZE=yes
 	${MAKE} run PREFIX=dope NOVEC=no SPECIALIZE=no
+
+clean:
+	rm -rf *.ppm *.o *.optrpt gnu_* *.exe *.doping.cpp doping_loop_*

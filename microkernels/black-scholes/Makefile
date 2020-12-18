@@ -28,8 +28,3 @@ APP := black-scholes
 include ../common.mk
 
 all: compile
-
-clean:
-	rm -rf *.ppm *.o *.optrpt gnu_* *.exe *.doping.cpp
-
-

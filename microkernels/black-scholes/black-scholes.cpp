@@ -60,7 +60,7 @@ static void usage() {
 
 
 int main(int argc, char *argv[]) {
-    int nOptions = 1024*1024;
+    int nOptions = 1024*1024*128;
 
     for (int i = 1; i < argc; ++i) {
         if (strncmp(argv[i], "--count=", 8) == 0) {
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
             sum += result[i];
         bs_serial = std::min(bs_serial, dt);
     }
-    printf("[black-scholes serial]:\t\t[%.3f] mseconds (avg %f)\n", bs_serial, 
+    printf("[black-scholes serial]:\t\t%.3f mseconds (avg %f)\n", bs_serial, 
            sum / nOptions);
 
 

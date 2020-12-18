@@ -40,6 +40,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <cassert>
 
  
 void mandelbrot_serial(float x0p, float y0p, float x1p, float y1p,
@@ -49,17 +50,24 @@ void mandelbrot_serial(float x0p, float y0p, float x1p, float y1p,
     
 #if SPECIALIZE
     constexpr float x0 = -2.f;
-    constexpr float yy0 = -1.f;
+    constexpr float y0 = -1.f;
     constexpr float x1 = 1.f;
-    constexpr float yy1 = 1.f;
-    constexpr int width = 768;
-    constexpr int height = 512;
+    constexpr float y1 = 1.f;
+    constexpr int width = 1024*4;
+    constexpr int height = 1024*4;
     constexpr int maxIterations = 256;
+    assert(x0 == x0p);
+    assert(y0 == y0p);
+    assert(x1 == x1p);
+    assert(y1 == y1p);
+    assert(width == widthp);
+    assert(height == heightp);
+    assert(maxIterations == maxIterationsp);
 #else
     float x0;
-    float yy0;
+    float y0;
     float x1;
-    float yy1;
+    float y1;
     int width;
     int height;
     int maxIterations;
@@ -70,22 +78,22 @@ void mandelbrot_serial(float x0p, float y0p, float x1p, float y1p,
 #else
     //std::cout << " runtime -------------" << std::endl;
     x0 = x0p;
-    yy0 = y0p;
+    y0 = y0p;
     x1 = x1p;
-    yy1 = y1p;
+    y1 = y1p;
     width = widthp;
     height = heightp;
     maxIterations = maxIterationsp;
 #endif
                        
     float dx = (x1 - x0) / width;
-    float dy = (yy1 - yy0) / height;
+    float dy = (y1 - y0) / height;
 
     #pragma omp simd
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; ++i) {
             float x = x0 + i * dx;
-            float y = yy0 + j * dy;
+            float y = y0 + j * dy;
 
             int index = (j * width + i);
             float z_re = x, z_im = y;

@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 {
     int mask[9] = {1,2,3,0,0,0,3,2,1};
     int m = 3;
-    int n = 8192;
+    int n = 1024*20;
 
     int *image = new int[n*n];
     int *out = new int[(n-3)*(n-3)];
@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     // minimum time.
     //
     double minTimeSerial = 1e30;
-    for (unsigned int i = 0; i < 5; i++) {
+    for (unsigned int i = 0; i < 1; i++) {
         reset_and_start_timer();
         BM_convolve(image, out, n, m, mask);
         double t = get_elapsed_msec();
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     }
 
     // Report more results, save another image...
-    printf("[convolution serial]:\t\t[%.3f] mseconds (%d x %d image)\n", minTimeSerial, 
+    printf("[convolution serial]:\t\t%.3f mseconds (%d x %d image)\n", minTimeSerial, 
            n, m);
         
     return 0;

@@ -24,8 +24,6 @@
 # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-echo "RTCT auto-vectorization test"
-
 #module load intel/18.2.199
 
 #module load mypgi18.4
@@ -36,28 +34,32 @@ echo "RTCT auto-vectorization test"
 isa=$1
 #compilers=(gnu intel pgi clang)
 compilers=(gnu)
-tests=(ao binomial black-scholes convolution mandelbrot matrixmult stencil)
+#tests=(ao binomial black-scholes convolution mandelbrot matrixmult stencil)
+tests=(ao binomial black-scholes convolution mandelbrot stencil lattice_boltzmann)
 
 for c in "${compilers[@]}"; do
     echo "---" > compiler_${c}_${isa}_output.txt
-    echo " ############"  > output-$c-${isa}.txt
-    echo " # Using compiler: $c , isa:$isa "  >> output-$c-${isa}.txt
-    echo " ############" >> output-$c-${isa}.txt
+    echo " ############"  | tee output-$c-${isa}.txt
+    echo " # Using compiler: $c , isa:$isa "  | tee -a output-$c-${isa}.txt
+    echo " ############" | tee -a output-$c-${isa}.txt
     for t in "${tests[@]}"; do
-        echo "#--------------" >> output-$c-${isa}.txt
+        echo "#--------------" | tee -a output-$c-${isa}.txt
         cd $t
         make clean &> /dev/null
-        TEST_COMPILER=$c VECTOR_ISA=$isa make &>> ../compiler_${c}_${isa}_output.txt
-        rtvec=$(./${t}.rt-vec | grep "$t serial" | awk '{print $3}')
-        rtnovec=$(./${t}.rt-novec | grep "$t serial" | awk '{print $3}')
-        ctvec=$(./${t}.ct-vec | grep "$t serial" | awk '{print $3}')
-        ctnovec=$(./${t}.ct-novec | grep "$t serial" | awk '{print $3}')
+        TEST_COMPILER=$c VECTOR_ISA=$isa make compileall \
+            &>> ../compiler_${c}_${isa}_output.txt
+        rtvec=$(make runrt | grep "$t serial" | awk '{print $3}')
+        #rtnovec=$(./${t}.rt-novec | grep "$t serial" | awk '{print $3}')
+        ctvec=$(make runct | grep "$t serial" | awk '{print $3}')
+        #ctnovec=$(./${t}.ct-novec | grep "$t serial" | awk '{print $3}')
+        rtdoping=$(make rundoping | grep "$t serial" | awk '{print $3}')
 
         cd ..
-        echo "$t RT NO-VEC cycles = $rtnovec" >> output-$c-${isa}.txt
-        echo "$t RT VEC cycles = $rtvec" >> output-$c-${isa}.txt
-        echo "$t CT NO-VEC cycles = $ctnovec" >> output-$c-${isa}.txt
-        echo "$t CT VEC cycles = $ctvec"  >> output-$c-${isa}.txt
+        #echo "$t RT NO-VEC cycles = $rtnovec" | tee -a output-$c-${isa}.txt
+        echo "$t RT VEC = $rtvec" | tee -a output-$c-${isa}.txt
+        #echo "$t CT NO-VEC cycles = $ctnovec" | tee -a output-$c-${isa}.txt
+        echo "$t CT VEC = $ctvec"  | tee -a output-$c-${isa}.txt
+        echo "$t DOPING VEC = $rtdoping"  | tee -a output-$c-${isa}.txt
     done
 done
 
