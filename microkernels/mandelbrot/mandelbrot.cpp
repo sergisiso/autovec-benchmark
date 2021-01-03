@@ -71,8 +71,8 @@ writePPM(int *buf, int width, int height, const char *fn) {
 
 int main(int argc, char *argv[]) {
     static unsigned int test_iterations = 1;
-    unsigned int width = 1024;
-    unsigned int height = 1024;
+    unsigned int width = 1024*4;
+    unsigned int height = 1024*4;
     float x0 = -2;
     float x1 = 1;
     float y0 = -1;
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
         minSerial = std::min(minSerial, dt);
     }
 
-    printf("[mandelbrot serial]:\t\t[%.3f] mseconds\n", minSerial);
+    printf("[mandelbrot serial]:\t\t%.3f mseconds\n", minSerial);
     writePPM(buf, width, height, "mandelbrot-serial.ppm");
 
     //printf("\t\t\t\t(%.2fx speedup from ISPC)\n", minSerial/minISPC);

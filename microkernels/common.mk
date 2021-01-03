@@ -119,3 +119,50 @@ else
 	SPECSTRING := rt
 endif
 
+
+ifndef PREFIX
+PREFIXCMD ?=
+else
+PREFIXCMD := $(PREFIX) --
+EXTRALDFLAGS = -I/home/sergi/workspace/phd/doping/bin /home/sergi/workspace/phd/doping/bin/libdoping.so -rdynamic -ldl
+PREFSTRING = _doping
+endif
+
+NAME=$(APP)_$(VECSTRING)_$(SPECSTRING)$(PREFSTRING)
+
+compileall:
+	#make compile NOVEC=yes SPECIALIZE=yes
+	#make compile NOVEC=yes SPECIALIZE=no
+	${MAKE} compile NOVEC=no SPECIALIZE=no
+	${MAKE} compile NOVEC=no SPECIALIZE=yes
+	${MAKE} compile PREFIX=dope NOVEC=no SPECIALIZE=no
+
+compiledoping:
+	${MAKE} compile PREFIX=dope NOVEC=no SPECIALIZE=no
+
+assembly:
+	${CC} ${CFLAGS} -c ${ASM}$(NAME).s ${APP}_serial.cpp
+
+compile:
+	$(PREFIXCMD) ${CC} ${CFLAGS} ${REPORT} -I. -c -o ${NAME}.o ${APP}_serial.cpp
+	${CC} ${CFLAGS} -o ${NAME}.exe ${NAME}.o ${APP}.cpp $(EXTRALDFLAGS)
+
+run:
+	./${NAME}.exe
+
+rundoping:
+	${MAKE} run PREFIX=dope NOVEC=no SPECIALIZE=no
+
+runrt:
+	${MAKE} run NOVEC=no SPECIALIZE=no
+
+runct:
+	${MAKE} run NOVEC=no SPECIALIZE=yes
+
+runall:
+	${MAKE} run NOVEC=no SPECIALIZE=no
+	${MAKE} run NOVEC=no SPECIALIZE=yes
+	${MAKE} run PREFIX=dope NOVEC=no SPECIALIZE=no
+
+clean:
+	rm -rf *.ppm *.o *.optrpt gnu_* *.exe *.doping.cpp doping_loop_*

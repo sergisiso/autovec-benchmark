@@ -198,11 +198,16 @@ def load_data(data, compiler, category, parameters, parameters_path,
                 expectedvecresults.append([line for line in expectedvecf.readlines() if line[0] == 'S'])
     except FileNotFoundError:
         if file_number == 0:
-            print("Warning, files ", os.path.join(parameters_path, vecfname),
-                  " or ", os.path.join(parameters_path, novecfname),
-                  " not found!")
+            print("Warning, these files are needed:")
+            print(" - ", os.path.join(parameters_path, vecfname))
+            print(" - ", os.path.join(parameters_path, novecfname))
+            print(" - ", os.path.join(baseline_path, vecfname))
+            print(" - ", os.path.join(baseline_path, novecfname))
+            if expected_path:
+                print(" - ", os.path.join(expected_path, vecfname))
         else:
-            print("Warning: Not all files found in ", parameters_path)
+            print("Warning: Not all files for repetition ", file_number,
+                  " found in ", parameters_path)
         sys.exit(0)
 
     for indx, base in enumerate(basevecresults[0]):
@@ -464,7 +469,7 @@ def main():
         doping_path = os.path.join(category_path, parameter)
         baseline_path = os.path.join(baseline_category_path, parameter)
         expected_path = os.path.join(baseline_category_path, 'RUNTIME_ATTRIBUTES')
-        # expected_path = os.path.join(baseline_category_path, 'None')
+        #expected_path = os.path.join(baseline_category_path, 'None')
         load_data(data, compiler, category, parameter, doping_path,
                   baseline_path, expected_path)
 

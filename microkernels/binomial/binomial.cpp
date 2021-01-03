@@ -61,7 +61,7 @@ static void usage() {
 
 
 int main(int argc, char *argv[]) {
-    int nOptions = 128*1024;
+    int nOptions = 1024*1024;
 
     for (int i = 1; i < argc; ++i) {
         if (strncmp(argv[i], "--count=", 8) == 0) {
@@ -103,8 +103,8 @@ int main(int argc, char *argv[]) {
             sum += result[i];
         binomial_serial = std::min(binomial_serial, dt);
     }
-    printf("[binomial serial]:\t\t[%.3f] mseconds (avg %f)\n", 
-           binomial_serial, sum / nOptions);
+    printf("[binomial serial]:\t\t%.3f mseconds (chksum %f)\n", 
+           binomial_serial, sum);
 
     return 0;
 }

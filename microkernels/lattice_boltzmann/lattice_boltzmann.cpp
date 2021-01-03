@@ -58,8 +58,7 @@ int main(int argc, char *argv[]) {
         double dt = get_elapsed_msec();
         lattice_boltzmann_t = std::min(lattice_boltzmann_t, dt);
     }
-    printf("[lattice_boltzmann serial]:\t\t[%.3f] mseconds (avg %f)\n", 
-           lattice_boltzmann_t, "result");
+    printf("[lattice_boltzmann serial]:\t\t%.3f mseconds \n", lattice_boltzmann_t);
 
     return 0;
 }
