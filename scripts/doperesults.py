@@ -342,7 +342,7 @@ def data_sanity_check(data):
                     if baseline/doping < 0.9:  # or novec*1.1 < baseline:
                         regressions = regressions + 1
                         found = True
-                        print(test, "has doping=", doping, " baseline=",
+                        print(test, baseline/doping, "has doping=", doping, " baseline=",
                               baseline, " novec=", novec)
                     elif baseline/doping < 1.1:
                         same_perf = same_perf + 1
@@ -352,7 +352,7 @@ def data_sanity_check(data):
                         big_impr = big_impr + 1
 
                     if doping > expected*1.1:
-                        print(test, "has doping=", doping, " expected=", expected)
+                        print(test, expected/doping, "has doping=", doping, " expected=", expected)
                         expected_sum += 1
 
                 if found:
