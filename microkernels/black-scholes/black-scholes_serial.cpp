@@ -1,7 +1,9 @@
-/*  Copyright (c) 2019, Sergi siso 
+/*  Copyright (c) 2019-21, Sergi Siso
 
-  This file incorporates work covered by the following copyright and  
-  permission notice: 
+  Modified from: https://github.com/ispc/ispc/tree/master/examples
+
+  This file incorporates work covered by the following copyright and
+  permission notice:
 
   Copyright (c) 2010-2011, Intel Corporation
   All rights reserved.
@@ -38,15 +40,14 @@
   Modified from: https://github.com/ispc/ispc/tree/master/examples
 */
 
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS
-#define NOMINMAX
-#pragma warning (disable: 4244)
-#pragma warning (disable: 4305)
-#endif
-
 #include <math.h>
 #include <algorithm>
+
+#ifdef SPECIALIZE
+#define RESTRICT __restrict__
+#else
+#define RESTRICT __restrict__
+#endif
 
 // Cumulative normal distribution function
 static inline float CND(float X) {
@@ -69,14 +70,9 @@ static inline float CND(float X) {
 }
 
 
-#if SPECIALIZE
-void black_scholes_serial(float * __restrict__ Sa, float * __restrict__ Xa, 
-        float * __restrict__ Ta,  float * __restrict__ ra, float * __restrict__ va,
-        float  * __restrict__ result, int count) {
-#else
-void black_scholes_serial(float Sa[], float Xa[], float Ta[],  float ra[],
-        float va[], float result[], int count) {
-#endif
+void black_scholes_serial(float * RESTRICT Sa, float * RESTRICT Xa, 
+        float * RESTRICT Ta,  float * RESTRICT ra, float * RESTRICT va,
+        float * RESTRICT result, int count) {
 
     for (int i = 0; i < count; ++i) {
         float S = Sa[i], X = Xa[i];

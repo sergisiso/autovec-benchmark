@@ -1,4 +1,6 @@
-/*  Copyright (c) 2019, Sergi siso 
+/*  Copyright (c) 2019-2021, Sergi Siso
+
+  Extended from: https://github.com/ispc/ispc/tree/master/examples
 
   This file incorporates work covered by the following copyright and  
   permission notice: 
@@ -35,14 +37,14 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 */
 /*
-  Extended from: https://github.com/ispc/ispc/tree/master/examples
   Based on Syoyo Fujita's aobench: http://code.google.com/p/aobench
 */
 
 #include <stdlib.h>
 #include <math.h>
+#include <cassert>
 
-#if SPECIALIZE
+#ifdef SPECIALIZE
 constexpr int NAO_SAMPLES = 8;
 constexpr int nsubsamples = 2;
 //double M_PI = 3.1415926535f;
@@ -293,7 +295,10 @@ static void ao_scanlines(int y0, int y1, int w, int h,
 
 void ao_serial(int w, int h, 
                float image[]) {
-#ifndef SPECIALIZE
+#ifdef SPECIALIZE
+    assert(NAO_SAMPLES == 8);
+    assert(nsubsamples == 2);
+#else
     NAO_SAMPLES = 8;
     nsubsamples = 2;
 #endif

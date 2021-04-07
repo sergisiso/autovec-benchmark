@@ -1,7 +1,9 @@
-/*  Copyright (c) 2019, Sergi siso 
+/*  Copyright (c) 2019-21, Sergi Siso
 
-  This file incorporates work covered by the following copyright and  
-  permission notice: 
+  Modified from: https://github.com/ispc/ispc/tree/master/examples
+
+  This file incorporates work covered by the following copyright and
+  permission notice:
 
   Copyright (c) 2010-2011, Intel Corporation
   All rights reserved.
@@ -34,40 +36,30 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 */
-/*
-  Modified from: https://github.com/ispc/ispc/tree/master/examples
-*/
-
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS
-#define NOMINMAX
-#pragma warning (disable: 4244)
-#pragma warning (disable: 4305)
-#endif
 
 #include <math.h>
 #include <algorithm>
+#include <cassert>
 
-#if SPECIALIZE
+//#define RESTRICT __restrict__
+#define RESTRICT
+#ifdef SPECIALIZE
 constexpr int BINOMIAL_NUM = 64;
 #else
 int BINOMIAL_NUM;
 #endif
 
 
-#if SPECIALIZE
-void binomial_put_serial(float * __restrict__ Sa, float * __restrict__ Xa,
-        float * __restrict__ Ta, float * __restrict__ ra, float * __restrict__ va,
-        float * __restrict__ result, int count) {
-#else
-void binomial_put_serial(float Sa[], float Xa[], float Ta[], 
-                    float ra[], float va[], 
-                    float result[], int count) {
-#endif
+void binomial_put_serial(float * RESTRICT Sa, float * RESTRICT Xa,
+        float * RESTRICT Ta, float * RESTRICT ra, float * RESTRICT va,
+        float * RESTRICT result, int count) {
 
-#ifndef SPECIALIZE
+#ifdef SPECIALIZE
+    assert(BINOMIAL_NUM == 64);
+#else
     BINOMIAL_NUM = 64;
 #endif
+
     float V[BINOMIAL_NUM];
 
     for (int i = 0; i < count; ++i) {
@@ -93,5 +85,3 @@ void binomial_put_serial(float Sa[], float Xa[], float Ta[],
         result[i] = V[0];
     }
 }
-
-

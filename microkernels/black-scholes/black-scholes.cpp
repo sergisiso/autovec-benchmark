@@ -1,4 +1,10 @@
-/*
+/*  Copyright (c) 2019-21, Sergi Siso
+
+  Modified from: https://github.com/ispc/ispc/tree/master/examples
+
+  This file incorporates work covered by the following copyright and
+  permission notice:
+
   Copyright (c) 2010-2011, Intel Corporation
   All rights reserved.
 
@@ -47,11 +53,11 @@ using std::max;
 //using namespace ispc;
 
 extern void black_scholes_serial(float Sa[], float Xa[], float Ta[], 
-                                 float ra[], float va[], 
+                                 float ra[], float va[],
                                  float result[], int count);
 
 /*extern void binomial_put_serial(float Sa[], float Xa[], float Ta[], 
-                                float ra[], float va[], 
+                                float ra[], float va[],
                                 float result[], int count);
 */
 static void usage() {

@@ -1,5 +1,7 @@
 /*  Copyright (c) 2019, Sergi siso 
 
+  Modified from: https://github.com/ispc/ispc/tree/master/examples
+
   This file incorporates work covered by the following copyright and  
   permission notice: 
 
@@ -34,9 +36,6 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 */
-/*
-  Modified from: https://github.com/ispc/ispc/tree/master/examples
-*/
 
 #include <stdint.h>
 
@@ -58,7 +57,6 @@ static inline double rtc(void)
 }
 #endif // !WIN32
             
-static uint64_t start,  end;
 static double  tstart, tend;
 
 static inline void reset_and_start_timer()

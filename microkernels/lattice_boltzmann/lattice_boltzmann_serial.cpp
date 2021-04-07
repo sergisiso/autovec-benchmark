@@ -1,19 +1,23 @@
 #include <cmath>
 #include <utility>
 #include <iostream>
+#include <cassert>
+
 
 int TSIZE;
 int HEndIn;
-#if SPECIALIZE
+#ifdef SPECIALIZE
 constexpr int HIniIn = 1;
 constexpr int FLUIDS = 4;
-int LATS = 19; // Should be constexpr but it causes compiler error?
-constexpr double postequil = 1; // ? which value
+constexpr int LATS = 19;
+constexpr double postequil = 1;
+#define RESTRICT __restrict__
 #else
 int HIniIn;
 int FLUIDS;
 int LATS;
 double postequil;
+#define RESTRICT __restrict__
 #endif
 
 // Define Model - D3Q19
@@ -79,10 +83,16 @@ void initialize(
  
     TSIZE = 84;
     HEndIn = 82;
-#ifndef SPECIALIZE
+#ifdef SPECIALIZE
+    assert(HIniIn == 1);
+    assert(FLUIDS == 4);
+    assert(LATS == 19);
+    assert(postequil == 1);
+#else
     HIniIn = 1;
     FLUIDS = 4;
     LATS= 19;
+    postequil = 1;
 #endif
 
     // Allocate array
@@ -108,37 +118,19 @@ void initialize(
     for(int i = 0; i < t_phi(); i++) lbphi[i] = 1;
 }
 
-#if SPECIALIZE
 void lattice_boltzmann_serial(
-    double * __restrict__ array,
-    double * __restrict__ array_new,
-    double * __restrict__ array_pot,
-    double * __restrict__ lbphi,
-    double * __restrict__ lbg,
-    double * __restrict__ lbincp,
-    double * __restrict__ lbtf,
-    double * __restrict__ lbbdforcex,
-    double * __restrict__ lbbdforcey,
-    double * __restrict__ lbbdforcez) {
-    double * __restrict__ array_ptr;
-#else
-void lattice_boltzmann_serial(
-    double * array,
-    double * array_new,
-    double * array_pot,
-    double * lbphi,
-    double * lbg,
-    double * lbincp,
-    double * lbtf,
-    double * lbbdforcex,
-    double * lbbdforcey,
-    double * lbbdforcez) {
-    double * array_ptr;
-#endif
-
-#ifndef SPECIALIZE
-    postequil = 1; // ? which value
-#endif
+    double * RESTRICT array,
+    double * RESTRICT array_new,
+    double * RESTRICT array_pot,
+    double * RESTRICT lbphi,
+    double * RESTRICT lbg,
+    double * RESTRICT lbincp,
+    double * RESTRICT lbtf,
+    double * RESTRICT lbbdforcex,
+    double * RESTRICT lbbdforcey,
+    double * RESTRICT lbbdforcez) {
+    
+    double * array_ptr; // For swaping array with array_new
 
     for(int iteration = 0; iteration <= 5; iteration++){
 
@@ -146,7 +138,7 @@ void lattice_boltzmann_serial(
 //#pragma omp parallel for schedule(static) collapse(2)
         for(int x=0; x<TSIZE; x++){
             for(int y=0; y<TSIZE; y++){
-#pragma omp simd
+                #pragma omp simd
                 for(int z=0; z<TSIZE; z++){
                     for(int f=0; f<FLUIDS; f++) {
                         double mass=0.0;
@@ -163,7 +155,7 @@ void lattice_boltzmann_serial(
 //#pragma omp parallel for schedule(static) collapse(2)
         for(int x=HIniIn; x<=HEndIn; x++){
             for(int y=HIniIn; y<=HEndIn; y++){
-#pragma omp simd
+                #pragma omp simd
                 for(int z=HIniIn; z<=HEndIn; z++){
                     double factorx[FLUIDS];
                     double factory[FLUIDS];

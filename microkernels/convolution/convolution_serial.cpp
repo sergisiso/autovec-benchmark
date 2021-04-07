@@ -1,21 +1,28 @@
 #include <vector>
 #include <iostream>
+#include <cassert>
 
-#if SPECIALIZE
+#ifdef SPECIALIZE
 static const int mask[9] = {1,2,3,0,0,0,3,2,1};
 constexpr int m = 3;
 constexpr int n = 1024*20;
+//#define RESTRICT __restrict__
+#define RESTRICT
 #else
 int * mask;
 int m;
 int n;
+//#define RESTRICT __restrict__
+#define RESTRICT
 #endif
 
 
-#if SPECIALIZE
-void BM_convolve(int * image, int * out, int p_n, int p_m, int * p_mask) {
+void BM_convolve(int * RESTRICT image, int * RESTRICT out,
+                 int p_n, int p_m, int * RESTRICT p_mask) {
+#ifdef SPECIALIZE
+  assert(m == p_m);
+  assert(n == p_n);
 #else
-void BM_convolve(int * image, int * out, int p_n, int p_m, int * p_mask) {
   n = p_n; // Original had range 16 to 1024
   m = p_m;
   mask = p_mask;

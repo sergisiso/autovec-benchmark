@@ -1,4 +1,10 @@
-/*
+/*  Copyright (c) 2019-2021, Sergi Siso
+
+  Extended from: https://github.com/ispc/ispc/tree/master/examples
+
+  This file incorporates work covered by the following copyright and
+  permission notice:
+
   Copyright (c) 2010-2011, Intel Corporation
   All rights reserved.
 
@@ -54,7 +60,6 @@
 //using namespace ispc;
 
 #include "../timing.h"
-
 
 extern void ao_serial(int w, int h, float image[]);
 
@@ -115,7 +120,7 @@ int main(int argc, char **argv)
     img = new unsigned char[width * height * 3];
     fimg = new float[width * height * 3];
 
-   //
+    //
     // Run the serial path, again test_iteration times, and report the
     // minimum time.
     //
@@ -130,7 +135,7 @@ int main(int argc, char **argv)
     }
 
     float sum = 0.;
-    for (int i = 0; i < width * height; ++i)
+    for (unsigned int i = 0; i < width * height * 3; ++i)
         sum += fimg[i];
     // Report more results, save another image...
     printf("[ao serial]:\t\t%.3f mseconds (%d x %d image, chksum %f)\n", minTimeSerial, 

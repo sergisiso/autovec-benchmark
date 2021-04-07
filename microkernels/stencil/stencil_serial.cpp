@@ -41,7 +41,7 @@
 #define A_cur(x, y, z) Ain[index + (x) + ((y) * Nx) + ((z) * Nxy)]
 #define A_next(x, y, z) Aout[index + (x) + ((y) * Nx) + ((z) * Nxy)]
 
-#if SPECIALIZE
+#ifdef SPECIALIZE
 static void
 stencil_step(int x0, int x1,
              int y0, int y1,

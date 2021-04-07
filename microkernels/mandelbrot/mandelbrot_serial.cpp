@@ -41,14 +41,13 @@
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
-
  
 void mandelbrot_serial(float x0p, float y0p, float x1p, float y1p,
                        int widthp, int heightp, int maxIterationsp,
                        int output[])
 {
     
-#if SPECIALIZE
+#ifdef SPECIALIZE
     constexpr float x0 = -2.f;
     constexpr float y0 = -1.f;
     constexpr float x1 = 1.f;
@@ -56,13 +55,6 @@ void mandelbrot_serial(float x0p, float y0p, float x1p, float y1p,
     constexpr int width = 1024*4;
     constexpr int height = 1024*4;
     constexpr int maxIterations = 256;
-    assert(x0 == x0p);
-    assert(y0 == y0p);
-    assert(x1 == x1p);
-    assert(y1 == y1p);
-    assert(width == widthp);
-    assert(height == heightp);
-    assert(maxIterations == maxIterationsp);
 #else
     float x0;
     float y0;
@@ -73,8 +65,15 @@ void mandelbrot_serial(float x0p, float y0p, float x1p, float y1p,
     int maxIterations;
 #endif
 
-#if SPECIALIZE
+#ifdef SPECIALIZE
     //std::cout << " specialize -------------" << std::endl;
+    assert(x0 == x0p);
+    assert(y0 == y0p);
+    assert(x1 == x1p);
+    assert(y1 == y1p);
+    assert(width == widthp);
+    assert(height == heightp);
+    assert(maxIterations == maxIterationsp);
 #else
     //std::cout << " runtime -------------" << std::endl;
     x0 = x0p;
