@@ -41,11 +41,11 @@
 #include <algorithm>
 #include <cassert>
 
-//#define RESTRICT __restrict__
-#define RESTRICT
 #ifdef SPECIALIZE
+#define RESTRICT __restrict__
 constexpr int BINOMIAL_NUM = 64;
 #else
+#define RESTRICT
 int BINOMIAL_NUM;
 #endif
 

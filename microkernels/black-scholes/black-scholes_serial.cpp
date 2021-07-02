@@ -46,7 +46,7 @@
 #ifdef SPECIALIZE
 #define RESTRICT __restrict__
 #else
-#define RESTRICT __restrict__
+#define RESTRICT
 #endif
 
 // Cumulative normal distribution function

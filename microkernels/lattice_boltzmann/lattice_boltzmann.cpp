@@ -10,29 +10,50 @@ using std::max;
 
 #include "../timing.h"
 
-extern void initialize(double *&array, double *&array_new, double *&array_pot, double *&lbphi,
-    double *&lbg, double *&lbincp, double *&lbtf, double *&lbbdforcex, double *&lbbdforcey, double *&lbbdforcez);
-
-extern void lattice_boltzmann_serial(double * array, double * array_new, double * array_pot, double * lbphi,
-    double * lbg, double * lbincp, double * lbtf, double * lbbdforcex, double * lbbdforcey, double * lbbdforcez);
+extern void lattice_boltzmann_serial(double * array, double * array_new, double * array_pot,
+    double * lbphi, double * lbg, double * lbincp, double * lbtf, double * lbbdforcex,
+    double * lbbdforcey, double * lbbdforcez, int p_fluids, int p_lats, int p_size);
  
-static void usage() {
-    printf("usage: lattice_boltzmann \n");
+void initialize(
+    double *&array,
+    double *&array_new,
+    double *&array_pot,
+    double *&lbphi,
+    double *&lbg,
+    double *&lbincp,
+    double *&lbtf,
+    double *&lbbdforcex,
+    double *&lbbdforcey,
+    double *&lbbdforcez,
+    int FLUIDS,
+    int t_total,
+    int t_pot,
+    int t_phi) {
+ 
+    // Allocate array
+    array = new double [t_total];
+    array_new = new double [t_total];
+    array_pot = new double [t_pot];
+    lbphi = new double [t_phi];
+    lbg = new double [FLUIDS*FLUIDS];
+    lbincp = new double [FLUIDS];
+    lbtf = new double [FLUIDS];
+    lbbdforcex = new double [FLUIDS];
+    lbbdforcey = new double [FLUIDS];
+    lbbdforcez = new double [FLUIDS];
+
+    // Initialize arrays
+    for(int i = 0; i < FLUIDS; i++){
+        lbincp[i] = 1; lbtf[i] = 1; lbbdforcex[i] = 1; lbbdforcey[i] = 1; lbbdforcez[i] = 1;
+    }
+    for(int i = 0; i < FLUIDS*FLUIDS; i++) lbg[i] = 1;
+    for(int i = 0; i < t_total; i++) array[i] = 1;
+    for(int i = 0; i < t_total; i++) array_new[i] = 1;
+    for(int i = 0; i < t_pot; i++) array_pot[i] = 1;
+    for(int i = 0; i < t_phi; i++) lbphi[i] = 1;
 }
 
-
 int main(int argc, char *argv[]) {
-    int nOptions = 128*1024;
-
-    for (int i = 1; i < argc; ++i) {
-        if (strncmp(argv[i], "--count=", 8) == 0) {
-            nOptions = atoi(argv[i] + 8);
-            if (nOptions <= 0) {
-                usage();
-                exit(1);
-            }
-        }
-    }
 
      // Define arrays   
     double * array;
@@ -46,7 +67,16 @@ int main(int argc, char *argv[]) {
     double * lbbdforcey; // Fluids
     double * lbbdforcez; // Fluids
 
-    initialize(array, array_new, array_pot, lbphi, lbg, lbincp, lbtf, lbbdforcex, lbbdforcey, lbbdforcez);
+    // Define parameters
+    int FLUIDS = 4;
+    int LATS = 19;
+    int TSIZE = 100;
+    int t_total = TSIZE * TSIZE * TSIZE * FLUIDS * LATS;
+    int t_pot = TSIZE * TSIZE * TSIZE * FLUIDS;
+    int t_phi = TSIZE * TSIZE * TSIZE;
+
+    initialize(array, array_new, array_pot, lbphi, lbg, lbincp, lbtf, lbbdforcex,
+               lbbdforcey, lbbdforcez, FLUIDS, t_total, t_pot, t_phi);
 
     //
     // Lattice Boltzmann, serial implementation
@@ -54,7 +84,8 @@ int main(int argc, char *argv[]) {
     double lattice_boltzmann_t = 1e30;
     for (int i = 0; i < 1; ++i) {
         reset_and_start_timer();
-        lattice_boltzmann_serial(array, array_new, array_pot, lbphi, lbg, lbincp, lbtf, lbbdforcex, lbbdforcey, lbbdforcez);
+        lattice_boltzmann_serial(array, array_new, array_pot, lbphi, lbg, lbincp, lbtf,
+                                 lbbdforcex, lbbdforcey, lbbdforcez, FLUIDS, LATS, TSIZE);
         double dt = get_elapsed_msec();
         lattice_boltzmann_t = std::min(lattice_boltzmann_t, dt);
     }

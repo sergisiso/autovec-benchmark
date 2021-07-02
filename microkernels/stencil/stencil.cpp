@@ -1,4 +1,10 @@
-/*
+/*  Copyright (c) 2019-2021, Sergi Siso
+
+  Extended from: https://github.com/ispc/ispc/tree/master/examples
+
+  This file incorporates work covered by the following copyright and
+  permission notice:
+
   Copyright (c) 2010-2014, Intel Corporation
   All rights reserved.
 

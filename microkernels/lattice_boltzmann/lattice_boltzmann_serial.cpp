@@ -4,20 +4,22 @@
 #include <cassert>
 
 
-int TSIZE;
-int HEndIn;
 #ifdef SPECIALIZE
+constexpr int TSIZE = 100;
 constexpr int HIniIn = 1;
+constexpr int HEndIn = TSIZE - HIniIn;
 constexpr int FLUIDS = 4;
 constexpr int LATS = 19;
 constexpr double postequil = 1;
 #define RESTRICT __restrict__
 #else
+int TSIZE;
+int HEndIn;
 int HIniIn;
 int FLUIDS;
 int LATS;
 double postequil;
-#define RESTRICT __restrict__
+#define RESTRICT
 #endif
 
 // Define Model - D3Q19
@@ -69,55 +71,6 @@ inline int total_mem(){
     return (sizeof(double) * (t_total()*2+t_pot()) + t_phi() * sizeof(int))/1024/1024;
 }
 
-void initialize(
-    double *&array,
-    double *&array_new,
-    double *&array_pot,
-    double *&lbphi,
-    double *&lbg,
-    double *&lbincp,
-    double *&lbtf,
-    double *&lbbdforcex,
-    double *&lbbdforcey,
-    double *&lbbdforcez) {
- 
-    TSIZE = 84;
-    HEndIn = 82;
-#ifdef SPECIALIZE
-    assert(HIniIn == 1);
-    assert(FLUIDS == 4);
-    assert(LATS == 19);
-    assert(postequil == 1);
-#else
-    HIniIn = 1;
-    FLUIDS = 4;
-    LATS= 19;
-    postequil = 1;
-#endif
-
-    // Allocate array
-    array = new double [t_total()];
-    array_new = new double [t_total()];
-    array_pot = new double [t_pot()];
-    lbphi = new double [t_phi()];
-    lbg = new double [FLUIDS*FLUIDS];
-    lbincp = new double [FLUIDS];
-    lbtf = new double [FLUIDS];
-    lbbdforcex = new double [FLUIDS];
-    lbbdforcey = new double [FLUIDS];
-    lbbdforcez = new double [FLUIDS];
-
-    // Initialize arrays
-    for(int i = 0; i < FLUIDS; i++){
-        lbincp[i] = 1; lbtf[i] = 1; lbbdforcex[i] = 1; lbbdforcey[i] = 1; lbbdforcez[i] = 1;
-    }
-    for(int i = 0; i < FLUIDS*FLUIDS; i++) lbg[i] = 1;
-    for(int i = 0; i < t_total(); i++) array[i] = 1;
-    for(int i = 0; i < t_total(); i++) array_new[i] = 1;
-    for(int i = 0; i < t_pot(); i++) array_pot[i] = 1;
-    for(int i = 0; i < t_phi(); i++) lbphi[i] = 1;
-}
-
 void lattice_boltzmann_serial(
     double * RESTRICT array,
     double * RESTRICT array_new,
@@ -128,14 +81,26 @@ void lattice_boltzmann_serial(
     double * RESTRICT lbtf,
     double * RESTRICT lbbdforcex,
     double * RESTRICT lbbdforcey,
-    double * RESTRICT lbbdforcez) {
+    double * RESTRICT lbbdforcez,
+    int p_fluids, int p_lats, int p_size) {
     
-    double * array_ptr; // For swaping array with array_new
+#ifdef SPECIALIZE
+    assert(p_fluids == 4);
+    assert(p_lats == 19);
+    assert(p_size == 100);
+#else
+    FLUIDS = p_fluids;
+    LATS = p_lats;
+    TSIZE = p_size;
+    HIniIn = 1;
+    HEndIn = TSIZE - HIniIn;
+    postequil = 1;
+#endif
 
     for(int iteration = 0; iteration <= 5; iteration++){
 
         // Calculate Potential of each particle
-//#pragma omp parallel for schedule(static) collapse(2)
+        //#pragma omp parallel for schedule(static) collapse(2)
         for(int x=0; x<TSIZE; x++){
             for(int y=0; y<TSIZE; y++){
                 #pragma omp simd
@@ -152,11 +117,11 @@ void lattice_boltzmann_serial(
         }
 
         // Compute interaction forces, collition and propagation
-//#pragma omp parallel for schedule(static) collapse(2)
-        for(int x=HIniIn; x<=HEndIn; x++){
-            for(int y=HIniIn; y<=HEndIn; y++){
+        //#pragma omp parallel for schedule(static) collapse(2)
+        for(int x=HIniIn; x<HEndIn; x++){
+            for(int y=HIniIn; y<HEndIn; y++){
                 #pragma omp simd
-                for(int z=HIniIn; z<=HEndIn; z++){
+                for(int z=HIniIn; z<HEndIn; z++){
                     double factorx[FLUIDS];
                     double factory[FLUIDS];
                     double factorz[FLUIDS];
@@ -172,7 +137,6 @@ void lattice_boltzmann_serial(
                     double particle_mass = 0.0;
 
                     //Compute particle mass and speed
-                    double fluid_mass=0.0;
                     for(int fluid=0; fluid<FLUIDS; fluid++){
                         for(int l=0; l<LATS; l++) {
                             particle_mass += array[index(x,y,z,fluid,l)];
@@ -209,7 +173,6 @@ void lattice_boltzmann_serial(
                             fluid_mass += array[index(x,y,z,fluid,lattice)];
                         }
 
-
                         // Shan Chen interaction
                         if(lbphi[indexphi(x,y,z)] == 0.0){
                             const double psik = std::abs(array_pot[indexpot(x,y,z,fluid)]);
@@ -220,7 +183,6 @@ void lattice_boltzmann_serial(
                                 interforce_local_z-=gfluid*factorz[fluid2];
                             }
                         }
-
 
                         // Collision
                         if(lbphi[indexphi(x,y,z)] != 11){
@@ -254,10 +216,4 @@ void lattice_boltzmann_serial(
         std::swap(array_new, array);
     }
 
-    // Give the class pointers the proper final state
-    //array_ptr = array;
-    //array_new_ptr = array_new;
-
 }
-
-
