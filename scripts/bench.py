@@ -179,6 +179,8 @@ def main():
     parser.add_argument('--repeat', type=int, default=1,
                         help="Repeat each benchmarks the specified number of"
                              "times")
+    parser.add_argument('--run-novec', action="store_true",
+                        help="Also execute the tests with no-vectorization flags")
     args = parser.parse_args()
 
     # Select all combinations when no parameter has been selected
@@ -219,16 +221,16 @@ def main():
 
             # Store platform information
             cmd = "lscpu"
-            process = subprocess.Popen(cmd, cwd=compiler_dir,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE, shell=True)
-            platform_out, _ = process.communicate()
+            with subprocess.Popen(cmd, cwd=compiler_dir,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE, shell=True) as process:
+                platform_out, _ = process.communicate()
 
             cmd = C_FLAGS[compiler]['call'] + " --version"
-            process = subprocess.Popen(cmd, cwd=compiler_dir,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE, shell=True)
-            compiler_out, compiler_err = process.communicate()
+            with subprocess.Popen(cmd, cwd=compiler_dir,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE, shell=True) as process:
+                compiler_out, compiler_err = process.communicate()
 
             with open(os.path.join(compiler_dir, 'info.txt'), 'w') as fout:
                 fout.write("Platform:\n" + platform_out.decode("utf-8") + "\n")
@@ -293,15 +295,16 @@ def main():
                           test_dir, 'compiler_vec.out')
 
                 # Compile Scalar version
-                exec_comp(args.cmd_prefix + ' ' + C_FLAGS[compiler]['call']
-                          + C_FLAGS[compiler]['opt']
-                          + C_FLAGS[compiler]['novec']
-                          + C_FLAGS[compiler]['arch'][args.isa]
-                          + C_FLAGS[compiler]['report']+compiler+'_'
-                          + args.isa+'_novec.txt' + pgoflags_novec
-                          + ' -c -o tscrtnovec.o tsc_runtime.c'
-                          + ' -D' + category + info_flags,
-                          test_dir, 'compiler_novec.out')
+                if args.run_novec:
+                    exec_comp(args.cmd_prefix + ' ' + C_FLAGS[compiler]['call']
+                              + C_FLAGS[compiler]['opt']
+                              + C_FLAGS[compiler]['novec']
+                              + C_FLAGS[compiler]['arch'][args.isa]
+                              + C_FLAGS[compiler]['report']+compiler+'_'
+                              + args.isa+'_novec.txt' + pgoflags_novec
+                              + ' -c -o tscrtnovec.o tsc_runtime.c'
+                              + ' -D' + category + info_flags,
+                              test_dir, 'compiler_novec.out')
 
                 # Generate assembly files
                 if args.generate_assembly:
@@ -322,10 +325,12 @@ def main():
                 exec_comp(args.cmd_prefix + ' ' + C_FLAGS[compiler]['call']
                           + C_FLAGS[compiler]['unopt'] + pgoflags
                           + ' dummy.o tscrtvec.o -o runrtvec -lm', test_dir)
-                exec_comp(args.cmd_prefix + ' ' + C_FLAGS[compiler]['call']
-                          + C_FLAGS[compiler]['unopt'] + pgoflags
-                          + ' dummy.o tscrtnovec.o -o runrtnovec -lm',
-                          test_dir)
+
+                if args.run_novec:
+                    exec_comp(args.cmd_prefix + ' ' + C_FLAGS[compiler]['call']
+                              + C_FLAGS[compiler]['unopt'] + pgoflags
+                              + ' dummy.o tscrtnovec.o -o runrtnovec -lm',
+                              test_dir)
 
                 # Run commands
                 for i in range(args.repeat):
@@ -337,20 +342,22 @@ def main():
                     run_cmd(testdir="/".join(test_dir.split('/')[2:]),
                             cmd='./runrtvec > runrtvec'+str(i)+'.txt',
                             scriptdir=compiler_dir, scriptfname=scriptname)
-                    run_cmd(testdir="/".join(test_dir.split('/')[2:]),
-                            cmd='./runrtnovec > runrtnovec'+str(i)+'.txt',
-                            scriptdir=compiler_dir, scriptfname=scriptname)
+                    if args.run_novec:
+                        run_cmd(testdir="/".join(test_dir.split('/')[2:]),
+                                cmd='./runrtnovec > runrtnovec'+str(i)+'.txt',
+                                scriptdir=compiler_dir, scriptfname=scriptname)
 
 
 def exec_comp(cmd, test_dir, save_file=None):
     """ Execute Compiler command """
     print("Compiling: ", cmd)
-    process = subprocess.Popen(cmd, cwd=test_dir, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE, shell=True)
-    out, err = process.communicate()
-    errcode = process.returncode
+    with subprocess.Popen(cmd, cwd=test_dir, stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE, shell=True) as process:
+        out, err = process.communicate()
+        errcode = process.returncode
     if save_file:
         with open(os.path.join(test_dir, save_file), 'w') as fout:
+            fout.write("Command:\n" + cmd + "\n")
             fout.write("Output:\n" + out.decode("utf-8") + "\n")
             fout.write("Return code: " + str(errcode) + "\n")
             fout.write("Error:\n" + err.decode("utf-8") + "\n")
@@ -371,10 +378,10 @@ def run_cmd(testdir, cmd, scriptdir, scriptfname=None):
     else:  # Run the benchmarks locally
         print("Executing: ", cmd)
         run_dir = os.path.join(scriptdir, testdir)
-        process = subprocess.Popen(cmd, cwd=run_dir, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE, shell=True)
-        out, err = process.communicate()
-        errcode = process.returncode
+        with subprocess.Popen(cmd, cwd=run_dir, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE, shell=True) as process:
+            out, err = process.communicate()
+            errcode = process.returncode
         print("Output:\n" + out.decode("utf-8"))
         print("Return code: " + str(errcode))
         print("Error:\n" + err.decode("utf-8"))

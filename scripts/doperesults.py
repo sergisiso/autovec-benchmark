@@ -173,9 +173,7 @@ def load_data(data, compiler, category, parameters, parameters_path,
 
     # Open results files and entries to 'data'
     vecresults = []
-    novecresults = []
     basevecresults = []
-    basenovecresults = []
 
     expectedvecresults = []
 
@@ -184,15 +182,10 @@ def load_data(data, compiler, category, parameters, parameters_path,
         for i in range(NUM_REPS):
             file_number = i
             vecf = open(os.path.join(parameters_path, vecfname.replace('0', str(i))), 'r')
-            novecf = open(os.path.join(parameters_path, novecfname.replace('0', str(i))), 'r')
             basevecf = open(os.path.join(baseline_path, vecfname.replace('0', str(i))), 'r')
-            basenovecf = open(os.path.join(baseline_path, novecfname.replace('0', str(i))), 'r')
             vecresults.append([line for line in vecf.readlines() if line[0] == 'S' or
                 (line.split() and line.split()[0] == "DopingRuntime:")])
-            novecresults.append([line for line in novecf.readlines() if line[0] == 'S' or
-                (line.split() and line.split()[0] == "DopingRuntime:")])
             basevecresults.append([line for line in basevecf.readlines() if line[0] == 'S'])
-            basenovecresults.append([line for line in basenovecf.readlines() if line[0] == 'S'])
             if expected_path:
                 expectedvecf = open(os.path.join(expected_path, vecfname.replace('0', str(i))), 'r')
                 expectedvecresults.append([line for line in expectedvecf.readlines() if line[0] == 'S'])
@@ -200,9 +193,7 @@ def load_data(data, compiler, category, parameters, parameters_path,
         if file_number == 0:
             print("Warning, these files are needed:")
             print(" - ", os.path.join(parameters_path, vecfname))
-            print(" - ", os.path.join(parameters_path, novecfname))
             print(" - ", os.path.join(baseline_path, vecfname))
-            print(" - ", os.path.join(baseline_path, novecfname))
             if expected_path:
                 print(" - ", os.path.join(expected_path, vecfname))
         else:
@@ -223,21 +214,16 @@ def load_data(data, compiler, category, parameters, parameters_path,
             # Check individual test data
             overheads = []
             vectimes = []
-            novectimes = []
             basevectimes = []
-            basenovectimes = []
             expectedvectimes = []
             for i in range(NUM_REPS):
-                basetest_novec, basenovec_time, cs1 = basenovecresults[i][indx].split()
-                basetest_vec, basevec_time, cs2 = basevecresults[i][indx].split()
-                if novecresults[i][indx].split()[6] == "DopingRuntime:":  # some checksums have dyn compilation
-                    _, _, _, novec_time, test_novec, _, _, _, _, _, cs3 = novecresults[i][indx].split()
+                basetest_vec, basevec_time, cs1 = basevecresults[i][indx].split()
+                # some checksums have dyn compilation
+                if vecresults[i][indx].split()[6] == "DopingRuntime:":
+                    _, overhead, _, vec_time, test_vec, _, _, _, _, _, cs2 = \
+                        vecresults[i][indx].split()
                 else:
-                    _, _, _, novec_time, test_novec, _, cs3 = novecresults[i][indx].split()
-                if vecresults[i][indx].split()[6] == "DopingRuntime:":  # some checksums have dyn compilation
-                    _, overhead, _, vec_time, test_vec, _, _, _, _, _, cs4 = vecresults[i][indx].split()
-                else:
-                    _, overhead, _, vec_time, test_vec, _, cs4 = vecresults[i][indx].split()
+                    _, overhead, _, vec_time, test_vec, _, cs2 = vecresults[i][indx].split()
                 if expected_path:
                     expected_test, expectedvec_time, _ = expectedvecresults[i][indx].split()
                     if test != expected_test:
@@ -245,41 +231,33 @@ def load_data(data, compiler, category, parameters, parameters_path,
                         sys.exit(0)
 
 
-                if (test_novec != test or test_vec != test or
-                    basetest_novec != test or basetest_vec != test):
+                if (test_vec != test or basetest_vec != test):
                     print("Error: Tests positions do not match", compiler,
                           category, parameters, test)
                     sys.exit(0)
 
                 # Check that results are within tolerance.
                 if ((abs(float(check) - float(cs1)) > abs(float(check) * 0.0001)) or
-                    (abs(float(check) - float(cs2)) > abs(float(check) * 0.0001)) or
-                    (abs(float(check) - float(cs3)) > abs(float(check) * 0.0001)) or
-                    (abs(float(check) - float(cs4)) > abs(float(check) * 0.0001))):
+                    (abs(float(check) - float(cs2)) > abs(float(check) * 0.0001))):
                     print("Warning checksums differ! ", compiler,
                           category, parameters, test, check, cs1, cs2)
                     sys.exit(0)
 
                 overheads.append(float(overhead))
                 vectimes.append(float(vec_time))
-                novectimes.append(float(novec_time))
                 basevectimes.append(float(basevec_time))
-                basenovectimes.append(float(basenovec_time))
                 expectedvectimes.append(float(expectedvec_time))
 
             # Get the minimum in order to minimize system noise.
             overhead = statistics.mean(overheads)
             vec_time = min(vectimes)
-            novec_time = min(novectimes)
             basevec_time = min(basevectimes)
-            basenovec_time = min(basenovectimes)
             expectedvec_time = min(expectedvectimes)
             # vecstd = statistics.stdev(vectimes)
             # novecstd = statistics.stdev(novectimes)
 
             # Check that time is big enough to be significant
-            if novec_time < 0.5 or vec_time < 0.5 or \
-                basevec_time < 0.5 or basenovec_time < 0.5:
+            if vec_time < 0.5 or basevec_time < 0.5:
                 print("Warning: Time too small ", test, compiler, category,
                       parameters)
 
@@ -290,8 +268,8 @@ def load_data(data, compiler, category, parameters, parameters_path,
                 data[compiler][category][parameters][test] = [0, 0, 0, 0, 0, 0, 0]
             else:
                 data[compiler][category][parameters][test] = [
-                    overhead, vec_time, novec_time, novec_time/vec_time,
-                    basevec_time, basenovec_time, basenovec_time/basevec_time,
+                    overhead, vec_time, 0, 0/vec_time,
+                    basevec_time, 0, 0/basevec_time,
                     expectedvec_time
                     ]
 
@@ -448,6 +426,10 @@ def main():
     if not os.path.exists(baseline_folder):
         print("Results folder '" + baseline_folder + "' does not exist!")
         sys.exit(-2)
+    if baseline_folder == args.testdir:
+        print("testdir needs to point to a dope_-- folder")
+        sys.exit(-2)
+    print("Comparing: ", baseline_folder, " with ", args.testdir)
 
     # Create output directory
     outputdir = "results-plots"
@@ -468,8 +450,8 @@ def main():
         parameter = 'RUNTIME_ALL'
         doping_path = os.path.join(category_path, parameter)
         baseline_path = os.path.join(baseline_category_path, parameter)
-        expected_path = os.path.join(baseline_category_path, 'RUNTIME_ATTRIBUTES')
-        #expected_path = os.path.join(baseline_category_path, 'None')
+        #expected_path = os.path.join(baseline_category_path, 'RUNTIME_ALL')
+        expected_path = os.path.join(baseline_category_path, 'None')
         load_data(data, compiler, category, parameter, doping_path,
                   baseline_path, expected_path)
 
