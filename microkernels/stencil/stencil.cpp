@@ -50,9 +50,6 @@
 #include <string.h>
 #include <math.h>
 #include "../timing.h"
-//#include "stencil_ispc.h"
-//using namespace ispc;
-
 
 extern void loop_stencil_serial(int t0, int t1, int x0, int x1,
                                 int y0, int y1, int z0, int z1,
@@ -76,7 +73,7 @@ void InitData(int Nx, int Ny, int Nz, float *A[2], float *vsq) {
 
 int main(int argc, char *argv[]) {
     static unsigned int test_iterations = 5;
-    int Nx = 256, Ny = 256, Nz = 256;
+    int Nx = 512, Ny = 512, Nz = 512;
     int width = 4;
 
     if (argc > 1) {
@@ -88,11 +85,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    float *Aserial[2], *Aispc[2];
+    float *Aserial[2];
     Aserial[0] = new float [Nx * Ny * Nz];
     Aserial[1] = new float [Nx * Ny * Nz];
-    Aispc[0] = new float [Nx * Ny * Nz];
-    Aispc[1] = new float [Nx * Ny * Nz];
     float *vsq = new float [Nx * Ny * Nz];
 
     float coeff[4] = { 0.5, -.25, .125, -.0625 }; 
@@ -114,7 +109,7 @@ int main(int argc, char *argv[]) {
         minTimeSerial = std::min(minTimeSerial, dt);
     }
 
-    printf("[stencil serial]:\t\t[%.3f] mseconds\n", minTimeSerial);
+    printf("[stencil serial]:\t\t%.3f mseconds\n", minTimeSerial);
 
     return 0;
 }

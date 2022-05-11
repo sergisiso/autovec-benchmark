@@ -133,9 +133,9 @@ NAME=$(APP)_$(VECSTRING)_$(SPECSTRING)$(PREFSTRING)
 compileall:
 	#make compile NOVEC=yes SPECIALIZE=yes
 	#make compile NOVEC=yes SPECIALIZE=no
-	${MAKE} compile NOVEC=no SPECIALIZE=no
-	${MAKE} compile NOVEC=no SPECIALIZE=yes
-	${MAKE} compile PREFIX=dope NOVEC=no SPECIALIZE=no
+	${MAKE} compile NOVEC=no SPECIALIZE=no TEST_COMPILER=$(TEST_COMPILER) VECTOR_ISA=$(VECTOR_ISA)
+	${MAKE} compile NOVEC=no SPECIALIZE=yes TEST_COMPILER=$(TEST_COMPILER) VECTOR_ISA=$(VECTOR_ISA)
+	${MAKE} compile PREFIX=dope NOVEC=no SPECIALIZE=no TEST_COMPILER=$(TEST_COMPILER) VECTOR_ISA=$(VECTOR_ISA)
 
 compiledoping:
 	${MAKE} compile PREFIX=dope NOVEC=no SPECIALIZE=no
@@ -165,4 +165,4 @@ runall:
 	${MAKE} run PREFIX=dope NOVEC=no SPECIALIZE=no
 
 clean:
-	rm -rf *.ppm *.o *.optrpt gnu_* *.exe *.doping.cpp doping_loop_*
+	rm -rf *.ppm *.o *.optrpt gnu_* *.exe *.doping.cpp doping_loop_* *report.txt

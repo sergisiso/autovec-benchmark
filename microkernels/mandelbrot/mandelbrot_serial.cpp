@@ -88,7 +88,7 @@ void mandelbrot_serial(float x0p, float y0p, float x1p, float y1p,
     float dx = (x1 - x0) / width;
     float dy = (y1 - y0) / height;
 
-    #pragma omp simd
+    // #pragma omp simd
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; ++i) {
             float x = x0 + i * dx;

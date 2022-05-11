@@ -31,11 +31,11 @@
 #module load ibm/13.1.3
 #module load mygcc8
 
-isa=$1
+isa=avx2
 #compilers=(gnu intel pgi clang)
-compilers=(gnu)
-#tests=(ao binomial black-scholes convolution mandelbrot matrixmult stencil)
-tests=(ao binomial black-scholes convolution mandelbrot stencil lattice_boltzmann)
+compilers=(intel)
+#tests=(matrixmult)
+tests=(black-scholes convolution mandelbrot stencil lattice_boltzmann matrixmult)
 
 for c in "${compilers[@]}"; do
     echo "---" > compiler_${c}_${isa}_output.txt
@@ -46,7 +46,7 @@ for c in "${compilers[@]}"; do
         echo "#--------------" | tee -a output-$c-${isa}.txt
         cd $t
         make clean &> /dev/null
-        TEST_COMPILER=$c VECTOR_ISA=$isa make compileall \
+        make compileall TEST_COMPILER=$c VECTOR_ISA=$isa \
             &>> ../compiler_${c}_${isa}_output.txt
         rtvec=$(make runrt | grep "$t serial" | awk '{print $3}')
         #rtnovec=$(./${t}.rt-novec | grep "$t serial" | awk '{print $3}')
