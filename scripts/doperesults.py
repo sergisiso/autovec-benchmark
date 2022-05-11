@@ -29,14 +29,14 @@
 
 import sys
 import os
-import shutil
 import statistics
 import argparse
 from collections import defaultdict
-from plotutils import *
+import matplotlib as mpl
+mpl.use('Agg') # Allows to use Matplotlib without a XServer
+import matplotlib.pyplot as plt
 
 NUM_REPS = 1
-debug = False
 
 remove_tests = []  # ['S2712']
 remove_categories = []  # ['REDUCTIONS','CONTROL_FLOW','SEARCHING']
@@ -219,21 +219,39 @@ def load_data(data, compiler, category, parameters, parameters_path,
             for i in range(NUM_REPS):
                 basetest_vec, basevec_time, cs1 = basevecresults[i][indx].split()
                 # some checksums have dyn compilation
-                if vecresults[i][indx].split()[6] == "DopingRuntime:":
-                    _, overhead, _, vec_time, test_vec, _, _, _, _, _, cs2 = \
-                        vecresults[i][indx].split()
+
+                result_list = vecresults[i][indx].split()
+                if len(result_list) == 5:
+                    if result_list[0] == "DopingRuntime:":
+                        _, overhead, test_vec, vec_time, cs2 = result_list
+                    elif result_list[2] == "DopingRuntime:":
+                        test_vec, vec_time, _, _, cs2 = result_list
+                    else:
+                        print("Can not parser results line:")
+                        print(vecresults[i][indx])
+                        exit(-1)
+                elif len(result_list) == 7:
+                    _, overhead, test_vec, vec_time, _, _, cs2 = result_list
+                elif len(result_list) == 3:
+                    overhead = 0.0
+                    test_vec, vec_time, cs2 = result_list
+                elif len(result_list) == 3:
+                    overhead = 0.0
+                    test_vec, vec_time, cs2 = result_list
                 else:
-                    _, overhead, _, vec_time, test_vec, _, cs2 = vecresults[i][indx].split()
+                    print("Can not parser results line:")
+                    print(vecresults[i][indx])
+                    exit(-1)
                 if expected_path:
                     expected_test, expectedvec_time, _ = expectedvecresults[i][indx].split()
                     if test != expected_test:
                         print("Expected test mismatch!")
                         sys.exit(0)
 
-
                 if (test_vec != test or basetest_vec != test):
                     print("Error: Tests positions do not match", compiler,
                           category, parameters, test)
+                    print(vecresults[i][indx])
                     sys.exit(0)
 
                 # Check that results are within tolerance.
@@ -241,7 +259,7 @@ def load_data(data, compiler, category, parameters, parameters_path,
                     (abs(float(check) - float(cs2)) > abs(float(check) * 0.0001))):
                     print("Warning checksums differ! ", compiler,
                           category, parameters, test, check, cs1, cs2)
-                    sys.exit(0)
+                    # sys.exit(0)
 
                 overheads.append(float(overhead))
                 vectimes.append(float(vec_time))
@@ -325,8 +343,8 @@ def data_sanity_check(data):
                     if baseline/doping < 0.9:  # or novec*1.1 < baseline:
                         regressions = regressions + 1
                         found = True
-                        print(test, baseline/doping, "has doping=", doping, " baseline=",
-                              baseline, " novec=", novec)
+                        print(test," Regression speedup=", baseline/doping, "has doping=", doping,
+                              " baseline=", baseline)
                     elif baseline/doping < 1.1:
                         same_perf = same_perf + 1
                     elif baseline/doping < 2:
@@ -335,19 +353,20 @@ def data_sanity_check(data):
                         big_impr = big_impr + 1
 
                     if doping > expected*1.1:
-                        print(test, expected/doping, "has doping=", doping, " expected=", expected)
+                        print(test," Less than expected speedup=", expected/doping, "has doping=",
+                              doping, " expected=", expected)
                         expected_sum += 1
 
                 if found:
                     print("in ", compiler, category)
                     found = False
         print("found a regression in ", regressions, "tests")
-        print("Same perf in ", same_perf)
-        print("Small improvement in ", small_impr)
-        print("Big improvement in ", big_impr)
+        print("Same perf (below x1.1) in", same_perf)
+        print("Moderate improvement (x1.1 to x2) in", small_impr)
+        print("Big improvement (more than x2) in", big_impr)
         print("Tests that are less than expected: ", expected_sum)
         print("Average:", statistics.mean(speedups),
-              " median:", statistics.median(speedups),
+              # " median:", statistics.median(speedups),
               " geomean:", geometric_mean(speedups))
         print("")
 
@@ -383,25 +402,51 @@ def nested_dict(level, element_type):
     return defaultdict(lambda: nested_dict(level-1, element_type))
 
 
-def plot_compiler(data, outputdir):
-    import matplotlib.pyplot as plt
-    plt.figure()
+def plot_all_tests(data, outputdir):
 
-    overheads = []
-    speedups = []
+    values = []
+    names = []
+    num_cat = 0
+    num_tests = 0
+    category_name = []
 
     compiler = [k for k in data.keys()][0]
+    compiler_name = compiler.split("-")[-1].replace('/','')
+
     for category in data[compiler].keys():
+        values.append([])
+        names.append([])
+        category_name.append([])
         for test, results in data[compiler][category]['RUNTIME_ALL'].items():
-            overhead, doping, _, _, baseline, novec, _, _ = results
-            overheads.append(overhead)
-            speedups.append(baseline/doping)
+            # [doping_overhead, performance vec, performance novec,
+            # veff, baseline vec, baseline novec, baseline veff]
+            _, doping, _, _, baseline, _, _, _ = results
+            values[num_cat].append(baseline/doping)
+            names[num_cat].append(test)
+            category_name[num_cat].append(category)
+            num_tests += 1
+        num_cat += 1
 
-    boxplot = plt.boxplot(overheads)
+    ratios = [len(names[i]) for i in range(num_cat)]
+    fig, axes = plt.subplots(nrows=1, ncols=num_cat, sharey=True,
+                             figsize=(20,4), gridspec_kw={'width_ratios':ratios})
+    for i in range(num_cat):
+        ax = axes[i]
+        ax.scatter(names[i], values[i])
+        for tick in ax.get_xticklabels():
+            tick.set_rotation(90)
+        ax.tick_params(axis=u'y', which=u'both', length=0)
+        ax.margins(0.1)
+    axes[0].set_ylabel("Speed-up")
+    fig.tight_layout()
+    fig.subplots_adjust(wspace=0)
+    plt.savefig(os.path.join(outputdir, f'scatterplot_{compiler_name}.png'))
 
-    plt.show()
-    boxplot = plt.boxplot(speedups)
-    plt.show()
+    fig2 = plt.figure()
+    bp_names = [name[0] for name in category_name]
+    bp_values = [3 for name in category_name]
+    plt.bar(bp_names, bp_values)
+    plt.savefig(os.path.join(outputdir, f'barplot_{compiler_name}.png'))
 
 
 def main():
@@ -433,9 +478,8 @@ def main():
 
     # Create output directory
     outputdir = "results-plots"
-    if os.path.exists(outputdir):
-        shutil.rmtree(outputdir)
-    os.makedirs(outputdir)
+    if not os.path.exists(outputdir):
+        os.makedirs(outputdir)
 
     # Nested dictionary of {compiler, category, parameters, test} =
     #     [doping_overhead, performance vec, performance novec, vector eff,
@@ -465,9 +509,8 @@ def main():
         print("Error: It should contain all categories!")
         sys.exit(-3)
 
-    if False:
-        plot_compiler(data, outputdir)
-
+    print("Plotting figures in ", outputdir)
+    plot_all_tests(data, outputdir)
 
 if __name__ == "__main__":
     main()
