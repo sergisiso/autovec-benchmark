@@ -1,4 +1,5 @@
 scripts/results-test
+scripts/results-plots
 *.o
 *.exe
 *.doping.cpp
