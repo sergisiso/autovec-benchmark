@@ -26,6 +26,8 @@
 
 import os
 import numpy as np
+import matplotlib as mpl
+mpl.use('Agg') # Allows to use Matplotlib without a XServer
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 from matplotlib.patches import Patch
