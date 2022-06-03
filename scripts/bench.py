@@ -75,7 +75,7 @@ C_FLAGS = {
     },
     "icc": {
         "call": "icc -std=c99 -g",
-        "arch": {"avx2": " -xAVX2",
+        "arch": {"avx2": " -xHost",
                  "avx512": " -xCORE-AVX512 -qopt-zmm-usage=high",
                  "knl": " -xMIC-AVX512"},
         "vec": " ",
@@ -87,7 +87,7 @@ C_FLAGS = {
     },
     "clang": {
         "call": "clang",
-        "arch": {"avx2": " -march=skylake ",
+        "arch": {"avx2": " -march=native ",
                  "avx512": " -march=skylake-avx512 ",
                  "knl": " -march=knl ",
                  "altivec": " -mcpu=power8 "},
@@ -98,9 +98,9 @@ C_FLAGS = {
         "report": " -fsave-optimization-record -foptimization-record-file=",
         "assem": " -S"
     },
-    "pgi": {
-        "call": " pgcc",
-        "arch": {"avx2": " -tp=haswell ",
+    "nvc": {
+        "call": "nvc",
+        "arch": {"avx2": " -tp=host ",
                  "avx512": " -tp=skylake ",
                  "knl": " -tp=knl ",
                  "altivec": " "},

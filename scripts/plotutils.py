@@ -257,7 +257,7 @@ def plot_radar_chart(categories, values, labels, outputfile, title="",
     #         size='large')
 
     fig.set_size_inches(size[0], size[1])
-    plt.savefig(outputfile, dpi=100, bbox_inches='tight', format='eps')
+    plt.savefig(outputfile, dpi=100, bbox_inches='tight', format='png')
 
 
 def plot_vspectrum(charts, labels, values, outputfile,
@@ -287,6 +287,7 @@ def plot_vspectrum(charts, labels, values, outputfile,
         ax.set_ylim(bottom=ymin, top=ymax)
         ax.tick_params(axis='x', which='both', bottom='off', top='off',
                        labelbottom='off')
+        ax.set_xticks([])
         ax.set_xlabel(name.title().replace("_", "\n"), rotation=0,
                       fontsize='small')
 
@@ -306,9 +307,6 @@ def plot_vspectrum(charts, labels, values, outputfile,
 
     # Find existing elements
     fig, axis = plt.subplots(1, len(charts) + 1)
-
-    # for ax in axis:
-    #    ax.set_facecolor('none')
 
     if max(map(max, values)) > ymax:
         ymax = max(map(max, values)) + 1
@@ -336,9 +334,6 @@ def plot_vspectrum(charts, labels, values, outputfile,
                                   color=palette[lab])
             axis[-1].add_artist(con)
 
-    # for ax in axis:
-    #    ax.set_facecolor('none')
-
     if len(values) > 1 and connect:
         # Connect same labels among inner charts (just 0 to 1 implemented)
         for val1, val2, lab in zip(values[0], values[1], labels):
@@ -361,14 +356,10 @@ def plot_vspectrum(charts, labels, values, outputfile,
     fig.canvas.draw()
 
     labels = axis[0].get_yticks().tolist()
-    # print(labels)
     labels[-1] = '(AVX512 vector length) ' + str(labels[-1])
-    # print(labels)
-    axis[0].set_xticklabels(labels)
 
-    # fig.suptitle(title)
     fig.set_size_inches(size[0], size[1])
-    plt.savefig(outputfile, dpi=100, bbox_inches='tight', format='eps')
+    plt.savefig(outputfile, dpi=100, bbox_inches='tight', format='png')
 
 
 def plot_bars(labels, data1, data2, data3, data4, output, title, chars,
@@ -491,6 +482,6 @@ def plot_bars(labels, data1, data2, data3, data4, output, title, chars,
 
     fig.set_size_inches(size[0], size[1])
     fig.tight_layout()
-    figlegend.savefig(os.path.join(os.path.dirname(output), 'legend.eps'),
-                      format='eps')
-    fig.savefig(output, format='eps')
+    figlegend.savefig(os.path.join(os.path.dirname(output), 'legend.png'),
+                      format='png')
+    fig.savefig(output, format='png')

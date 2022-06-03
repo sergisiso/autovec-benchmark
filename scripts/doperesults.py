@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (c) 2019-2020 Sergi Siso
+# Copyright (c) 2019-2022 Sergi Siso
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -25,15 +25,17 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-""" Provide statistics and plots from a TSVC results folder. """
+""" Provide Doping statistics and plots from a TSVC results folder. """
 
 import sys
 import os
 import statistics
 import argparse
+import math
 from collections import defaultdict
 import matplotlib as mpl
 mpl.use('Agg') # Allows to use Matplotlib without a XServer
+# pylint: disable=wrong-import-position
 import matplotlib.pyplot as plt
 
 NUM_REPS = 1
@@ -139,24 +141,50 @@ ALL_CATEGORIES = [
 
 
 def geometric_mean(arr):
-    import math
+    ''' Calculate the geometric mean. '''
 
     # declare product variable and initialize it to 1.
     product = 1
-    n = len(arr)
+    length = len(arr)
 
     # Compute the product of all the elements in the array.
-    for i in range(0, n):
+    for i in range(0, length):
         product = product * arr[i]
 
     # compute geometric mean through formula pow(product, 1/n) and
     # return the value to main function.
-    gm = (float)(math.pow(product, (1 / n)))
-    return (float)(gm)
+    geomean = (float)(math.pow(product, (1 / length)))
+    return (float)(geomean)
+
+def parse_doping_line(line):
+    ''' For a given line returns: overhead, test, time, checksum '''
+    result_list = line.split()
+    # Overhead has a default value because sometimes its not found
+    overhead = 0.0
+    if len(result_list) == 5:
+        if result_list[0] == "DopingRuntime:":
+            _, overhead, test, time, checksum = result_list
+        elif result_list[2] == "DopingRuntime:":
+            # some checksums have dyn compilation that we need to ignore
+            test, time, _, _, checksum = result_list
+        else:
+            print("Can not parse results line:\n", line)
+            sys.exit(-1)
+    elif len(result_list) == 7:
+        _, overhead, test, time, _, _, checksum = result_list
+    elif len(result_list) == 3:
+        test, time, checksum = result_list
+    elif len(result_list) == 3:
+        test, time, checksum = result_list
+    else:
+        print("Can not parse results line:\n", line)
+        sys.exit(-1)
+
+    return overhead, test, time, checksum
 
 
-def load_data(data, compiler, category, parameters, parameters_path,
-        baseline_path, expected_path=None):
+def load_data(data, compiler, category, parameters, path,
+        baseline_path, expected_path=None, novec_exist=True):
 
     if parameters != "RUNTIME_ALL":
         print("Just loading 'runtime all' for now!")
@@ -171,36 +199,64 @@ def load_data(data, compiler, category, parameters, parameters_path,
         vecfname = 'runrtvec0.txt'
         novecfname = 'runrtnovec0.txt'
 
-    # Open results files and entries to 'data'
+    # Populate the following lists with the data from the benchmark output files
     vecresults = []
     basevecresults = []
-
+    novecresults = []
+    basenovecresults = []
     expectedvecresults = []
 
     file_number = 0
     try:
         for i in range(NUM_REPS):
             file_number = i
-            vecf = open(os.path.join(parameters_path, vecfname.replace('0', str(i))), 'r')
-            basevecf = open(os.path.join(baseline_path, vecfname.replace('0', str(i))), 'r')
-            vecresults.append([line for line in vecf.readlines() if line[0] == 'S' or
+            dopingvec_fn = os.path.join(path, vecfname.replace('0', str(i)))
+            dopingnovec_fn = os.path.join(path, novecfname.replace('0', str(i)))
+
+            basevec_fn = os.path.join(baseline_path, vecfname.replace('0', str(i)))
+            basenovec_fn = os.path.join(baseline_path, novecfname.replace('0', str(i)))
+
+            with open(dopingvec_fn, 'r') as vecf:
+                vecresults.append(
+                    [line for line in vecf.readlines() if line[0] == 'S' or
                 (line.split() and line.split()[0] == "DopingRuntime:")])
-            basevecresults.append([line for line in basevecf.readlines() if line[0] == 'S'])
+
+            with open(basevec_fn, 'r') as basevecf:
+                basevecresults.append(
+                    [line for line in basevecf.readlines() if line[0] == 'S'])
+
+            # Load novec results if they exist
+            if novec_exist:
+                with open(dopingnovec_fn, 'r') as novecf:
+                    novecresults.append(
+                        [line for line in novecf.readlines() if line[0] == 'S' or
+                    (line.split() and line.split()[0] == "DopingRuntime:")])
+
+                with open(basenovec_fn, 'r') as basenovecf:
+                    basenovecresults.append(
+                        [line for line in basenovecf.readlines() if line[0] == 'S'])
+
+            # Load the expected results if they exist
             if expected_path:
-                expectedvecf = open(os.path.join(expected_path, vecfname.replace('0', str(i))), 'r')
-                expectedvecresults.append([line for line in expectedvecf.readlines() if line[0] == 'S'])
-    except FileNotFoundError:
+                expectedvec_fn = os.path.join(expected_path, vecfname.replace('0', str(i)))
+                with open(expectedvec_fn, 'r') as expectedvecf:
+                    expectedvecresults.append(
+                        [line for line in expectedvecf.readlines() if line[0] == 'S'])
+    except FileNotFoundError as err:
         if file_number == 0:
             print("Warning, these files are needed:")
-            print(" - ", os.path.join(parameters_path, vecfname))
+            print(" - ", os.path.join(path, vecfname))
             print(" - ", os.path.join(baseline_path, vecfname))
             if expected_path:
                 print(" - ", os.path.join(expected_path, vecfname))
+            print(err)
         else:
             print("Warning: Not all files for repetition ", file_number,
-                  " found in ", parameters_path)
+                  " found in ", path)
         sys.exit(0)
 
+    # Now parse all the obtained list, for each test populate the fields in the
+    # data data-structure
     for indx, base in enumerate(basevecresults[0]):
         # If line starts with S it is a test
         if base[0] == 'S':
@@ -215,38 +271,14 @@ def load_data(data, compiler, category, parameters, parameters_path,
             overheads = []
             vectimes = []
             basevectimes = []
+            novectimes = []
+            basenovectimes = []
             expectedvectimes = []
             for i in range(NUM_REPS):
+                # Parse baseline results line
                 basetest_vec, basevec_time, cs1 = basevecresults[i][indx].split()
-                # some checksums have dyn compilation
-
-                result_list = vecresults[i][indx].split()
-                if len(result_list) == 5:
-                    if result_list[0] == "DopingRuntime:":
-                        _, overhead, test_vec, vec_time, cs2 = result_list
-                    elif result_list[2] == "DopingRuntime:":
-                        test_vec, vec_time, _, _, cs2 = result_list
-                    else:
-                        print("Can not parser results line:")
-                        print(vecresults[i][indx])
-                        exit(-1)
-                elif len(result_list) == 7:
-                    _, overhead, test_vec, vec_time, _, _, cs2 = result_list
-                elif len(result_list) == 3:
-                    overhead = 0.0
-                    test_vec, vec_time, cs2 = result_list
-                elif len(result_list) == 3:
-                    overhead = 0.0
-                    test_vec, vec_time, cs2 = result_list
-                else:
-                    print("Can not parser results line:")
-                    print(vecresults[i][indx])
-                    exit(-1)
-                if expected_path:
-                    expected_test, expectedvec_time, _ = expectedvecresults[i][indx].split()
-                    if test != expected_test:
-                        print("Expected test mismatch!")
-                        sys.exit(0)
+                # Parse doping vec results line
+                overhead, test_vec, vec_time, cs2 = parse_doping_line(vecresults[i][indx])
 
                 if (test_vec != test or basetest_vec != test):
                     print("Error: Tests positions do not match", compiler,
@@ -261,23 +293,43 @@ def load_data(data, compiler, category, parameters, parameters_path,
                           category, parameters, test, check, cs1, cs2)
                     # sys.exit(0)
 
+                if novec_exist:
+                    # Parse baseline results line
+                    basetest_novec, basenovec_time, cs3 = basenovecresults[i][indx].split()
+                    # Parse doping vec results line
+                    _, test_novec, novec_time, cs4 = \
+                            parse_doping_line(novecresults[i][indx])
+                    if (test_novec != test or basetest_novec != test):
+                        print("Novec test mismatch!")
+                        sys.exit(0)
+
+                if expected_path:
+                    expected_test, expectedvec_time, _ = expectedvecresults[i][indx].split()
+                    if test != expected_test:
+                        print("Expected test mismatch!")
+                        sys.exit(0)
+
                 overheads.append(float(overhead))
                 vectimes.append(float(vec_time))
                 basevectimes.append(float(basevec_time))
+                if novec_exist:
+                    novectimes.append(float(novec_time))
+                    basenovectimes.append(float(basenovec_time))
                 expectedvectimes.append(float(expectedvec_time))
 
             # Get the minimum in order to minimize system noise.
             overhead = statistics.mean(overheads)
             vec_time = min(vectimes)
             basevec_time = min(basevectimes)
+            novec_time = min(novectimes) if novec_exist else 0
+            basenovec_time = min(basenovectimes) if novec_exist else 0
             expectedvec_time = min(expectedvectimes)
             # vecstd = statistics.stdev(vectimes)
             # novecstd = statistics.stdev(novectimes)
 
             # Check that time is big enough to be significant
             if vec_time < 0.5 or basevec_time < 0.5:
-                print("Warning: Time too small ", test, compiler, category,
-                      parameters)
+                print("Warning: Time too small ", test, vec_time, basevec_time)
 
             # Nested dictionary of {compiler, category, parameters, test} =
             # [doping_overhead, performance vec, performance novec, vector eff,
@@ -286,8 +338,8 @@ def load_data(data, compiler, category, parameters, parameters_path,
                 data[compiler][category][parameters][test] = [0, 0, 0, 0, 0, 0, 0]
             else:
                 data[compiler][category][parameters][test] = [
-                    overhead, vec_time, 0, 0/vec_time,
-                    basevec_time, 0, 0/basevec_time,
+                    overhead, vec_time, novec_time, novec_time/vec_time,
+                    basevec_time, basenovec_time, basenovec_time/basevec_time,
                     expectedvec_time
                     ]
 
@@ -442,11 +494,47 @@ def plot_all_tests(data, outputdir):
     fig.subplots_adjust(wspace=0)
     plt.savefig(os.path.join(outputdir, f'scatterplot_{compiler_name}.png'))
 
-    fig2 = plt.figure()
-    bp_names = [name[0] for name in category_name]
-    bp_values = [3 for name in category_name]
-    plt.bar(bp_names, bp_values)
-    plt.savefig(os.path.join(outputdir, f'barplot_{compiler_name}.png'))
+    # fig2 = plt.figure()
+    # bp_names = [name[0] for name in category_name]
+    # bp_values = [3 for name in category_name]
+    # plt.bar(bp_names, bp_values)
+    # plt.savefig(os.path.join(outputdir, f'barplot_{compiler_name}.png'))
+
+def plot_vspectrum_from_data(data, outputdir):
+    ''' Plot Doping VSpectrum '''
+    from plotutils import plot_vspectrum
+    title = "My title"
+    char = ('Baseline', 'With\ndynamic\noptimizations')
+    baseline_veffs = []
+    doping_veffs = []
+    labels = []
+
+    # Get the data
+    compiler = list(data.keys())[0]
+    for category in data[compiler].keys():
+        label = category.title().replace('_',' ')
+        cat_baselines_veffs = []
+        cat_doping_veffs = []
+        for test, results in data[compiler][category]['RUNTIME_ALL'].items():
+            # [doping_overhead, performance vec, performance novec,
+            # veff, baseline vec, baseline novec, baseline veff]
+            _, _, _, veff, _, _, baseline_veff, _ = results
+            cat_baselines_veffs.append(baseline_veff)
+            cat_doping_veffs.append(veff)
+            
+        print(label, geometric_mean(cat_baselines_veffs),
+              geometric_mean(cat_doping_veffs))
+        labels.append(label)
+        baseline_veffs.append(geometric_mean(cat_baselines_veffs))
+        doping_veffs.append(geometric_mean(cat_doping_veffs))
+
+    vals = [baseline_veffs, doping_veffs]
+    compiler_name = compiler.split("-")[-1].replace('/','')
+    plot_vspectrum(
+        char, labels, vals, os.path.join(outputdir, 'vspectrum_' + compiler_name + ".png"),
+        title=title, ylabel="Vector Efficiency GeoMean",
+        connect=True, ymin=1, ymax=2.5)
+
 
 
 def main():
@@ -511,6 +599,7 @@ def main():
 
     print("Plotting figures in ", outputdir)
     plot_all_tests(data, outputdir)
+    plot_vspectrum_from_data(data, outputdir)
 
 if __name__ == "__main__":
     main()

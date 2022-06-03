@@ -33,6 +33,8 @@ import shutil
 import statistics
 import argparse
 from collections import defaultdict
+import matplotlib as mpl
+mpl.use('Agg') # Allows to use Matplotlib without a XServer
 import matplotlib.pyplot as plt
 from plotutils import *
 
@@ -217,7 +219,7 @@ def load_data(data, compiler, category, parameters, parameters_path,
                    or (abs(float(check) - float(cs2)) > abs(float(check) * 0.01)):
                     print("Warning checksums differ! ", compiler,
                           category, parameters, test, check, cs1, cs2)
-                    sys.exit(0)
+                    # sys.exit(0)
 
                 vectimes.append(float(vec_time))
                 novectimes.append(float(novec_time))
@@ -358,7 +360,8 @@ def plot_parameter(data, parameter, output, title=""):
             category_exposed = []
             category_hidden = []
 
-            for test, value in data[compiler][category]['None'].items():
+            #for test, value in data[compiler][category]['None'].items():
+            for test, value in data[compiler][category]['RUNTIME_ALL'].items():
                 value_exposed = value[2]
                 try:
                     rt = data[compiler][category][parameter][test]
@@ -549,8 +552,7 @@ def plot_kernel(kerneldata, output, title="Empty"):
                                     'exposed_novec', 'exposed_vec'))
 
 
-def print_summary(data):
-    categories = all_categories
+def print_summary(data, categories):
 
     # Potentially change names and order
     parameters = ['None', 'RUNTIME_ATTRIBUTES', 'RUNTIME_INDEX',
@@ -751,12 +753,11 @@ def main():
 
     if args.tsvc:
         print("\nData sanity check (necessary for plots) ...")
-        data_sanity_check(data)
-        print("\nWriting summary to file...")
-        os.makedirs(os.path.join('plots', 'latex_table'))
-        print_summary(data)
+        # data_sanity_check(data)
+        #print("\nWriting summary to file...")
+        #os.makedirs(os.path.join(outputdir, 'latex_table'))
+        #print_summary(data, selected_categories)
 
-    exit(0)
     if args.strict_all:
         if ALL_CATEGORIES in categories:
             print("Error: It should contain all categories!")
@@ -765,35 +766,40 @@ def main():
         if ALL_PARAMETERS in parameters:
             print("Error: It should contain all parameters kind!")
             sys.exit(-3)
-    if True:
-        print("\n- Ploting Summary VSpectrums..")
-        os.makedirs(os.path.join('plots', 'extendedtsvc_summary'))
-        path = os.path.join('plots', 'extendedtsvc_summary')
-        plot_parameter(
-            data, 'RUNTIME_INDEX',
-            os.path.join(path, 'index_parameters.eps'), 'Index Parameters')
-        plot_parameter(
-            data, 'RUNTIME_LOOP_BOUNDS',
-            os.path.join(path, 'loop_bound.eps'), 'Loop Bounds Parameters')
-        plot_parameter(
-            data, 'RUNTIME_CONDITIONS',
-            os.path.join(path, 'conditional_parameters.eps'),
-            'Conditional Parameters')
-        # plot_parameter(
-        #     data, 'RUNTIME_ARITHMETIC',
-        #     os.path.join(path, 'arithmetic_parameters.eps'),
-        #     'Arithmetic Parameters')
-        plot_parameter(
-            data, 'RUNTIME_ATTRIBUTES',
-            os.path.join(path, 'variable_attributes.eps'),
-            'Variable attributes')
-        plot_parameter(
-            data, 'RUNTIME_ALL',
-            os.path.join(path, 'all.eps'),
-            'All Parameters')
 
+    if False:
+        print("\n- Ploting Summary VSpectrums..")
+        os.makedirs(os.path.join(outputdir, 'extendedtsvc_summary'))
+        path = os.path.join(outputdir, 'extendedtsvc_summary')
+        if 'RUNTIME_INDEX' in selected_parameters:
+            plot_parameter(
+                data, 'RUNTIME_INDEX',
+                os.path.join(path, 'index_parameters.png'), 'Index Parameters')
+        if 'RUNTIME_LOOP_BOUNDS' in selected_parameters:
+            plot_parameter(
+                data, 'RUNTIME_LOOP_BOUNDS',
+                os.path.join(path, 'loop_bound.png'), 'Loop Bounds Parameters')
+        if 'RUNTIME_CONDITIONS' in selected_parameters:
+            plot_parameter(
+                data, 'RUNTIME_CONDITIONS',
+                os.path.join(path, 'conditional_parameters.png'),
+                'Conditional Parameters')
+        if 'RUNTIME_ARITHMETIC' in selected_parameters:
+            plot_parameter(
+                data, 'RUNTIME_ARITHMETIC',
+                os.path.join(path, 'arithmetic_parameters.png'),
+                'Arithmetic Parameters')
+        if 'RUNTIME_ATTRIBUTES' in selected_parameters:
+            plot_parameter(
+                data, 'RUNTIME_ATTRIBUTES',
+                os.path.join(path, 'variable_attributes.png'),
+                'Variable attributes')
+        if 'RUNTIME_ALL' in selected_parameters:
+            plot_parameter(
+                data, 'RUNTIME_ALL',
+                os.path.join(path, 'runtime_all.png'),
+                'All Parameters')
         plt.close("all")
-        # exit(0)
 
     if False:
         print("\n- Compiler comparison")
@@ -801,72 +807,73 @@ def main():
         # os.makedirs(os.path.join('plots', 'categories_maxinfo_vspectrum'))
         os.makedirs(os.path.join('plots', 'categories_maxinfo_bars'))
         plot_max_info_architecture(
-            data, 'compilers-avx2.eps', 'avx2',
+            data, 'compilers-avx2.png', 'avx2',
             'AVX2 Compiler comparison')
         plot_max_info_architecture(
-            data, 'compilers-avx512.eps', 'avx512',
+            data, 'compilers-avx512.png', 'avx512',
             'AVX512 Compiler comparison')
         plot_max_info_architecture(
-            data, 'compilers-knl.eps', 'knl',
+            data, 'compilers-knl.png', 'knl',
             'KNL Compiler comparison')
         plot_max_info_architecture(
-            data, 'compilers-altivec.eps', 'altivec',
+            data, 'compilers-altivec.png', 'altivec',
             'Altivec Compiler comparison')
 
         plt.close("all")
 
-    if False:
+    if True:
         print("\n- Detailed VSpectrums")
         os.makedirs(os.path.join('plots', 'extendedtsvc_detailed'))
         path = os.path.join('plots', 'extendedtsvc_detailed')
         plot_categories(
-            data, 'avx2-icc', os.path.join(path, 'avx2-icc.eps'),
+            data, 'avx2-icc', os.path.join(path, 'avx2-icc.png'),
             title="AVX2 ICC Auto-vectorization")
+        sys.exit(0)
         plot_categories(
-            data, 'avx2-gcc', os.path.join(path, 'avx2-gcc.eps'),
+            data, 'avx2-gcc', os.path.join(path, 'avx2-gcc.png'),
             title="AVX2 GCC Auto-vectorization")
         plot_categories(
-            data, 'avx2-pgi', os.path.join(path, 'avx2-pgi.eps'),
+            data, 'avx2-pgi', os.path.join(path, 'avx2-pgi.png'),
             title="AVX2 PGI Auto-vectorization")
         plot_categories(
-            data, 'avx2-clang', os.path.join(path, 'avx2-clang.eps'),
+            data, 'avx2-clang', os.path.join(path, 'avx2-clang.png'),
             title="AVX2 Clang Auto-vectorization")
         plot_categories(
-            data, 'avx512-icc', os.path.join(path, 'avx512-icc.eps'),
+            data, 'avx512-icc', os.path.join(path, 'avx512-icc.png'),
             title="AVX512 ICC Auto-vectorization")
         plot_categories(
-            data, 'avx512-gcc', os.path.join(path, 'avx512-gcc.eps'),
+            data, 'avx512-gcc', os.path.join(path, 'avx512-gcc.png'),
             title="AVX512 GCC Auto-vectorization")
         plot_categories(
-            data, 'avx512-pgi', os.path.join(path, 'avx512-pgi.eps'),
+            data, 'avx512-pgi', os.path.join(path, 'avx512-pgi.png'),
             title="AVX512 PGI Auto-vectorization")
         plot_categories(
-            data, 'avx512-clang', os.path.join(path, 'avx512-clang.eps'),
+            data, 'avx512-clang', os.path.join(path, 'avx512-clang.png'),
             title="AVX512 Clang Auto-vectorization")
         plt.close("all")
         plot_categories(
-            data, 'knl-icc', os.path.join(path, 'knl-icc.eps'),
+            data, 'knl-icc', os.path.join(path, 'knl-icc.png'),
             title="KNL ICC Auto-vectorization")
         plot_categories(
-            data, 'knl-gcc', os.path.join(path, 'knl-gcc.eps'),
+            data, 'knl-gcc', os.path.join(path, 'knl-gcc.png'),
             title="KNL GCC Auto-vectorization")
         plot_categories(
-            data, 'knl-pgi', os.path.join(path, 'knl-pgi.eps'),
+            data, 'knl-pgi', os.path.join(path, 'knl-pgi.png'),
             title="KNL PGI Auto-vectorization")
         plot_categories(
-            data, 'knl-clang', os.path.join(path, 'knl-clang.eps'),
+            data, 'knl-clang', os.path.join(path, 'knl-clang.png'),
             title="KNL Clang Auto-vectorization")
         plot_categories(
-            data, 'altivec-gcc', os.path.join(path, 'altivec-gcc.eps'),
+            data, 'altivec-gcc', os.path.join(path, 'altivec-gcc.png'),
             title="Altivec GCC Auto-vectorization")
         plot_categories(
-            data, 'altivec-ibm', os.path.join(path, 'altivec-ibm.eps'),
+            data, 'altivec-ibm', os.path.join(path, 'altivec-ibm.png'),
             title="Altivec IBM Auto-vectorization")
         plot_categories(
-            data, 'altivec-pgi', os.path.join(path, 'altivec-pgi.eps'),
+            data, 'altivec-pgi', os.path.join(path, 'altivec-pgi.png'),
             title="Altivec PGI Auto-vectorization")
         plot_categories(
-            data, 'altivec-clang', os.path.join(path, 'altivec-clang.eps'),
+            data, 'altivec-clang', os.path.join(path, 'altivec-clang.png'),
             title="Altivec Clang Auto-vectorization")
         plt.close("all")
 
@@ -874,25 +881,25 @@ def main():
         print("\n- MicroKernels")
         os.makedirs(os.path.join('plots', 'microkernels'))
         path = os.path.join('plots', 'microkernels')
-        # plot_kernel(microkernel_data['ao'], os.path.join(path, 'ao.eps'),
+        # plot_kernel(microkernel_data['ao'], os.path.join(path, 'ao.png'),
         #             title="Ambient Occlusion")
         plot_kernel(microkernel_data['binomial'],
-                    os.path.join(path, 'binomial.eps'),
+                    os.path.join(path, 'binomial.png'),
                     title="Binomial Options")
         plot_kernel(microkernel_data['black-scholes'],
-                    os.path.join(path, 'black-scholes.eps'),
+                    os.path.join(path, 'black-scholes.png'),
                     title="Black-Scholes Options")
         plot_kernel(microkernel_data['convolution'],
-                    os.path.join(path, 'convolution.eps'),
+                    os.path.join(path, 'convolution.png'),
                     title="Convolution")
         plot_kernel(microkernel_data['mandelbrot'],
-                    os.path.join(path, 'mandelbrot.eps'),
+                    os.path.join(path, 'mandelbrot.png'),
                     title="Mandelbrot")
         plot_kernel(microkernel_data['matrixmult'],
-                    os.path.join(path, 'matrixmult.eps'),
+                    os.path.join(path, 'matrixmult.png'),
                     title="Small Matrix Multiplications")
         plot_kernel(microkernel_data['stencil'],
-                    os.path.join(path, 'stencil.eps'),
+                    os.path.join(path, 'stencil.png'),
                     title="Stencil Computation")
 
 
