@@ -1,18 +1,28 @@
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
-#include <time.h>
+#include "../timing.h"
 #include <sstream>
 
+//#define PRINT_PROGRESS 1
 
 void do_x_matrixMult ( unsigned nump, double *a, double *b, double *c, int MATRIXSIZEp) {
 
 #if SPECIALIZE
-    int num = 500000;
-    int MATRIXSIZE = 32;
+    unsigned num = 500000;
+    unsigned MATRIXSIZE = 32;
 #else
-    int num = nump;
-    int MATRIXSIZE = MATRIXSIZEp;
+    unsigned num = nump;
+    unsigned MATRIXSIZE = MATRIXSIZEp;
+#endif
+
+#ifdef PRINT_PROGRESS
+    double timings[20];
+    unsigned iterations[20];
+    timings[0] = rtc();
+    iterations[0] = 0;
+    unsigned next_print = 0;
+    int print_count = 1;
 #endif
 
     for ( unsigned n = 0; n < num; n++){
@@ -23,5 +33,19 @@ void do_x_matrixMult ( unsigned nump, double *a, double *b, double *c, int MATRI
 			    }
 		    }
 	    }
+
+#ifdef PRINT_PROGRESS
+        if (n > next_print){
+            timings[print_count] = rtc();
+            iterations[print_count] = n;
+            print_count = print_count + 1;
+            next_print = next_print + (num/15);
+        }
+#endif
     }
+#ifdef PRINT_PROGRESS
+    for(int i = 0; i < print_count; i++){
+        printf("Progress: it: %d, time: %f \n", iterations[i], timings[i] - timings[0]);
+    }
+#endif
 }

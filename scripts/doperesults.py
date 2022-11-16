@@ -328,7 +328,7 @@ def load_data(data, compiler, category, parameters, path,
             # novecstd = statistics.stdev(novectimes)
 
             # Check that time is big enough to be significant
-            if vec_time < 0.5 or basevec_time < 0.5:
+            if vec_time < 0.3 or basevec_time < 0.3:
                 print("Warning: Time too small ", test, vec_time, basevec_time)
 
             # Nested dictionary of {compiler, category, parameters, test} =
@@ -376,7 +376,8 @@ def data_sanity_check(data):
         # does the difference comes from baseline of vector?
         print("")
         print("Tests that regress with Doping:")
-        speedups = []
+        speedups_avg = []
+        speedups_geo = []
         regressions = 0
         same_perf = 0
         small_impr = 0
@@ -385,12 +386,14 @@ def data_sanity_check(data):
         for compiler in sorted(data.keys()):
             for category in data[compiler].keys():
 
+                cat_speedups = []
+
                 found = False
                 for test, results in data[compiler][category]['RUNTIME_ALL'].items():
                     # [doping_overhead, performance vec, performance novec,
                     # veff, baseline vec, baseline novec, baseline veff]
                     _, doping, _, _, baseline, novec, _, expected = results
-                    speedups.append(baseline/doping)
+                    cat_speedups.append(baseline/doping)
 
                     if baseline/doping < 0.9:  # or novec*1.1 < baseline:
                         regressions = regressions + 1
@@ -402,6 +405,7 @@ def data_sanity_check(data):
                     elif baseline/doping < 2:
                         small_impr = small_impr + 1
                     else:
+                        print("BIG", test)
                         big_impr = big_impr + 1
 
                     if doping > expected*1.1:
@@ -409,17 +413,22 @@ def data_sanity_check(data):
                               doping, " expected=", expected)
                         expected_sum += 1
 
+                speedups_geo.append(geometric_mean(cat_speedups))
+                speedups_avg.append(statistics.mean(cat_speedups))
+
+                print("############", category, geometric_mean(cat_speedups))
                 if found:
                     print("in ", compiler, category)
                     found = False
+
         print("found a regression in ", regressions, "tests")
         print("Same perf (below x1.1) in", same_perf)
         print("Moderate improvement (x1.1 to x2) in", small_impr)
         print("Big improvement (more than x2) in", big_impr)
         print("Tests that are less than expected: ", expected_sum)
-        print("Average:", statistics.mean(speedups),
+        print("Average:", statistics.mean(speedups_avg),
               # " median:", statistics.median(speedups),
-              " geomean:", geometric_mean(speedups))
+              " geomean:", geometric_mean(speedups_geo))
         print("")
 
 
@@ -521,9 +530,9 @@ def plot_vspectrum_from_data(data, outputdir):
             _, _, _, veff, _, _, baseline_veff, _ = results
             cat_baselines_veffs.append(baseline_veff)
             cat_doping_veffs.append(veff)
-            
+
         print(label, geometric_mean(cat_baselines_veffs),
-              geometric_mean(cat_doping_veffs))
+              geometric_mean(cat_doping_veffs), geometric_mean(cat_doping_veffs) -  geometric_mean(cat_baselines_veffs))
         labels.append(label)
         baseline_veffs.append(geometric_mean(cat_baselines_veffs))
         doping_veffs.append(geometric_mean(cat_doping_veffs))
@@ -532,6 +541,38 @@ def plot_vspectrum_from_data(data, outputdir):
     compiler_name = compiler.split("-")[-1].replace('/','')
     plot_vspectrum(
         char, labels, vals, os.path.join(outputdir, 'vspectrum_' + compiler_name + ".png"),
+        title=title, ylabel="Vector Efficiency GeoMean",
+        connect=True, ymin=1, ymax=2.5)
+
+
+def plot_single_vspectrum_from_data(data, outputdir):
+    ''' Plot Doping VSpectrum '''
+    from plotutils import plot_vspectrum
+    title = "My title"
+    char = ['TSVC']
+    allinfo_veffs = []
+    labels = []
+
+    # Get the data
+    compiler = list(data.keys())[0]
+    for category in data[compiler].keys():
+        label = category.title().replace('_',' ')
+        cat_baselines_veffs = []
+        cat_doping_veffs = []
+        for test, results in data[compiler][category]['RUNTIME_ALL'].items():
+            # [doping_overhead, performance vec, performance novec,
+            # veff, baseline vec, baseline novec, baseline veff]
+            _, _, _, veff, _, _, baseline_veff, _ = results
+            cat_baselines_veffs.append(baseline_veff)
+
+        labels.append(label)
+        allinfo_veffs.append(geometric_mean(cat_baselines_veffs))
+
+    vals = [[max(1,val) for val in allinfo_veffs]]
+    print(labels, vals)
+    compiler_name = compiler.split("-")[-1].replace('/','')
+    plot_vspectrum(
+        char, labels, vals, os.path.join(outputdir, 'baseline_vspectrum_' + compiler_name + ".png"),
         title=title, ylabel="Vector Efficiency GeoMean",
         connect=True, ymin=1, ymax=2.5)
 
@@ -600,6 +641,7 @@ def main():
     print("Plotting figures in ", outputdir)
     plot_all_tests(data, outputdir)
     plot_vspectrum_from_data(data, outputdir)
+    plot_single_vspectrum_from_data(data, outputdir)
 
 if __name__ == "__main__":
     main()

@@ -48,6 +48,7 @@ else
 	VECTOR_ISA=native
 	GNUISA=-mtune=native
 	INTELISA=-xHost
+	PGIISA=-tp=native
 endif
 
 # Choose compiler toolchain - gnu by default
@@ -69,8 +70,8 @@ else ifeq ($(TEST_COMPILER),intel)
 	NOVECFLAG=-no-simd -no-vec
 	REPORT=-qopt-report=5 -qopt-report-file=$(IDSTRING)report.txt
 	ASM=-S
-else ifeq ($(TEST_COMPILER),pgi)
-	CC=pgc++
+else ifeq ($(TEST_COMPILER),nvidia)
+	CC=nvc++
 	CFLAGS=-O3 $(PGIISA) --c++11
 	UNSAFE=-fast -fastsse
 	NOVECFLAG=-Mnovect
@@ -84,7 +85,7 @@ else ifeq ($(TEST_COMPILER),ibm)
 	REPORT=-D
 	ASM= -S
 else ifeq ($(TEST_COMPILER),clang)
-	CC=clang
+	CC=clang++
 	CFLAGS=-O3 $(CLANGISA) -std=c++11 -lm -lstdc++
 	UNSAFE=-ffast-math
 	NOVECFLAG=-fno-vectorize

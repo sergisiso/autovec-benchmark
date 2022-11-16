@@ -299,9 +299,9 @@ def plot_vspectrum(charts, labels, values, outputfile,
 
     if debug:
         print(outputfile)
-        # print(charts)
-        # print(labels)
-        # print(values)
+        print(charts)
+        print(labels)
+        print(values)
         for idx, lab in enumerate(labels):
             print(lab, round((values[0][idx]/values[1][idx]-1)*100, 1))
 

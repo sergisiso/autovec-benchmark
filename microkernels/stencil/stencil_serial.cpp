@@ -60,8 +60,8 @@ void loop_stencil_serial(int t0, int t1,
 
     for (int t = t0; t < t1; ++t) {
         if ((t & 1) == 0){
-            const float * RESTRICT Ain = Aeven;
-            float * RESTRICT Aout = Aodd;
+            const float * Ain = Aeven;
+            float * Aout = Aodd;
             for (int z = z0; z < z1; ++z) {
                 for (int y = y0; y < y1; ++y) {
                     for (int x = x0; x < x1; ++x) {
@@ -83,8 +83,8 @@ void loop_stencil_serial(int t0, int t1,
                 }
             }
         }else{
-            const float * RESTRICT Ain = Aodd;
-            float * RESTRICT Aout = Aeven;
+            const float * Ain = Aodd;
+            float * Aout = Aeven;
             for (int z = z0; z < z1; ++z) {
                 for (int y = y0; y < y1; ++y) {
                     for (int x = x0; x < x1; ++x) {

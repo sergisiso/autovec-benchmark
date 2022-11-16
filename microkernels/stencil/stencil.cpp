@@ -72,7 +72,7 @@ void InitData(int Nx, int Ny, int Nz, float *A[2], float *vsq) {
 
 
 int main(int argc, char *argv[]) {
-    static unsigned int test_iterations = 5;
+    static unsigned int test_iterations = 1;
     int Nx = 512, Ny = 512, Nz = 512;
     int width = 4;
 

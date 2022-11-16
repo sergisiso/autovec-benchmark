@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     // Black-Scholes options pricing model, serial implementation
     //
     double bs_serial = 1e30;
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 1; ++i) {
         reset_and_start_timer();
         black_scholes_serial(S, X, T, r, v, result, nOptions);
         double dt = get_elapsed_msec();

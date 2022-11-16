@@ -125,7 +125,11 @@ C_FLAGS = {
 
 # Information classes flags
 PARAMETER_FLAGS = {
-    "None": " ",
+    # "None": " "
+    "None": " -DRUNTIME_LOOP_BOUNDS_PARAMETERS"
+            " -DRUNTIME_ARITHMETIC_PARAMETERS"
+            " -DRUNTIME_INDEX_PARAMETERS"
+            " -DCONDITION_EVAL_PARAMETERS",
     "RUNTIME_ALL": " -DRUNTIME_LOOP_BOUNDS_PARAMETERS"
                    " -DRUNTIME_ARITHMETIC_PARAMETERS"
                    " -DRUNTIME_INDEX_PARAMETERS"

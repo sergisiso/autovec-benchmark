@@ -93,7 +93,7 @@ void lattice_boltzmann_serial(
     LATS = p_lats;
     TSIZE = p_size;
     HIniIn = 1;
-    HEndIn = TSIZE - HIniIn;
+    HEndIn = p_size - 1;
     postequil = 1;
 #endif
 
