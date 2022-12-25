@@ -14,9 +14,14 @@ constexpr double postequil = 1;
 #define RESTRICT __restrict__
 #else
 int TSIZE;
-int HEndIn;
 int HIniIn;
+int HEndIn;
+// Nvidia has an internal compiler error unless fluids has a compile-time value
+#ifdef NVIDIA_COMPILER
+constexpr int FLUIDS = 4;
+#else
 int FLUIDS;
+#endif
 int LATS;
 double postequil;
 #define RESTRICT
@@ -89,12 +94,16 @@ void lattice_boltzmann_serial(
     assert(p_lats == 19);
     assert(p_size == 100);
 #else
-    FLUIDS = p_fluids;
-    LATS = p_lats;
-    TSIZE = p_size;
-    HIniIn = 1;
-    HEndIn = p_size - 1;
-    postequil = 1;
+#ifndef NVIDIA_COMPILER
+   FLUIDS = p_fluids;
+#else
+    assert(p_fluids == 4);
+#endif
+   LATS = p_lats;
+   TSIZE = p_size;
+   HIniIn = 1;
+   HEndIn = p_size - 1;
+   postequil = 1;
 #endif
 
     for(int iteration = 0; iteration <= 5; iteration++){

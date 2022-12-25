@@ -71,7 +71,7 @@ else ifeq ($(TEST_COMPILER),intel)
 	REPORT=-qopt-report=5 -qopt-report-file=$(IDSTRING)report.txt
 	ASM=-S
 else ifeq ($(TEST_COMPILER),nvidia)
-	CC=nvc++
+	CC=nvc++ -DNVIDIA_COMPILER
 	CFLAGS=-O3 $(PGIISA) --c++11
 	UNSAFE=-fast -fastsse
 	NOVECFLAG=-Mnovect
